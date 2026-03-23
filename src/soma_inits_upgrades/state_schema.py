@@ -66,7 +66,7 @@ TASK_ORDER: list[str] = [
 
 def _default_tasks_completed() -> dict[str, bool]:
     """Build default tasks_completed dict from TASK_ORDER."""
-    return {task: False for task in TASK_ORDER}
+    return dict.fromkeys(TASK_ORDER, False)
 
 
 class EntryState(BaseModel):

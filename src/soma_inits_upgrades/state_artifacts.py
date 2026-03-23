@@ -3,15 +3,19 @@
 from __future__ import annotations
 
 import sys
-import sys
+from typing import TYPE_CHECKING
 
-
+from soma_inits_upgrades.git_ops import safe_rmtree
 from soma_inits_upgrades.state import (
-    atomic_write_json, detect_entry_field_changes, read_entry_state,
+    atomic_write_json,
+    detect_entry_field_changes,
+    read_entry_state,
 )
 from soma_inits_upgrades.state_schema import EntryState
-from soma_inits_upgrades.git_ops import safe_rmtree
-from soma_inits_upgrades.state_schema import EntryState
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
 
 def get_entry_artifact_paths(
     init_file_name: str, output_dir: Path,
@@ -76,6 +80,8 @@ def delete_entry_artifacts(
     for path in targets:
         if path.is_dir():
             safe_rmtree(path, output_dir)
+        else:
+            path.unlink(missing_ok=True)
 
 
 def reset_entry_state_if_modified(

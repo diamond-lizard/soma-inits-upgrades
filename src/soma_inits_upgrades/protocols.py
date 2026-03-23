@@ -2,15 +2,18 @@
 
 from __future__ import annotations
 
-import subprocess
-from pathlib import Path
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from soma_inits_upgrades.state_schema import EntryState, GlobalState
+from soma_inits_upgrades.state_schema import EntryState, GlobalState  # noqa: TC001
+
+if TYPE_CHECKING:
+    import subprocess
+    from pathlib import Path
 
 
+@runtime_checkable
 class SubprocessRunner(Protocol):
     """Protocol for subprocess.run-compatible callables."""
 
@@ -19,24 +22,28 @@ class SubprocessRunner(Protocol):
     ) -> subprocess.CompletedProcess[str]: ...
 
 
+@runtime_checkable
 class TaskHandler(Protocol):
     """Protocol for per-entry task handler functions."""
 
     def __call__(self, ctx: EntryContext) -> bool: ...
 
 
+@runtime_checkable
 class XclipChecker(Protocol):
     """Protocol for xclip availability checker."""
 
     def __call__(self) -> bool: ...
 
 
+@runtime_checkable
 class UserInputFn(Protocol):
     """Protocol for user input functions."""
 
     def __call__(self, prompt: str) -> str: ...
 
 
+@runtime_checkable
 class WhichFn(Protocol):
     """Protocol for shutil.which-compatible callables."""
 

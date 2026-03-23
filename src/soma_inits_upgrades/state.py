@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import sys
-from pathlib import Path
-
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel
 
 from soma_inits_upgrades.state_schema import EntriesSummary, EntryState, GlobalState
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def read_global_state(path: Path) -> GlobalState | None:

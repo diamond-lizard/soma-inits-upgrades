@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import re
-from typing import Any
 import urllib.parse
+from typing import Any
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator, model_validator
 
