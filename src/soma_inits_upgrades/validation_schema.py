@@ -46,11 +46,10 @@ class StaleInitsFile(BaseModel):
     @model_validator(mode="after")
     def check_duplicate_init_files(self) -> StaleInitsFile:
         """Reject duplicate init_file values."""
-        seen: set[str] = set()
-        for entry in self.results:
-            if entry.init_file in seen:
-                raise ValueError(f"duplicate init_file: {entry.init_file!r}")
-            seen.add(entry.init_file)
+        names = [e.init_file for e in self.results]
+        dupes = [n for n in names if names.count(n) > 1]
+        if dupes:
+            raise ValueError(f"duplicate init_file: {dupes[0]!r}")
         return self
 
 

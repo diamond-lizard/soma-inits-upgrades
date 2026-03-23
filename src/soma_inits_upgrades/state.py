@@ -87,36 +87,3 @@ def reconcile_entries_summary(entry_names: list[str], state_dir: Path) -> Entrie
             counts["pending"] += 1
         counts["total"] += 1
     return EntriesSummary(**counts)
-
-
-def create_entry_state_if_missing(entry_dict: dict[str, str], state_dir: Path) -> bool:
-    """Create a per-entry state file if missing or corrupt.
-
-    Returns True if a state file was created/recreated, False if valid.
-    """
-    path = state_dir / f"{entry_dict['init_file']}.json"
-    existing = read_entry_state(path)
-    if existing is not None:
-        return False
-    if path.exists():
-        print(f"Warning: recreating corrupt state for {path}", file=sys.stderr)
-    state = EntryState(
-        init_file=entry_dict["init_file"],
-        repo_url=entry_dict["repo_url"],
-        pinned_ref=entry_dict["pinned_ref"],
-    )
-    atomic_write_json(path, state)
-    return True
-
-
-def detect_entry_field_changes(state: EntryState, entry_dict: dict[str, str]) -> list[str]:
-    """Compare repo_url and pinned_ref between state and entry dict.
-
-    Returns a list of field names that differ.
-    """
-    changed: list[str] = []
-    if state.repo_url != entry_dict["repo_url"]:
-        changed.append("repo_url")
-    if state.pinned_ref != entry_dict["pinned_ref"]:
-        changed.append("pinned_ref")
-    return changed

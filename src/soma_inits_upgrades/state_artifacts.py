@@ -1,17 +1,10 @@
-"""Entry artifact management: path resolution, deletion, state creation/reset/change detection."""
+"""Entry artifact management: path resolution and deletion."""
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
 
 from soma_inits_upgrades.git_ops import safe_rmtree
-from soma_inits_upgrades.state import (
-    atomic_write_json,
-    detect_entry_field_changes,
-    read_entry_state,
-)
-from soma_inits_upgrades.state_schema import EntryState
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -82,29 +75,3 @@ def delete_entry_artifacts(
             safe_rmtree(path, output_dir)
         else:
             path.unlink(missing_ok=True)
-
-
-def reset_entry_state_if_modified(
-    entry_dict: dict[str, str], state_dir: Path, output_dir: Path,
-) -> bool:
-    """Reset entry state if repo_url or pinned_ref changed.
-
-    Returns True if the entry was modified and reset, False otherwise.
-    """
-    path = state_dir / f"{entry_dict['init_file']}.json"
-    existing = read_entry_state(path)
-    if existing is None:
-        return False
-    changed = detect_entry_field_changes(existing, entry_dict)
-    if not changed:
-        return False
-    fields = ", ".join(changed)
-    print(f"Warning: {entry_dict['init_file']} changed ({fields}), resetting", file=sys.stderr)
-    delete_entry_artifacts(entry_dict["init_file"], output_dir)
-    new_state = EntryState(
-        init_file=entry_dict["init_file"],
-        repo_url=entry_dict["repo_url"],
-        pinned_ref=entry_dict["pinned_ref"],
-    )
-    atomic_write_json(path, new_state)
-    return True

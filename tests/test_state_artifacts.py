@@ -8,8 +8,8 @@ from soma_inits_upgrades.state import atomic_write_json
 from soma_inits_upgrades.state_artifacts import (
     delete_entry_artifacts,
     get_entry_artifact_paths,
-    reset_entry_state_if_modified,
 )
+from soma_inits_upgrades.state_lifecycle import reset_entry_state_if_modified
 from soma_inits_upgrades.state_schema import EntryState
 
 if TYPE_CHECKING:
