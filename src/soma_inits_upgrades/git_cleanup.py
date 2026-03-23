@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
     from soma_inits_upgrades.protocols import SubprocessRunner
 
-from soma_inits_upgrades.git_ops import _resolve_run
+from soma_inits_upgrades.subprocess_utils import resolve_run
 
 GIT_DIFF_TIMEOUT_SECONDS = 120
 
@@ -25,7 +25,7 @@ def generate_diff(
     Returns True if the diff is non-empty, False if empty.
     Raises RuntimeError on git diff failure or timeout.
     """
-    run_fn = _resolve_run(run_fn)
+    run_fn = resolve_run(run_fn)
     try:
         result = run_fn(
             ["git", "diff", "--no-color", "--no-ext-diff",
