@@ -104,7 +104,7 @@ def detect_default_branch(
         clone_dir, run_fn,
     )
     if result and result.returncode == 0:
-        return result.stdout.strip().rsplit("/", 1)[-1]
+        return result.stdout.strip().removeprefix("refs/remotes/origin/")
     for name in ("main", "master"):
         check = _run_git(
             ["git", "rev-parse", "--verify", f"refs/remotes/origin/{name}"],
