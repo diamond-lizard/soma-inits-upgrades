@@ -15,19 +15,20 @@ if TYPE_CHECKING:
 
 
 def make_xclip_checker(
-    which_fn: WhichFn = shutil.which,
+    which_fn: WhichFn | None = None,
 ) -> Callable[[], bool]:
     """Return a closure that checks xclip availability, caching the result.
 
     The closure calls which_fn('xclip') on first invocation and caches the
     boolean result, returning the cached value on subsequent calls.
     """
+    resolved_fn = which_fn if which_fn is not None else shutil.which
     cache: list[bool] = []
 
     def checker() -> bool:
         """Return True if xclip is available on the system."""
         if not cache:
-            cache.append(which_fn("xclip") is not None)
+            cache.append(resolved_fn("xclip") is not None)
         return cache[0]
 
     return checker
