@@ -11,8 +11,6 @@ from soma_inits_upgrades.state_schema import (
     EntriesSummary,
     EntryState,
     GlobalState,
-    GraphFinalizationTasks,
-    SummaryTasks,
 )
 
 if TYPE_CHECKING:
@@ -88,10 +86,9 @@ def reconcile_entries_summary(entry_names: list[str], state_dir: Path) -> Entrie
 
 
 def reset_downstream_phases(global_state: GlobalState) -> None:
-    """Reset entry_processing through summary phases to pending.
+    """Reset entry_processing through summary, graph and completion flags."""
+    from soma_inits_upgrades.state_schema import GraphFinalizationTasks, SummaryTasks
 
-    Resets graph_finalization_tasks, summary_tasks, and completion.
-    """
     global_state.phases.entry_processing = "pending"
     global_state.phases.graph_finalization = "pending"
     global_state.phases.summary = "pending"
