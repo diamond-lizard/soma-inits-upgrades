@@ -6,6 +6,9 @@ import re
 import sys
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.deps_header_parsing import extract_multiline_requires
+from soma_inits_upgrades.deps_parsing import parse_pkg_el
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -59,100 +62,6 @@ def _scan_file_for_header(
         if _PKG_REQ_RE.match(line):
             results.append((path, idx))
 
-
-def parse_pkg_el(path: Path) -> tuple[str | None, str | None]:
-    """Parse a -pkg.el file and return (raw_deps_sexp, package_name).
-
-    The file contains (define-package NAME VERSION [DOCSTRING] REQUIREMENTS).
-    DOCSTRING is optional; REQUIREMENTS may be quote-prefixed.
-    Returns (None, None) if the file cannot be parsed or has too few arguments.
-    """
-    import sexpdata
-
-    try:
-        text = path.read_text(encoding="utf-8")
-        parsed = sexpdata.loads(text)
-    except (OSError, UnicodeDecodeError, ValueError):
-        return None, None
-    if not isinstance(parsed, list) or len(parsed) < 3:
-        return None, None
-    pkg_name = _extract_string(parsed[1])
-    reqs_arg = _select_requirements_arg(parsed)
-    if reqs_arg is None:
-        return None, pkg_name
-    raw = _unwrap_to_string(reqs_arg)
-    return raw, pkg_name
-
-
-def _extract_string(val: object) -> str | None:
-    """Extract a plain string from a sexpdata value."""
-    import sexpdata
-
-    if isinstance(val, str):
-        return val
-    if isinstance(val, sexpdata.Symbol):
-        return val.value()
-    return None
-
-
-def _select_requirements_arg(parsed: list[object]) -> object | None:
-    """Pick the REQUIREMENTS argument from a define-package form.
-
-    If the 3rd arg is a string it is the DOCSTRING; REQUIREMENTS is the 4th.
-    If the 3rd arg is a list or Quoted, it is REQUIREMENTS directly.
-    """
-    import sexpdata
-
-    third = parsed[2]
-    if isinstance(third, str):
-        return parsed[3] if len(parsed) > 3 else None
-    if isinstance(third, (list, sexpdata.Quoted)):
-        return third
-    return None
-
-
-def _unwrap_to_string(val: object) -> str:
-    """Convert a sexpdata value to its string representation.
-
-    Unwraps Quoted wrappers and converts lists to s-expression strings.
-    """
-    import sexpdata
-
-    if isinstance(val, sexpdata.Quoted):
-        val = val.x
-    if isinstance(val, list):
-        return sexpdata.dumps(val)
-    if isinstance(val, str):
-        return val
-    return str(val)
-
-
-_CONTINUATION_RE = re.compile(r"^;+\s+")
-
-
-def extract_multiline_requires(lines: list[str], header_line_idx: int) -> str:
-    """Extract a Package-Requires: value that may span continuation lines.
-
-    Starts after the colon on the header line, then accumulates subsequent
-    lines starting with semicolons followed by whitespace.  Stops when
-    parentheses are balanced.
-    """
-    header = lines[header_line_idx]
-    value = header.split("Package-Requires:", 1)[1].strip()
-    for line in lines[header_line_idx + 1 :]:
-        if _is_balanced(value):
-            break
-        m = _CONTINUATION_RE.match(line)
-        if not m:
-            break
-        value += " " + line[m.end() :]
-    return value.strip()
-
-
-def _is_balanced(text: str) -> bool:
-    """Return True when opening and closing parens are equal and non-zero."""
-    opens = text.count("(")
-    return opens > 0 and opens == text.count(")")
 
 
 def locate_package_metadata(
