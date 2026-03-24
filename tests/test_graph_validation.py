@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from soma_inits_upgrades.graph import (
-    add_entry,
+from soma_inits_upgrades.graph import add_entry, remove_entries
+from soma_inits_upgrades.graph_validation import (
     invert_dependencies,
-    remove_entries,
     validate_graph,
 )
 
