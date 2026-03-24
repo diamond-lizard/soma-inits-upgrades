@@ -7,17 +7,20 @@ from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel
 
-from soma_inits_upgrades.state_schema import EntriesSummary, EntryState, GlobalState
+from soma_inits_upgrades.state_schema import (
+    EntriesSummary,
+    EntryState,
+    GlobalState,
+    GraphFinalizationTasks,
+    SummaryTasks,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
 
 
 def read_global_state(path: Path) -> GlobalState | None:
-    """Read and validate the global state file.
-
-    Returns None if missing or invalid JSON.
-    """
+    """Read and validate the global state file, or None if missing."""
     if not path.exists():
         return None
     try:
@@ -44,10 +47,7 @@ def atomic_write_json(path: Path, data: BaseModel | dict[str, Any]) -> None:
 
 
 def read_entry_state(path: Path) -> EntryState | None:
-    """Read and validate a per-entry state file.
-
-    Returns None if missing or invalid JSON.
-    """
+    """Read and validate a per-entry state file, or None if missing."""
     if not path.exists():
         return None
     try:
@@ -71,11 +71,9 @@ def reset_task(state: EntryState, task_id: str, path: Path) -> None:
 
 
 def reconcile_entries_summary(entry_names: list[str], state_dir: Path) -> EntriesSummary:
-    """Count entry statuses by reading per-entry state files.
-
-    Only state files corresponding to entries in entry_names are counted.
-    """
-    counts: dict[str, int] = {"total": 0, "done": 0, "in_progress": 0, "pending": 0, "error": 0}
+    """Count entry statuses by reading per-entry state files."""
+    keys = ("total", "done", "in_progress", "pending", "error")
+    counts: dict[str, int] = dict.fromkeys(keys, 0)
     for name in entry_names:
         path = state_dir / f"{name}.json"
         state = read_entry_state(path)
@@ -87,3 +85,17 @@ def reconcile_entries_summary(entry_names: list[str], state_dir: Path) -> Entrie
             counts["pending"] += 1
         counts["total"] += 1
     return EntriesSummary(**counts)
+
+
+def reset_downstream_phases(global_state: GlobalState) -> None:
+    """Reset entry_processing through summary phases to pending.
+
+    Resets graph_finalization_tasks, summary_tasks, and completion.
+    """
+    global_state.phases.entry_processing = "pending"
+    global_state.phases.graph_finalization = "pending"
+    global_state.phases.summary = "pending"
+    global_state.graph_finalization_tasks = GraphFinalizationTasks()
+    global_state.summary_tasks = SummaryTasks()
+    global_state.completed = False
+    global_state.date_completed = None
