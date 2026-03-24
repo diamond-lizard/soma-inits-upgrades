@@ -3,10 +3,6 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 DEFINITION_FORMS: set[str] = {
     "defun", "defmacro", "defvar", "defcustom", "defconst",
@@ -60,43 +56,3 @@ def derive_mode_symbols(symbol: str, form: str) -> list[str]:
         return [symbol, symbol + "-hook", symbol + "-map"]
     return [symbol]
 
-
-def collect_removed_lines(diff_path: Path) -> list[str]:
-    """Parse a diff file and return all removed line contents.
-
-    Uses unidiff to parse the diff into structured objects, then flattens
-    files -> hunks -> lines into a flat list of removed line strings.
-    """
-    import unidiff
-
-    patch = unidiff.PatchSet.from_filename(str(diff_path), encoding="utf-8")
-    return [
-        line.value.rstrip("\n")
-        for pf in patch
-        for hunk in pf
-        for line in hunk
-        if line.is_removed
-    ]
-
-
-def extract_changed_symbols(diff_path: Path) -> list[str]:
-    """Extract unique changed/removed elisp symbols from a diff file.
-
-    Pipelines removed lines through definition detection, symbol extraction,
-    and mode symbol expansion. Returns a deduplicated list.
-    """
-    removed = collect_removed_lines(diff_path)
-    seen: set[str] = set()
-    result: list[str] = []
-    for line in removed:
-        if not is_definition_line(line):
-            continue
-        extracted = extract_symbol_and_form(line)
-        if extracted is None:
-            continue
-        symbol, form = extracted
-        for sym in derive_mode_symbols(symbol, form):
-            if sym not in seen:
-                seen.add(sym)
-                result.append(sym)
-    return result

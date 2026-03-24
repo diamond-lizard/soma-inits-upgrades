@@ -1,16 +1,15 @@
-"""Ripgrep usage search: pattern building, batched search, JSON parsing, usage I/O."""
+"""Ripgrep usage search: constants, pattern building, batched search."""
 
 from __future__ import annotations
 
-import json
 import re
-import subprocess
-import sys
 import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    import subprocess
+
     from soma_inits_upgrades.protocols import SubprocessRunner
 
 from soma_inits_upgrades.subprocess_utils import resolve_run
@@ -85,82 +84,3 @@ def run_batched_rg(
         cmd, capture_output=True, text=True,
         timeout=RG_SEARCH_TIMEOUT_SECONDS,
     )
-
-
-def parse_rg_json_output(
-    stdout: str, symbols: list[str],
-) -> dict[str, list[str]]:
-    """Parse ripgrep JSON output, mapping matches back to symbols.
-
-    Returns a dict mapping symbol names to deduplicated file path lists.
-    Symbols with no usages map to an empty list.
-    """
-    result: dict[str, list[str]] = {s: [] for s in symbols}
-    seen: dict[str, set[str]] = {s: set() for s in symbols}
-    for raw_line in stdout.splitlines():
-        record = json.loads(raw_line)
-        if record.get("type") != "match":
-            continue
-        data = record["data"]
-        file_path = data["path"]["text"]
-        for submatch in data.get("submatches", []):
-            matched_text = submatch["match"]["text"]
-            if matched_text in result and file_path not in seen[matched_text]:
-                seen[matched_text].add(file_path)
-                result[matched_text].append(file_path)
-    return result
-
-
-def search_symbol_usages(
-    symbols: list[str], search_root: Path, output_dir: Path,
-    tmp_dir: Path,
-    run_fn: SubprocessRunner | None = None,
-) -> dict[str, list[str]]:
-    """Search for elisp symbol usages in the Emacs config directory.
-
-    Returns a dict mapping symbol names to lists of file paths where
-    each symbol is referenced. Returns empty dict on error or timeout.
-    """
-    if not symbols:
-        return {}
-    exclude = [*USAGE_SEARCH_EXCLUSION_DIRS, output_dir]
-    pattern_file = write_pattern_file(symbols, tmp_dir)
-    try:
-        result = run_batched_rg(
-            pattern_file, search_root, exclude, run_fn,
-        )
-    except subprocess.TimeoutExpired:
-        print(
-            f"Warning: symbol search timed out after"
-            f" {RG_SEARCH_TIMEOUT_SECONDS} seconds",
-            file=sys.stderr,
-        )
-        return {}
-    finally:
-        pattern_file.unlink(missing_ok=True)
-    if result.returncode >= 2:
-        print(
-            f"Warning: rg exited with code {result.returncode}:"
-            f" {result.stderr.strip()}",
-            file=sys.stderr,
-        )
-        return {}
-    if result.returncode == 1:
-        return {s: [] for s in symbols}
-    return parse_rg_json_output(result.stdout, symbols)
-
-
-def write_usage_analysis(data: dict[str, list[str]], path: Path) -> None:
-    """Write a usage analysis dictionary to a JSON file."""
-    path.write_text(
-        json.dumps(data, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
-
-
-def read_usage_analysis(path: Path) -> dict[str, list[str]] | None:
-    """Read a usage analysis JSON file. Returns None if missing."""
-    if not path.exists():
-        return None
-    data: dict[str, list[str]] = json.loads(path.read_text(encoding="utf-8"))
-    return data
