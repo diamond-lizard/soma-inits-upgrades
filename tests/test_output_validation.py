@@ -5,9 +5,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from soma_inits_upgrades.output_validation import (
-    cleanup_malformed_files,
     validate_security_review_content,
     validate_upgrade_analysis_output,
+)
+from soma_inits_upgrades.output_validation_tasks import (
+    cleanup_malformed_files,
     validate_upgrade_report_content,
 )
 

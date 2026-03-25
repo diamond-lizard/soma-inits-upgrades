@@ -60,7 +60,7 @@ def test_run_llm_task_skips_when_done(tmp_path: Path) -> None:
     """run_llm_task returns continue when task already complete."""
     from fakes import make_fake_git
 
-    from soma_inits_upgrades.llm_support import run_llm_task
+    from soma_inits_upgrades.llm_task import run_llm_task
     from soma_inits_upgrades.protocols import EntryContext
     from soma_inits_upgrades.state import atomic_write_json
     from soma_inits_upgrades.state_schema import EntryState, GlobalState

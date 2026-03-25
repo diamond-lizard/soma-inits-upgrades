@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING
 from soma_inits_upgrades.entry_changes import (
     detect_entry_changes,
     handle_orphaned_entries,
-    retry_errored_entries,
 )
+from soma_inits_upgrades.entry_retry import retry_errored_entries
 from soma_inits_upgrades.graph import write_graph
 from soma_inits_upgrades.state import atomic_write_json
 from soma_inits_upgrades.state_schema import EntryState, GlobalState

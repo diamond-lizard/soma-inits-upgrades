@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING
 from fakes import make_fake_git
 
 from soma_inits_upgrades.graph import read_graph, write_graph
-from soma_inits_upgrades.phase_dispatch import dispatch_entry_processing
-from soma_inits_upgrades.processing import process_single_entry
+from soma_inits_upgrades.phase_dispatch_run import dispatch_entry_processing
+from soma_inits_upgrades.processing_entry import process_single_entry
 from soma_inits_upgrades.state import atomic_write_json, read_entry_state
 from soma_inits_upgrades.state_schema import TASK_ORDER, EntryState, GlobalState
 
