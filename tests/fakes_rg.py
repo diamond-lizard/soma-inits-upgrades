@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from tests.fakes import make_completed_process
+from fakes import make_completed_process
 
 if TYPE_CHECKING:
     import subprocess
