@@ -1,4 +1,4 @@
-"""Tests for phase_dispatch.py (check_processing_viability)."""
+"""Tests for phase_dispatch.py: viability, resume, retry."""
 
 from __future__ import annotations
 
@@ -57,3 +57,45 @@ def test_viability_prints_error_notes(
         check_processing_viability(summary, ["a.el"], state_dir)
     captured = capsys.readouterr()
     assert "timeout during clone" in captured.err
+
+
+def test_resume_returns_false_no_changes(tmp_path: Path) -> None:
+    """Returns False when no changes and no retryable errors."""
+    from soma_inits_upgrades.phase_dispatch import resume_completed_entry_processing
+    from soma_inits_upgrades.state_schema import GlobalState
+
+    sd = tmp_path / ".state"
+    sd.mkdir(parents=True)
+    (tmp_path / ".tmp").mkdir()
+    es = EntryState(
+        init_file="x.el", repo_url="https://x.com/r", pinned_ref="a",
+        status="done",
+    )
+    atomic_write_json(sd / "x.el.json", es)
+    gs = GlobalState(entry_names=["x.el"])
+    atomic_write_json(sd / "global.json", gs)
+    gp = tmp_path / "soma-inits-dependency-graphs.json"
+    gp.write_text("{}", encoding="utf-8")
+    results = [{"init_file": "x.el", "repo_url": "https://x.com/r", "pinned_ref": "a"}]
+    assert resume_completed_entry_processing(results, sd, tmp_path, gs) is False
+
+
+def test_resume_returns_true_retryable_errors(tmp_path: Path) -> None:
+    """Returns True when retryable errors exist."""
+    from soma_inits_upgrades.phase_dispatch import resume_completed_entry_processing
+    from soma_inits_upgrades.state_schema import GlobalState
+
+    sd = tmp_path / ".state"
+    sd.mkdir(parents=True)
+    (tmp_path / ".tmp").mkdir()
+    es = EntryState(
+        init_file="x.el", repo_url="https://x.com/r", pinned_ref="a",
+        status="error", retries_remaining=3,
+    )
+    atomic_write_json(sd / "x.el.json", es)
+    gs = GlobalState(entry_names=["x.el"])
+    atomic_write_json(sd / "global.json", gs)
+    gp = tmp_path / "soma-inits-dependency-graphs.json"
+    gp.write_text("{}", encoding="utf-8")
+    results = [{"init_file": "x.el", "repo_url": "https://x.com/r", "pinned_ref": "a"}]
+    assert resume_completed_entry_processing(results, sd, tmp_path, gs) is True

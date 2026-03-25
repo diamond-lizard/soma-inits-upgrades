@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from soma_inits_upgrades.state_schema import EntryState, GlobalState  # noqa: TC001
+from soma_inits_upgrades.state_schema import EntryState, GlobalState
 
 if TYPE_CHECKING:
     import subprocess
-    from pathlib import Path
 
 
 @runtime_checkable

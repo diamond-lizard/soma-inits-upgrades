@@ -38,7 +38,10 @@ class FakeGit:
         arg_list = args if isinstance(args, list) else args.split()
         subcmd = _find_git_subcmd(arg_list)
         self.operations.append((subcmd, arg_list))
-        return self._dispatch(subcmd)
+        result = self._dispatch(subcmd)
+        if subcmd == "clone" and result.returncode == 0:
+            self._create_clone_dir(arg_list)
+        return result
 
     def _dispatch(self, subcmd: str) -> subprocess.CompletedProcess[str]:
         """Route to the appropriate handler based on git subcommand."""
@@ -51,6 +54,15 @@ class FakeGit:
             "checkout": make_completed_process(0 if self.checkout_ok else 1),
         }
         return handlers.get(subcmd, make_completed_process(1, stderr="unknown command"))
+
+    @staticmethod
+    def _create_clone_dir(args: list[str]) -> None:
+        """Create the clone target directory on successful clone."""
+        from pathlib import Path
+
+        target = args[-1] if args else None
+        if target and not target.startswith("-"):
+            Path(target).mkdir(parents=True, exist_ok=True)
 
     def _symbolic_ref_result(self) -> subprocess.CompletedProcess[str]:
         """Return result for symbolic-ref command."""

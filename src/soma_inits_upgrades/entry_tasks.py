@@ -18,6 +18,7 @@ def task_clone(ctx: EntryContext) -> bool:
         return False
     from soma_inits_upgrades.git_ops import clone_repo
     from soma_inits_upgrades.processing_helpers import set_entry_error
+    from soma_inits_upgrades.state import mark_task_complete
 
     avail_mb = shutil.disk_usage(str(ctx.output_dir)).free // (1024 * 1024)
     if avail_mb < LOW_DISK_THRESHOLD_MB:
@@ -33,6 +34,7 @@ def task_clone(ctx: EntryContext) -> bool:
     if not success:
         set_entry_error(ctx, f"clone failed: {error_msg}")
         return False
+    mark_task_complete(ctx.entry_state, "clone", ctx.entry_state_path)
     return False
 
 
