@@ -1,1 +1,117 @@
 """Entry change detection: new, modified, and orphaned entry handling, retry logic."""
+
+from __future__ import annotations
+
+import sys
+from typing import TYPE_CHECKING
+
+from soma_inits_upgrades.state_lifecycle import (
+    create_entry_state_if_missing,
+    reset_entry_state_if_modified,
+)
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from soma_inits_upgrades.state_schema import GlobalState
+
+
+def detect_entry_changes(
+    results: list[dict[str, str]], state_dir: Path, output_dir: Path,
+) -> tuple[list[str], list[str]]:
+    """Detect new and modified entries. Returns (new_names, modified_names)."""
+    new: list[str] = []
+    modified: list[str] = []
+    for entry in results:
+        if create_entry_state_if_missing(entry, state_dir):
+            new.append(entry["init_file"])
+        if reset_entry_state_if_modified(entry, state_dir, output_dir):
+            modified.append(entry["init_file"])
+    return new, modified
+
+
+def handle_orphaned_entries(
+    results: list[dict[str, str]], state_dir: Path,
+    output_dir: Path, global_state: GlobalState,
+) -> int:
+    """Remove entries no longer in the input file.
+
+    Deletes state files, output files, and graph entries for orphans.
+    Returns the count of orphans removed.
+    """
+    from soma_inits_upgrades.graph import read_graph, remove_entries, write_graph
+    from soma_inits_upgrades.state_artifacts import delete_entry_artifacts
+
+    current_names = {e["init_file"] for e in results}
+    orphans = [n for n in global_state.entry_names if n not in current_names]
+    if not orphans:
+        return 0
+    for name in orphans:
+        (state_dir / f"{name}.json").unlink(missing_ok=True)
+        delete_entry_artifacts(name, output_dir, include_permanent=True, include_temp=True)
+        global_state.entry_names.remove(name)
+        print(f"Entry {name} no longer in input file, removing", file=sys.stderr)
+    graph_path = output_dir / "soma-inits-dependency-graphs.json"
+    graph, _restored = read_graph(graph_path)
+    remove_entries(graph, orphans)
+    write_graph(graph_path, graph)
+    return len(orphans)
+
+
+def detect_new_or_modified_entries(
+    results: list[dict[str, str]], state_dir: Path,
+    output_dir: Path, global_state: GlobalState,
+) -> tuple[list[str], list[str], int]:
+    """Detect new, modified, and orphaned entries.
+
+    Returns (new_entry_names, modified_entry_names, orphan_count).
+    """
+    new_names, modified_names = detect_entry_changes(results, state_dir, output_dir)
+    orphan_count = handle_orphaned_entries(results, state_dir, output_dir, global_state)
+    return new_names, modified_names, orphan_count
+
+
+def reset_phases_for_new_entries(
+    global_state: GlobalState, new_names: list[str],
+) -> None:
+    """Reset downstream phases and add new entry names to global state.
+
+    Sets entry_processing to in_progress and appends truly new names.
+    """
+    from soma_inits_upgrades.state import reset_downstream_phases
+
+    reset_downstream_phases(global_state)
+    global_state.phases.entry_processing = "in_progress"
+    for name in new_names:
+        if name not in global_state.entry_names:
+            global_state.entry_names.append(name)
+    count = len(new_names)
+    print(f"Detected {count} new/modified entries, resuming processing", file=sys.stderr)
+
+
+def retry_errored_entries(results: list[dict[str, str]], state_dir: Path) -> int:
+    """Retry error-status entries with remaining retries.
+
+    Resets status to in_progress, decrements retries_remaining.
+    Returns count of retried entries.
+    """
+    from soma_inits_upgrades.state import atomic_write_json, read_entry_state
+
+    retried = 0
+    for entry in results:
+        name = entry["init_file"]
+        path = state_dir / f"{name}.json"
+        state = read_entry_state(path)
+        if state is None or state.status != "error":
+            continue
+        if state.retries_remaining <= 0:
+            print(f"Skipping {name}: no retries remaining ({state.notes})", file=sys.stderr)
+            continue
+        state.retries_remaining -= 1
+        state.status = "in_progress"
+        state.notes = None
+        state.done_reason = None
+        atomic_write_json(path, state)
+        print(f"Retrying {name} ({state.retries_remaining} retries remaining)", file=sys.stderr)
+        retried += 1
+    return retried
