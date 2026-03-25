@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import shutil
 import signal
 from functools import partial
 from typing import TYPE_CHECKING
@@ -37,7 +36,6 @@ def cli(stale_inits_file: str, output_dir: str) -> None:
     Results are written to OUTPUT_DIR (default: ~/.emacs.d/soma/inits-upgrades/).
     Processing is fully resumable; re-run to continue from where you left off.
     """
-
     from soma_inits_upgrades.cli_helpers import (
         check_stale_inits_mismatch,
         load_stale_inits,
@@ -45,29 +43,15 @@ def cli(stale_inits_file: str, output_dir: str) -> None:
     )
     from soma_inits_upgrades.process_lock import acquire_process_lock
     from soma_inits_upgrades.state import read_global_state
-    from soma_inits_upgrades.subprocess_utils import (
-        ProcessTracker,
-        make_sigterm_handler,
-        tracked_run,
-    )
+    from soma_inits_upgrades.subprocess_tracking import tracked_run
+    from soma_inits_upgrades.subprocess_utils import ProcessTracker, make_sigterm_handler
+    from soma_inits_upgrades.tool_checks import validate_tools
 
     tracker = ProcessTracker()
     signal.signal(signal.SIGTERM, make_sigterm_handler(tracker))
     run_fn = partial(tracked_run, tracker=tracker)
+    validate_tools(run_fn)
 
-    from soma_inits_upgrades.tool_checks import (
-        check_git_available,
-        check_git_version,
-        check_rg_available,
-        check_rg_pcre2,
-    )
-    def which_fn(name: str) -> str | None:
-        return shutil.which(name)
-
-    git_path = check_git_available(which_fn)
-    check_git_version(git_path, run_fn)
-    rg_path = check_rg_available(which_fn)
-    check_rg_pcre2(rg_path, run_fn)
     resolved_stale, resolved_output = resolve_and_validate_paths(
         stale_inits_file, output_dir,
     )

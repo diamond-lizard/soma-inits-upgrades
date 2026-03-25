@@ -66,3 +66,20 @@ def check_rg_pcre2(
         )
         print(msg, file=sys.stderr)
         raise SystemExit(1)
+
+def validate_tools(run_fn: SubprocessRunner) -> None:
+    """Run all startup tool validation checks.
+
+    Verifies git (available, version >= 2.19) and rg (available, PCRE2).
+    Exits with code 1 if any check fails.
+    """
+    import shutil
+
+    def which_fn(name: str) -> str | None:
+        """Check if a tool is on PATH."""
+        return shutil.which(name)
+
+    git_path = check_git_available(which_fn)
+    check_git_version(git_path, run_fn)
+    rg_path = check_rg_available(which_fn)
+    check_rg_pcre2(rg_path, run_fn)
