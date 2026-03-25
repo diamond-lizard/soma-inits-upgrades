@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-import subprocess
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.subprocess_utils import SubprocessTimeoutError
 from soma_inits_upgrades.symbols_io import search_symbol_usages
 
 if TYPE_CHECKING:
+    import subprocess
     from pathlib import Path
 
 
@@ -65,7 +66,7 @@ def test_search_timeout(tmp_path: Path) -> None:
         args: list[str] | str, **kwargs: object,
     ) -> subprocess.CompletedProcess[str]:
         """Simulate a timeout."""
-        raise subprocess.TimeoutExpired(cmd="rg", timeout=120)
+        raise SubprocessTimeoutError(["rg"], 120.0)
 
     root = tmp_path / "emacs"
     root.mkdir()

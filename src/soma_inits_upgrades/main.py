@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import shutil
+import signal
+from functools import partial
 from typing import TYPE_CHECKING
 
 import click
@@ -20,7 +23,20 @@ if TYPE_CHECKING:
     help="Output directory for reports and state.",
 )
 def cli(stale_inits_file: str, output_dir: str) -> None:
-    """Automate security review and upgrade planning for stale elpaca pins."""
+    """Automate security review and upgrade planning for stale elpaca pins.
+
+    Reads STALE_INITS_FILE (a JSON file listing packages with outdated
+    pinned refs), clones each repository, generates diffs, extracts
+    symbols, and pauses at three LLM-assisted steps per entry:
+
+    \b
+    1. Security review -- paste the prompt into an LLM for analysis
+    2. Upgrade analysis -- LLM identifies breaking changes
+    3. Upgrade report -- LLM produces a human-readable summary
+
+    Results are written to OUTPUT_DIR (default: ~/.emacs.d/soma/inits-upgrades/).
+    Processing is fully resumable; re-run to continue from where you left off.
+    """
 
     from soma_inits_upgrades.cli_helpers import (
         check_stale_inits_mismatch,
@@ -29,7 +45,29 @@ def cli(stale_inits_file: str, output_dir: str) -> None:
     )
     from soma_inits_upgrades.process_lock import acquire_process_lock
     from soma_inits_upgrades.state import read_global_state
+    from soma_inits_upgrades.subprocess_utils import (
+        ProcessTracker,
+        make_sigterm_handler,
+        tracked_run,
+    )
 
+    tracker = ProcessTracker()
+    signal.signal(signal.SIGTERM, make_sigterm_handler(tracker))
+    run_fn = partial(tracked_run, tracker=tracker)
+
+    from soma_inits_upgrades.tool_checks import (
+        check_git_available,
+        check_git_version,
+        check_rg_available,
+        check_rg_pcre2,
+    )
+    def which_fn(name: str) -> str | None:
+        return shutil.which(name)
+
+    git_path = check_git_available(which_fn)
+    check_git_version(git_path, run_fn)
+    rg_path = check_rg_available(which_fn)
+    check_rg_pcre2(rg_path, run_fn)
     resolved_stale, resolved_output = resolve_and_validate_paths(
         stale_inits_file, output_dir,
     )

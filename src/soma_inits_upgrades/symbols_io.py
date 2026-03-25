@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import subprocess
 import sys
 from typing import TYPE_CHECKING
 
@@ -12,6 +11,8 @@ if TYPE_CHECKING:
 
     from soma_inits_upgrades.protocols import SubprocessRunner
 
+
+from soma_inits_upgrades.subprocess_utils import SubprocessTimeoutError
 from soma_inits_upgrades.symbols import (
     RG_SEARCH_TIMEOUT_SECONDS,
     USAGE_SEARCH_EXCLUSION_DIRS,
@@ -68,7 +69,7 @@ def search_symbol_usages(
         result = run_batched_rg(
             pattern_file, search_root, exclude, run_fn,
         )
-    except subprocess.TimeoutExpired:
+    except SubprocessTimeoutError:
         msg = f"Warning: symbol search timed out after {RG_SEARCH_TIMEOUT_SECONDS}s"
         print(msg, file=sys.stderr)
         return {}

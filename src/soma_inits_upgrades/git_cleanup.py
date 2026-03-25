@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import subprocess
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -10,7 +9,7 @@ if TYPE_CHECKING:
 
     from soma_inits_upgrades.protocols import SubprocessRunner
 
-from soma_inits_upgrades.subprocess_utils import resolve_run
+from soma_inits_upgrades.subprocess_utils import SubprocessTimeoutError, resolve_run
 
 GIT_DIFF_TIMEOUT_SECONDS = 120
 
@@ -33,7 +32,7 @@ def generate_diff(
             capture_output=True, text=True,
             timeout=GIT_DIFF_TIMEOUT_SECONDS, cwd=str(clone_dir),
         )
-    except subprocess.TimeoutExpired as exc:
+    except SubprocessTimeoutError as exc:
         msg = (
             f"diff timed out after {GIT_DIFF_TIMEOUT_SECONDS} seconds"
             f" between {pinned_ref} and {latest_ref}"

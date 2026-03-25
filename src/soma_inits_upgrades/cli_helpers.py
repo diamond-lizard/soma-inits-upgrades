@@ -26,7 +26,11 @@ def resolve_and_validate_paths(
     resolved_stale = _Path(stale_inits_path).expanduser().resolve()
     resolved_output = _Path(output_dir).expanduser().resolve()
     state_dir = resolved_output / ".state"
-    state_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        state_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        print(f"Error: cannot create output directory: {exc}", file=sys.stderr)
+        sys.exit(1)
     return resolved_stale, resolved_output
 
 

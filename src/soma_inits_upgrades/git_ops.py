@@ -5,7 +5,6 @@ from __future__ import annotations
 import os
 import shutil
 import stat
-import subprocess
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -13,10 +12,9 @@ if TYPE_CHECKING:
 
     from soma_inits_upgrades.protocols import SubprocessRunner
 
-from soma_inits_upgrades.subprocess_utils import resolve_run
+from soma_inits_upgrades.subprocess_utils import SubprocessTimeoutError, resolve_run
 
 GIT_CLONE_TIMEOUT_SECONDS = 60
-
 
 
 def _make_writable_handler(
@@ -60,7 +58,7 @@ def clone_repo(
             capture_output=True, text=True,
             timeout=GIT_CLONE_TIMEOUT_SECONDS, env=env,
         )
-    except subprocess.TimeoutExpired:
+    except SubprocessTimeoutError:
         if target_dir.exists():
             safe_rmtree(target_dir, containing_dir)
         return False, "clone timed out after 60 seconds"

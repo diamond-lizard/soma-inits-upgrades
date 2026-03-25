@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from soma_inits_upgrades.git_cleanup import generate_diff
+from soma_inits_upgrades.subprocess_utils import SubprocessTimeoutError
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -74,7 +75,7 @@ def test_generate_diff_invalid_ref(tmp_path: Path) -> None:
 def test_generate_diff_timeout(tmp_path: Path) -> None:
     """generate_diff raises RuntimeError on timeout."""
     def fake_run(*_a: object, **_kw: object) -> None:
-        raise subprocess.TimeoutExpired(cmd="git", timeout=120)
+        raise SubprocessTimeoutError(["git"], 120.0)
     out = tmp_path / "output.diff"
     with pytest.raises(RuntimeError, match="timed out"):
         generate_diff(tmp_path, "aaa", "bbb", out, run_fn=fake_run)

@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-import subprocess
 from typing import TYPE_CHECKING
 
 import pytest
 
 from soma_inits_upgrades.git_ops import clone_repo, safe_rmtree
+from soma_inits_upgrades.subprocess_utils import SubprocessTimeoutError
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -46,7 +46,7 @@ def test_clone_repo_timeout(tmp_path: Path) -> None:
     target = tmp_path / "newclone"
     def fake_run(*_args: object, **_kw: object) -> None:
         target.mkdir(exist_ok=True)
-        raise subprocess.TimeoutExpired(cmd="git", timeout=60)
+        raise SubprocessTimeoutError(["git"], 60.0)
     ok, err = clone_repo("http://x", target, tmp_path, run_fn=fake_run)
     assert ok is False
     assert "timed out" in err

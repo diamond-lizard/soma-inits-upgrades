@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-import subprocess
 from typing import TYPE_CHECKING
 
-from soma_inits_upgrades.subprocess_utils import resolve_run
+from soma_inits_upgrades.subprocess_utils import SubprocessTimeoutError, resolve_run
 
 if TYPE_CHECKING:
+    import subprocess
     from pathlib import Path
 
     from soma_inits_upgrades.protocols import SubprocessRunner
@@ -24,7 +24,7 @@ def _run_git(
             args, capture_output=True, text=True,
             timeout=timeout, cwd=str(clone_dir),
         )
-    except subprocess.TimeoutExpired:
+    except SubprocessTimeoutError:
         return None
 
 
