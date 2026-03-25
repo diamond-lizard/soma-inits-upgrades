@@ -23,8 +23,8 @@ def _setup(
     sd.mkdir(parents=True)
     td = tmp_path / ".tmp"
     td.mkdir()
-    entry = {"init_file": "x.el", "repo_url": "https://x.com/r", "pinned_ref": "old"}
-    es = EntryState(init_file="x.el", repo_url="https://x.com/r", pinned_ref="old")
+    entry = {"init_file": "x.el", "repo_url": "https://forge.test/r", "pinned_ref": "old"}
+    es = EntryState(init_file="x.el", repo_url="https://forge.test/r", pinned_ref="old")
     atomic_write_json(sd / "x.el.json", es)
     gs = GlobalState(
         entry_names=["x.el"], emacs_version="29.1",

@@ -26,7 +26,7 @@ def _ctx(tmp_path: Path, **git_kw: object) -> EntryContext:
     sd.mkdir(parents=True, exist_ok=True)
     td = tmp_path / ".tmp"
     td.mkdir(exist_ok=True)
-    es = EntryState(init_file="x.el", repo_url="https://x.com/r", pinned_ref="old")
+    es = EntryState(init_file="x.el", repo_url="https://forge.test/r", pinned_ref="old")
     es.status = "in_progress"
     esp = sd / "x.el.json"
     atomic_write_json(esp, es)
@@ -38,7 +38,10 @@ def _ctx(tmp_path: Path, **git_kw: object) -> EntryContext:
         global_state=gs, global_state_path=gsp,
         entry_idx=1, total=1, output_dir=tmp_path, tmp_dir=td,
         state_dir=sd, init_stem="x",
-        results=[{"init_file": "x.el", "repo_url": "https://x.com/r", "pinned_ref": "old"}],
+        results=[{
+            "init_file": "x.el", "repo_url": "https://forge.test/r",
+            "pinned_ref": "old",
+        }],
         xclip_checker=lambda: False, run_fn=make_fake_git(**git_kw),
     )
 

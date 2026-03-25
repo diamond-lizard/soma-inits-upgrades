@@ -24,7 +24,7 @@ def _ctx(
     td = tmp_path / ".tmp"
     td.mkdir(exist_ok=True)
     es = EntryState(
-        init_file="soma-pkg-init.el", repo_url="https://x.com/r",
+        init_file="soma-pkg-init.el", repo_url="https://forge.test/r",
         pinned_ref="old", latest_ref="new", default_branch="main",
     )
     es.status = "in_progress"
@@ -43,7 +43,7 @@ def _ctx(
         state_dir=sd, init_stem="soma-pkg-init",
         results=[{
             "init_file": "soma-pkg-init.el",
-            "repo_url": "https://x.com/r",
+            "repo_url": "https://forge.test/r",
             "pinned_ref": "old",
         }],
         xclip_checker=lambda: False,

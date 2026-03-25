@@ -53,7 +53,7 @@ def test_run_entry_task_loop_exception(tmp_path: object) -> None:
     sd.mkdir(parents=True)
     td = p / ".tmp"
     td.mkdir()
-    es = EntryState(init_file="x.el", repo_url="https://x.com/r", pinned_ref="a")
+    es = EntryState(init_file="x.el", repo_url="https://forge.test/r", pinned_ref="a")
     es.status = "in_progress"
     esp = sd / "x.el.json"
     atomic_write_json(esp, es)
@@ -72,7 +72,10 @@ def test_run_entry_task_loop_exception(tmp_path: object) -> None:
             global_state=gs, global_state_path=gsp,
             entry_idx=1, total=1, output_dir=p, tmp_dir=td,
             state_dir=sd, init_stem="x",
-            results=[{"init_file": "x.el", "repo_url": "https://x.com/r", "pinned_ref": "a"}],
+            results=[{
+                "init_file": "x.el", "repo_url": "https://forge.test/r",
+                "pinned_ref": "a",
+            }],
             xclip_checker=lambda: False, run_fn=make_fake_git(),
         )
         run_entry_task_loop(ctx)
@@ -97,7 +100,7 @@ def test_run_entry_task_loop_keyboard_interrupt(tmp_path: object) -> None:
     sd.mkdir(parents=True)
     td = p / ".tmp"
     td.mkdir()
-    es = EntryState(init_file="x.el", repo_url="https://x.com/r", pinned_ref="a")
+    es = EntryState(init_file="x.el", repo_url="https://forge.test/r", pinned_ref="a")
     es.status = "in_progress"
     esp = sd / "x.el.json"
     atomic_write_json(esp, es)
@@ -116,7 +119,10 @@ def test_run_entry_task_loop_keyboard_interrupt(tmp_path: object) -> None:
             global_state=gs, global_state_path=gsp,
             entry_idx=1, total=1, output_dir=p, tmp_dir=td,
             state_dir=sd, init_stem="x",
-            results=[{"init_file": "x.el", "repo_url": "https://x.com/r", "pinned_ref": "a"}],
+            results=[{
+                "init_file": "x.el", "repo_url": "https://forge.test/r",
+                "pinned_ref": "a",
+            }],
             xclip_checker=lambda: False, run_fn=make_fake_git(),
         )
         with pytest.raises(KeyboardInterrupt):

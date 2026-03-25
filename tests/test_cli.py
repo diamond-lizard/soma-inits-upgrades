@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 def _write_input(tmp: Path, entries: list[dict[str, str]] | None = None) -> Path:
     """Write a valid stale inits JSON file and return its path."""
     data = {"results": entries or [
-        {"init_file": "a.el", "repo_url": "https://x.com/a", "pinned_ref": "abc123"},
+        {"init_file": "a.el", "repo_url": "https://forge.test/r", "pinned_ref": "abc123"},
     ]}
     p = tmp / "stale.json"
     p.write_text(json.dumps(data))

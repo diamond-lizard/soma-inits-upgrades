@@ -22,7 +22,7 @@ def test_self_healing_reclone(tmp_path: Path) -> None:
     sd.mkdir(parents=True)
     td = tmp_path / ".tmp"
     td.mkdir()
-    es = EntryState(init_file="x.el", repo_url="https://x.com/r", pinned_ref="old")
+    es = EntryState(init_file="x.el", repo_url="https://forge.test/r", pinned_ref="old")
     es.status = "in_progress"
     es.tasks_completed["clone"] = True
     atomic_write_json(sd / "x.el.json", es)
@@ -33,7 +33,7 @@ def test_self_healing_reclone(tmp_path: Path) -> None:
     gsp = sd / "global.json"
     atomic_write_json(gsp, gs)
     write_graph(tmp_path / "soma-inits-dependency-graphs.json", {})
-    entry = {"init_file": "x.el", "repo_url": "https://x.com/r", "pinned_ref": "old"}
+    entry = {"init_file": "x.el", "repo_url": "https://forge.test/r", "pinned_ref": "old"}
     fg = make_fake_git(clone_ok=False)
     process_single_entry(
         entry, 1, 1, sd, tmp_path, gs, gsp, fg, [entry], lambda: False,
@@ -50,7 +50,7 @@ def test_new_entry_detection(tmp_path: Path) -> None:
     td = tmp_path / ".tmp"
     td.mkdir()
     old_es = EntryState(
-        init_file="old.el", repo_url="https://x.com/r", pinned_ref="a",
+        init_file="old.el", repo_url="https://forge.test/r", pinned_ref="a",
         status="done", tasks_completed=dict.fromkeys(TASK_ORDER, True),
     )
     atomic_write_json(sd / "old.el.json", old_es)
@@ -62,8 +62,8 @@ def test_new_entry_detection(tmp_path: Path) -> None:
     atomic_write_json(sd / "global.json", gs)
     write_graph(tmp_path / "soma-inits-dependency-graphs.json", {})
     results = [
-        {"init_file": "old.el", "repo_url": "https://x.com/r", "pinned_ref": "a"},
-        {"init_file": "new.el", "repo_url": "https://x.com/r", "pinned_ref": "b"},
+        {"init_file": "old.el", "repo_url": "https://forge.test/r", "pinned_ref": "a"},
+        {"init_file": "new.el", "repo_url": "https://forge.test/r", "pinned_ref": "b"},
     ]
     dispatch_entry_processing(
         results, sd, tmp_path, gs, make_fake_git(clone_ok=False),
@@ -79,7 +79,7 @@ def test_modified_entry_detection(tmp_path: Path) -> None:
     td = tmp_path / ".tmp"
     td.mkdir()
     es = EntryState(
-        init_file="x.el", repo_url="https://x.com/r", pinned_ref="old",
+        init_file="x.el", repo_url="https://forge.test/r", pinned_ref="old",
         status="done", tasks_completed=dict.fromkeys(TASK_ORDER, True),
     )
     atomic_write_json(sd / "x.el.json", es)
@@ -90,7 +90,7 @@ def test_modified_entry_detection(tmp_path: Path) -> None:
     )
     atomic_write_json(sd / "global.json", gs)
     write_graph(tmp_path / "soma-inits-dependency-graphs.json", {})
-    results = [{"init_file": "x.el", "repo_url": "https://x.com/r", "pinned_ref": "NEW"}]
+    results = [{"init_file": "x.el", "repo_url": "https://forge.test/r", "pinned_ref": "NEW"}]
     dispatch_entry_processing(
         results, sd, tmp_path, gs, make_fake_git(clone_ok=False),
     )
@@ -107,7 +107,7 @@ def test_orphan_removal(tmp_path: Path) -> None:
     td.mkdir()
     for name in ("keep.el", "drop.el"):
         es = EntryState(
-            init_file=name, repo_url="https://x.com/r", pinned_ref="a",
+            init_file=name, repo_url="https://forge.test/r", pinned_ref="a",
             status="done", tasks_completed=dict.fromkeys(TASK_ORDER, True),
         )
         atomic_write_json(sd / f"{name}.json", es)
@@ -121,7 +121,7 @@ def test_orphan_removal(tmp_path: Path) -> None:
         "drop.el": {"package": "drop", "depends_on": [],
                     "depended_on_by": [], "min_emacs_version": None},
     })
-    results = [{"init_file": "keep.el", "repo_url": "https://x.com/r", "pinned_ref": "a"}]
+    results = [{"init_file": "keep.el", "repo_url": "https://forge.test/r", "pinned_ref": "a"}]
     dispatch_entry_processing(results, sd, tmp_path, gs, make_fake_git())
     assert "drop.el" not in gs.entry_names
     assert not (sd / "drop.el.json").exists()

@@ -26,7 +26,7 @@ def _ctx(tmp_path: Path) -> EntryContext:
     sd.mkdir(parents=True)
     td = tmp_path / ".tmp"
     td.mkdir()
-    es = EntryState(init_file="x.el", repo_url="https://x.com/r", pinned_ref="a")
+    es = EntryState(init_file="x.el", repo_url="https://forge.test/r", pinned_ref="a")
     es.status = "in_progress"
     esp = sd / "x.el.json"
     atomic_write_json(esp, es)
