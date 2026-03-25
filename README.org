@@ -1,0 +1,158 @@
+* Overview
+
+=soma-inits-upgrades= automates the security review and upgrade planning
+process for stale [[https://github.com/progfolio/elpaca][elpaca]] package pins in your Emacs configuration.
+
+Given a JSON file listing packages with outdated pinned refs, the program:
+
+1. Clones each repository and generates a diff between the pinned ref and the
+   latest commit.
+2. Extracts Emacs Lisp symbols used by your configuration.
+3. Pauses at three LLM-assisted review steps per package, where you paste a
+   generated prompt into your LLM of choice and save its response.
+4. Validates LLM output and builds a dependency graph across all packages.
+5. Produces per-package upgrade reports and a cross-package summary.
+
+Processing is fully resumable.  If you quit at any point, re-running the
+command picks up exactly where you left off.
+
+* Prerequisites
+
+- Python 3.10 or later
+- [[https://docs.astral.sh/uv/][uv]] (for dependency management)
+- git 2.19 or later (for blobless clones)
+- [[https://github.com/BurntSushi/ripgrep][ripgrep]] with PCRE2 support (for Emacs Lisp symbol search)
+
+* Installation
+
+Clone this repository and create the virtual environment:
+
+#+begin_example
+cd soma-inits-upgrades
+uv venv
+uv pip install -e '.[dev]'
+#+end_example
+
+* Input File
+
+The program expects a JSON file with the following structure:
+
+#+begin_example
+{
+  "results": [
+    {
+      "init_file": "soma-magit-init.el",
+      "repo_url": "https://github.com/magit/magit",
+      "pinned_ref": "abc123def456..."
+    },
+    ...
+  ]
+}
+#+end_example
+
+Each entry describes one elpaca-pinned package:
+
+- =init_file= -- the Emacs init file that pins this package (e.g.
+  =soma-magit-init.el=).
+- =repo_url= -- the HTTPS URL of the package repository.
+- =pinned_ref= -- the git commit hash currently pinned.
+
+* Usage
+
+#+begin_example
+soma-inits-upgrades STALE_INITS_FILE [--output-dir DIR]
+#+end_example
+
+- =STALE_INITS_FILE= -- path to the JSON input file.
+- =--output-dir= -- where to write reports and state (default:
+  =~/.emacs.d/soma/inits-upgrades/=).
+
+On first run, the program prompts for your Emacs version.  This is used
+to detect packages that require a newer Emacs than you have.
+
+* Workflow
+
+Each package passes through these steps in order:
+
+** Clone and diff
+
+The repository is cloned (using blobless partial clones to save bandwidth),
+the default branch and latest commit are identified, and a diff is generated
+between the pinned ref and the latest commit.  If the pinned ref is already
+at the latest commit, the package is marked as current and skipped.
+
+** Dependency and symbol extraction
+
+Package dependencies (from Emacs Lisp headers) are parsed.  If the package
+requires a newer Emacs version than yours, it is flagged.  Emacs Lisp
+symbols defined by the package are extracted, and your configuration is
+searched to find which symbols you actually use.
+
+** Security review (LLM-assisted)
+
+A prompt file is generated containing the diff and context.  The program
+pauses and asks you to:
+
+1. Copy the prompt (optionally to the X primary selection via =xclip=).
+2. Paste it into your LLM.
+3. Save the LLM response to the indicated output file.
+4. Press =(c)ontinue=, =(s)kip=, or =(q)uit=.
+
+** Upgrade analysis (LLM-assisted)
+
+A second prompt is generated that asks the LLM to identify breaking API
+changes, removed or renamed symbols, changed dependencies, and Emacs
+version conflicts.  The same pause-and-paste workflow applies.  The LLM
+response must be valid JSON matching the expected schema.
+
+** Upgrade report (LLM-assisted)
+
+A third prompt asks the LLM to produce a human-readable upgrade report.
+Same pause-and-paste workflow.
+
+** Graph update and validation
+
+The package's dependency information is recorded in a cross-package
+dependency graph.  After all packages are processed, the graph is
+validated for cycles.
+
+** Cleanup
+
+The cloned repository is deleted to free disk space.
+
+* Output
+
+All output is written under the output directory (default
+=~/.emacs.d/soma/inits-upgrades/=):
+
+| File                                   | Description                            |
+|----------------------------------------+----------------------------------------|
+| =<package>-security-review.md=         | LLM security review per package        |
+| =<package>-upgrade-process.md=         | LLM upgrade report per package         |
+| =soma-inits-dependency-graphs.json=    | Cross-package dependency graph          |
+| =security-review-summary.md=           | Aggregated security review summary      |
+| =emacs-version-conflicts.md=           | Packages requiring a newer Emacs        |
+| =dependency-graph-warnings.md=         | Dependency graph validation warnings    |
+
+Intermediate files (diffs, prompts, symbol data, cloned repos) are stored
+under =.tmp/= and state tracking files under =.state/=.  These are managed
+automatically and should not be edited by hand.
+
+* Resumability
+
+The program tracks progress in JSON state files under =.state/=.  You can
+quit at any time (=q= at a prompt, =Ctrl-C=, or =SIGTERM=) and re-run the
+same command to resume.
+
+If the input file changes between runs (e.g. a =repo_url= or =pinned_ref=
+is updated), the affected packages are automatically reset and
+reprocessed.  New packages are picked up; packages no longer in the input
+are orphaned and their graph entries removed.
+
+Packages that encounter errors are retried automatically (up to five
+times) on subsequent runs.
+
+* Process Locking
+
+Only one instance of the program may run against a given output directory
+at a time.  A lock file under =.state/= prevents concurrent runs.
