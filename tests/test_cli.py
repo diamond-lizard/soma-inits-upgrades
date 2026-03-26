@@ -36,7 +36,8 @@ def test_cli_accepts_required_argument(tmp_path: Path) -> None:
     inp = _write_input(tmp_path)
     out = tmp_path / "out"
     result = runner.invoke(cli, [str(inp), "--output-dir", str(out)], input="29.1\n")
-    assert result.exit_code == 0
+    assert result.exit_code != 2, "Click rejected the argument"
+    assert "Emacs version" in result.output
 
 
 def test_cli_accepts_output_dir_option(tmp_path: Path) -> None:
@@ -45,4 +46,5 @@ def test_cli_accepts_output_dir_option(tmp_path: Path) -> None:
     inp = _write_input(tmp_path)
     out = tmp_path / "out"
     result = runner.invoke(cli, [str(inp), "--output-dir", str(out)], input="29.1\n")
-    assert result.exit_code == 0
+    assert result.exit_code != 2, "Click rejected --output-dir"
+    assert "Emacs version" in result.output
