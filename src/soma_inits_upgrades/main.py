@@ -4,14 +4,8 @@ from __future__ import annotations
 
 import signal
 from functools import partial
-from typing import TYPE_CHECKING
 
 import click
-
-if TYPE_CHECKING:
-    from pathlib import Path
-
-    from soma_inits_upgrades.state_schema import GlobalState
 
 
 @click.command()
@@ -73,37 +67,8 @@ def cli(stale_inits_file: str, output_dir: str) -> None:
     check_stale_inits_mismatch(global_state, resolved_stale)
     results = load_stale_inits(resolved_stale)
 
-    if global_state is None or global_state.phases.setup != "done":
-        _run_setup(
-            global_state, global_state_path,
-            resolved_stale, resolved_output, state_dir, results,
-        )
-
-
-def _run_setup(
-    global_state: GlobalState | None,
-    global_state_path: Path,
-    resolved_stale: Path,
-    resolved_output: Path,
-    state_dir: Path,
-    results: list[dict[str, str]],
-) -> None:
-    """Execute the Setup stage."""
-    from soma_inits_upgrades.setup_completion import (
-        complete_setup,
-        initialize_dep_graph,
-        initialize_entry_states,
+    from soma_inits_upgrades.phase_orchestration import run_all_phases
+    run_all_phases(
+        global_state, global_state_path,
+        resolved_stale, resolved_output, state_dir, results, run_fn,
     )
-    from soma_inits_upgrades.setup_stage import (
-        create_tmp_directory,
-        initialize_global_state,
-        prompt_emacs_version,
-    )
-
-    graph_path = resolved_output / "soma-inits-dependency-graphs.json"
-    gs = initialize_global_state(global_state, global_state_path, resolved_stale)
-    prompt_emacs_version(gs, global_state_path)
-    create_tmp_directory(resolved_output)
-    initialize_entry_states(results, state_dir, resolved_output, gs)
-    initialize_dep_graph(graph_path)
-    complete_setup(gs, global_state_path, results)
