@@ -84,3 +84,11 @@ def test_missing_input_rejected(tmp_path: Path) -> None:
     runner = CliRunner()
     result = runner.invoke(cli, [str(tmp_path / "nope.json"), "--output-dir", str(out)])
     assert result.exit_code == 2
+
+
+def test_directory_input_rejected(tmp_path: Path) -> None:
+    """Passing a directory as STALE_INITS_FILE exits with code 2."""
+    runner = CliRunner()
+    result = runner.invoke(cli, [str(tmp_path), "--output-dir", str(tmp_path / "out")])
+    assert result.exit_code == 2
+    assert "is a directory, not a file" in result.output
