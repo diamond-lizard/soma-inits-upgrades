@@ -41,6 +41,10 @@ def cli(stale_inits_file: str, output_dir: str) -> None:
         raise click.UsageError(
             f"STALE_INITS_FILE '{stale_inits_file}' is a directory, not a file",
         )
+    if not _Path(stale_inits_file).expanduser().exists():
+        raise click.UsageError(
+            f"STALE_INITS_FILE '{stale_inits_file}' does not exist",
+        )
 
     from soma_inits_upgrades.cli_helpers import (
         check_stale_inits_mismatch,

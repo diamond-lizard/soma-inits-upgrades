@@ -79,8 +79,8 @@ def test_invalid_input_rejected(tmp_path: Path) -> None:
 
 
 def test_missing_input_rejected(tmp_path: Path) -> None:
-    """Missing input file exits with code 1."""
+    """Missing input file exits with code 2 (usage error)."""
     out = tmp_path / "out"
     runner = CliRunner()
     result = runner.invoke(cli, [str(tmp_path / "nope.json"), "--output-dir", str(out)])
-    assert result.exit_code == 1
+    assert result.exit_code == 2
