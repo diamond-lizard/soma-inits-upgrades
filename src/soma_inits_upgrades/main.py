@@ -36,6 +36,12 @@ def cli(stale_inits_file: str, output_dir: str) -> None:
     Results are written to OUTPUT_DIR (default: ~/.emacs.d/soma/inits-upgrades/).
     Processing is fully resumable; re-run to continue from where you left off.
     """
+    from pathlib import Path as _Path
+    if _Path(stale_inits_file).expanduser().is_dir():
+        raise click.UsageError(
+            f"STALE_INITS_FILE '{stale_inits_file}' is a directory, not a file",
+        )
+
     from soma_inits_upgrades.cli_helpers import (
         check_stale_inits_mismatch,
         load_stale_inits,
