@@ -22,12 +22,12 @@ def recover_single_graph_entry(
 
     path = state_dir / f"{init_file}.json"
     state = read_entry_state(path)
-    if state is not None and state.package_name is not None:
+    if state is not None and state.repos[0].package_name is not None:
         from soma_inits_upgrades.graph import add_entry
 
         add_entry(
-            graph, init_file, state.package_name,
-            state.min_emacs_version, state.depends_on or [],
+            graph, init_file, state.repos[0].package_name,
+            state.repos[0].min_emacs_version, state.repos[0].depends_on or [],
         )
         return False
     entry_dict = next((e for e in results if e["init_file"] == init_file), None)
@@ -79,9 +79,12 @@ def task_graph_update(ctx: EntryContext) -> bool:
         graph, needs_rerun = recover_graph_from_backup(
             graph, ctx.results, ctx.state_dir, ctx.output_dir,
         )
-    pkg = ctx.entry_state.package_name or ctx.init_stem
-    add_entry(graph, ctx.entry_state.init_file, pkg,
-              ctx.entry_state.min_emacs_version, ctx.entry_state.depends_on or [])
+    repo = ctx.entry_state.repos[0]
+    pkg = repo.package_name or ctx.init_stem
+    add_entry(
+        graph, ctx.entry_state.init_file, pkg,
+        repo.min_emacs_version, repo.depends_on or [],
+    )
     try:
         write_graph(graph_path, graph)
     except OSError as exc:

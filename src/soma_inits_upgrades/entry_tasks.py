@@ -25,10 +25,11 @@ def task_clone(ctx: EntryContext) -> bool:
         print(msg, file=sys.stderr)
     idx, total = ctx.entry_idx, ctx.total
     name = ctx.entry_state.init_file
-    print(f"[{idx}/{total}] {name}: cloning {ctx.entry_state.repo_url}...", file=sys.stderr)
+    url = ctx.entry_state.repos[0].repo_url
+    print(f"[{idx}/{total}] {name}: cloning {url}...", file=sys.stderr)
     clone_dir = ctx.tmp_dir / ctx.init_stem
     success, error_msg = clone_repo(
-        ctx.entry_state.repo_url, clone_dir, ctx.output_dir, run_fn=ctx.run_fn,
+        ctx.entry_state.repos[0].repo_url, clone_dir, ctx.output_dir, run_fn=ctx.run_fn,
     )
     if not success:
         set_entry_error(ctx, f"clone failed: {error_msg}")
@@ -53,7 +54,7 @@ def task_default_branch(ctx: EntryContext) -> bool:
         set_entry_error(ctx, "could not detect default branch")
         _cleanup_temp(ctx)
         return False
-    ctx.entry_state.default_branch = branch
+    ctx.entry_state.repos[0].default_branch = branch
     ctx.entry_state.tasks_completed["default_branch"] = True
     atomic_write_json(ctx.entry_state_path, ctx.entry_state)
     return False
@@ -80,18 +81,18 @@ def task_latest_ref(ctx: EntryContext) -> bool:
         return False
     latest = resolve_latest_ref(ctx)
     if latest is None:
-        branch = ctx.entry_state.default_branch
+        branch = ctx.entry_state.repos[0].default_branch
         set_entry_error(ctx, f"could not resolve latest ref on branch {branch}")
         _cleanup_temp(ctx)
         return False
-    ctx.entry_state.latest_ref = latest
-    if is_pin_current(ctx.entry_state.pinned_ref, latest):
+    ctx.entry_state.repos[0].latest_ref = latest
+    if is_pin_current(ctx.entry_state.repos[0].pinned_ref, latest):
         msg = "pinned ref is already at latest commit - no upgrade needed"
         set_entry_done_early(ctx, "already_latest", msg)
         _cleanup_temp(ctx)
         return False
     if not verify_pinned_ref(ctx):
-        pin = ctx.entry_state.pinned_ref
+        pin = ctx.entry_state.repos[0].pinned_ref
         set_entry_error(ctx, f"pinned ref {pin} does not exist in repository")
         _cleanup_temp(ctx)
         return False

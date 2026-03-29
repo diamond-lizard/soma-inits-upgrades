@@ -17,7 +17,7 @@ def ensure_entry_state(
 ) -> EntryState | None:
     """Load or create per-entry state. Returns EntryState or None on error."""
     from soma_inits_upgrades.state import atomic_write_json, read_entry_state
-    from soma_inits_upgrades.state_schema import EntryState
+    from soma_inits_upgrades.state_schema import EntryState, RepoState
     path = state_dir / f"{entry['init_file']}.json"
     state = read_entry_state(path)
     if state is None:
@@ -25,8 +25,10 @@ def ensure_entry_state(
         print(f"Warning: state file missing for {name}, creating default", file=sys.stderr)
         state = EntryState(
             init_file=entry["init_file"],
-            repo_url=entry["repo_url"],
-            pinned_ref=entry["pinned_ref"],
+            repos=[RepoState(
+                repo_url=entry["repo_url"],
+                pinned_ref=entry["pinned_ref"],
+            )],
         )
         atomic_write_json(path, state)
         global_state.entries_summary.total += 1

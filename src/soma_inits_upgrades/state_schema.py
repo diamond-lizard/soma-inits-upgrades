@@ -1,4 +1,4 @@
-"""Pydantic state models, and TASK_ORDER constant."""
+"""Pydantic state models and task-order constants."""
 
 from __future__ import annotations
 
@@ -69,20 +69,40 @@ def _default_tasks_completed() -> dict[str, bool]:
     return dict.fromkeys(TASK_ORDER, False)
 
 
-class EntryState(BaseModel):
-    """Per-entry state file structure."""
 
-    init_file: str
+def _default_tier1_tasks_completed() -> dict[str, bool]:
+    """Build default tier1_tasks_completed dict."""
+    keys = [
+        "clone", "default_branch", "latest_ref", "diff",
+        "deps", "version_check", "symbols",
+    ]
+    return dict.fromkeys(keys, False)
+
+
+class RepoState(BaseModel):
+    """Per-repository state within an entry."""
+
     repo_url: str
     pinned_ref: str
     latest_ref: str | None = None
     default_branch: str | None = None
+    package_name: str | None = None
+    min_emacs_version: str | None = None
+    emacs_upgrade_required: bool = False
+    depends_on: list[str] | None = None
+    done_reason: str | None = None
+    notes: str | None = None
+    tier1_tasks_completed: dict[str, bool] = Field(
+        default_factory=_default_tier1_tasks_completed,
+    )
+
+class EntryState(BaseModel):
+    """Per-entry state file structure."""
+
+    init_file: str
+    repos: list[RepoState] = Field(default_factory=list)
     status: str = "pending"
     notes: str | None = None
     done_reason: str | None = None
-    depends_on: list[str] | None = None
-    min_emacs_version: str | None = None
-    package_name: str | None = None
-    emacs_upgrade_required: bool = False
     retries_remaining: int = 5
     tasks_completed: dict[str, bool] = Field(default_factory=_default_tasks_completed)

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from soma_inits_upgrades.state import atomic_write_json, read_entry_state
 from soma_inits_upgrades.state_artifacts import delete_entry_artifacts
-from soma_inits_upgrades.state_schema import EntryState
+from soma_inits_upgrades.state_schema import EntryState, RepoState
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -28,8 +28,10 @@ def create_entry_state_if_missing(
         print(f"Warning: recreating corrupt state for {path}", file=sys.stderr)
     state = EntryState(
         init_file=entry_dict["init_file"],
-        repo_url=entry_dict["repo_url"],
-        pinned_ref=entry_dict["pinned_ref"],
+        repos=[RepoState(
+            repo_url=entry_dict["repo_url"],
+            pinned_ref=entry_dict["pinned_ref"],
+        )],
     )
     atomic_write_json(path, state)
     return True
@@ -43,9 +45,9 @@ def detect_entry_field_changes(
     Returns a list of field names that differ.
     """
     changed: list[str] = []
-    if state.repo_url != entry_dict["repo_url"]:
+    if state.repos[0].repo_url != entry_dict["repo_url"]:
         changed.append("repo_url")
-    if state.pinned_ref != entry_dict["pinned_ref"]:
+    if state.repos[0].pinned_ref != entry_dict["pinned_ref"]:
         changed.append("pinned_ref")
     return changed
 
@@ -72,8 +74,10 @@ def reset_entry_state_if_modified(
     delete_entry_artifacts(entry_dict["init_file"], output_dir)
     new_state = EntryState(
         init_file=entry_dict["init_file"],
-        repo_url=entry_dict["repo_url"],
-        pinned_ref=entry_dict["pinned_ref"],
+        repos=[RepoState(
+            repo_url=entry_dict["repo_url"],
+            pinned_ref=entry_dict["pinned_ref"],
+        )],
     )
     atomic_write_json(path, new_state)
     return True

@@ -25,9 +25,10 @@ def task_deps(ctx: EntryContext) -> bool:
         return False
     label = f"[{ctx.entry_idx}/{ctx.total}]"
     print(f"{label} {ctx.entry_state.init_file}: parsing dependencies...", file=sys.stderr)
-    latest = ctx.entry_state.latest_ref or ""
+    latest = ctx.entry_state.repos[0].latest_ref or ""
     if not ensure_working_tree_at_ref(clone_dir, latest, run_fn=ctx.run_fn):
-        set_entry_error(ctx, f"git checkout failed: latest_ref {ctx.entry_state.latest_ref}")
+        msg = f"git checkout failed: latest_ref {ctx.entry_state.repos[0].latest_ref}"
+        set_entry_error(ctx, msg)
         return False
     raw_deps, pkg_name = locate_package_metadata(clone_dir)
     depends_on: list[str] = []
@@ -35,9 +36,10 @@ def task_deps(ctx: EntryContext) -> bool:
     if raw_deps:
         parsed = parse_requirements_sexp(raw_deps)
         depends_on, min_emacs = filter_dependencies(parsed)
-    ctx.entry_state.depends_on = depends_on
-    ctx.entry_state.min_emacs_version = min_emacs
-    ctx.entry_state.package_name = determine_package_name(pkg_name, ctx.entry_state.init_file)
+    ctx.entry_state.repos[0].depends_on = depends_on
+    ctx.entry_state.repos[0].min_emacs_version = min_emacs
+    repo = ctx.entry_state.repos[0]
+    repo.package_name = determine_package_name(pkg_name, ctx.entry_state.init_file)
     ctx.entry_state.tasks_completed["deps"] = True
     atomic_write_json(ctx.entry_state_path, ctx.entry_state)
     return False
@@ -50,8 +52,8 @@ def task_version_check(ctx: EntryContext) -> bool:
     from soma_inits_upgrades.deps_resolution import requires_newer_emacs
     from soma_inits_upgrades.state import atomic_write_json
 
-    ctx.entry_state.emacs_upgrade_required = requires_newer_emacs(
-        ctx.entry_state.min_emacs_version, ctx.global_state.emacs_version,
+    ctx.entry_state.repos[0].emacs_upgrade_required = requires_newer_emacs(
+        ctx.entry_state.repos[0].min_emacs_version, ctx.global_state.emacs_version,
     )
     ctx.entry_state.tasks_completed["version_check"] = True
     atomic_write_json(ctx.entry_state_path, ctx.entry_state)
@@ -93,8 +95,8 @@ def _build_dep_context(ctx: EntryContext) -> str:
     """Build dependency context string for upgrade prompts."""
     from soma_inits_upgrades.prompts_upgrade import format_dependency_context
     return format_dependency_context(
-        ctx.entry_state.depends_on or [],
-        ctx.entry_state.min_emacs_version,
-        ctx.entry_state.emacs_upgrade_required,
+        ctx.entry_state.repos[0].depends_on or [],
+        ctx.entry_state.repos[0].min_emacs_version,
+        ctx.entry_state.repos[0].emacs_upgrade_required,
         ctx.global_state.emacs_version,
     )

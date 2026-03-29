@@ -29,7 +29,8 @@ def task_diff(ctx: EntryContext) -> bool:
     diff_path = ctx.tmp_dir / f"{ctx.init_stem}.diff"
     try:
         has_diff = generate_diff(
-            clone_dir, ctx.entry_state.pinned_ref, ctx.entry_state.latest_ref or "",
+            clone_dir, ctx.entry_state.repos[0].pinned_ref,
+            ctx.entry_state.repos[0].latest_ref or "",
             diff_path, run_fn=ctx.run_fn,
         )
     except Exception as exc:
@@ -73,7 +74,8 @@ def resolve_latest_ref(ctx: EntryContext) -> str | None:
     """Resolve the latest commit SHA on the default branch."""
     from soma_inits_upgrades.git_ref_ops import rev_parse
     clone_dir = ctx.tmp_dir / ctx.init_stem
-    return rev_parse(clone_dir, f"origin/{ctx.entry_state.default_branch}", run_fn=ctx.run_fn)
+    branch = ctx.entry_state.repos[0].default_branch
+    return rev_parse(clone_dir, f"origin/{branch}", run_fn=ctx.run_fn)
 
 
 def is_pin_current(pinned_ref: str, latest_ref: str) -> bool:
@@ -85,4 +87,4 @@ def verify_pinned_ref(ctx: EntryContext) -> bool:
     """Verify the pinned ref exists in the repository."""
     from soma_inits_upgrades.git_ref_ops import verify_ref
     clone_dir = ctx.tmp_dir / ctx.init_stem
-    return verify_ref(clone_dir, ctx.entry_state.pinned_ref, run_fn=ctx.run_fn)
+    return verify_ref(clone_dir, ctx.entry_state.repos[0].pinned_ref, run_fn=ctx.run_fn)

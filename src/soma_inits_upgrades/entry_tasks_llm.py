@@ -19,11 +19,11 @@ def task_security_review(ctx: EntryContext) -> bool:
     prompt_path = ctx.tmp_dir / f"{ctx.init_stem}-security-review.prompt.md"
     malformed = output_path.with_suffix(output_path.suffix + ".malformed")
     mal_arg = malformed if malformed.exists() else None
-    pkg = ctx.entry_state.package_name or ctx.init_stem
+    pkg = ctx.entry_state.repos[0].package_name or ctx.init_stem
     def prompt_fn() -> str:
         return generate_security_review_prompt(
-            pkg, ctx.entry_state.repo_url, ctx.entry_state.pinned_ref,
-            ctx.entry_state.latest_ref or "", diff_path, output_path,
+            pkg, ctx.entry_state.repos[0].repo_url, ctx.entry_state.repos[0].pinned_ref,
+            ctx.entry_state.repos[0].latest_ref or "", diff_path, output_path,
             malformed_report_path=mal_arg,
         )
     result = run_llm_task(
@@ -47,11 +47,11 @@ def task_upgrade_analysis(ctx: EntryContext) -> bool:
     malformed = output_path.with_suffix(output_path.suffix + ".malformed")
     mal_arg = malformed if malformed.exists() else None
     dep_ctx = _build_dep_context(ctx)
-    pkg = ctx.entry_state.package_name or ctx.init_stem
+    pkg = ctx.entry_state.repos[0].package_name or ctx.init_stem
     def prompt_fn() -> str:
         return generate_upgrade_analysis_prompt(
-            pkg, ctx.entry_state.repo_url, ctx.entry_state.pinned_ref,
-            ctx.entry_state.latest_ref or "", diff_path, usage_path,
+            pkg, ctx.entry_state.repos[0].repo_url, ctx.entry_state.repos[0].pinned_ref,
+            ctx.entry_state.repos[0].latest_ref or "", diff_path, usage_path,
             output_path, dep_ctx, malformed_analysis_path=mal_arg,
         )
     result = run_llm_task(

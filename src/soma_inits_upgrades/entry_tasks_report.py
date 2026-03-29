@@ -22,13 +22,13 @@ def task_upgrade_report(ctx: EntryContext) -> bool:
     malformed = output_path.with_suffix(output_path.suffix + ".malformed")
     mal_arg = malformed if malformed.exists() else None
     dep_ctx = _build_dep_context(ctx)
-    pkg = ctx.entry_state.package_name or ctx.init_stem
+    pkg = ctx.entry_state.repos[0].package_name or ctx.init_stem
 
     def prompt_fn() -> str:
         """Generate the upgrade report prompt."""
         return generate_upgrade_report_prompt(
-            pkg, ctx.entry_state.repo_url, ctx.entry_state.pinned_ref,
-            ctx.entry_state.latest_ref or "", analysis_path,
+            pkg, ctx.entry_state.repos[0].repo_url, ctx.entry_state.repos[0].pinned_ref,
+            ctx.entry_state.repos[0].latest_ref or "", analysis_path,
             output_path, dep_ctx, malformed_report_path=mal_arg,
         )
 
