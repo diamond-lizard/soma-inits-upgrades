@@ -76,10 +76,8 @@ def _complete_summary(
     from datetime import date
 
     from soma_inits_upgrades.state import atomic_write_json
-    from soma_inits_upgrades.summary_completion import (
-        categorize_entries,
-        format_completion_message,
-    )
+    from soma_inits_upgrades.summary_completion import categorize_entries
+    from soma_inits_upgrades.summary_format import format_completion_message
 
     global_state.phases.summary = "done"
     global_state.completed = True

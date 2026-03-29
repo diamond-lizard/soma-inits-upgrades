@@ -14,15 +14,9 @@ def finalize_entry(ctx: EntryContext) -> None:
     from soma_inits_upgrades.state import atomic_write_json
     from soma_inits_upgrades.state_artifacts import delete_entry_artifacts
 
-    # Two-tier: passthrough repo done_reason to entry level
+    # Two-tier: aggregate repo done_reasons to entry level
     if ctx.entry_state.status not in ("done", "error"):
-        repos = ctx.entry_state.repos
-        ctx.entry_state.done_reason = repos[0].done_reason
-        if repos[0].done_reason == "error":
-            from soma_inits_upgrades.processing_helpers import set_entry_error
-            set_entry_error(ctx, repos[0].notes or "Tier 1 error")
-        elif all(r.done_reason is not None for r in repos):
-            ctx.entry_state.status = "done"
+        _aggregate_repo_outcomes(ctx)
 
     status = ctx.entry_state.status
     cleanup_done = ctx.entry_state.tasks_completed.get("temp_cleanup", False)
@@ -42,6 +36,38 @@ def finalize_entry(ctx: EntryContext) -> None:
         _cleanup_malformed(ctx)
     if status != "error":
         complete_entry_bookkeeping(ctx)
+
+
+def _aggregate_repo_outcomes(ctx: EntryContext) -> None:
+    """Aggregate per-repo done_reasons into entry-level outcome."""
+    from soma_inits_upgrades.processing_helpers import set_entry_error
+    from soma_inits_upgrades.state_schema import TIER_2_TASKS
+
+    repos = ctx.entry_state.repos
+    errored = [r for r in repos if r.done_reason == "error"]
+    if errored:
+        active = [r for r in repos if r.done_reason is None]
+        tier2_done = all(
+            ctx.entry_state.tasks_completed.get(t, False)
+            for t in TIER_2_TASKS
+        )
+        if active and tier2_done:
+            failed = [r.repo_url for r in errored]
+            ctx.entry_state.done_reason = "partial"
+            ctx.entry_state.notes = f"Tier 1 failed for: {', '.join(failed)}"
+            ctx.entry_state.status = "done"
+        else:
+            set_entry_error(ctx, "no repo produced a usable diff")
+        return
+    if all(r.done_reason is not None for r in repos):
+        reasons = {r.done_reason for r in repos}
+        if reasons == {"already_latest"}:
+            ctx.entry_state.done_reason = "already_latest"
+        elif reasons == {"empty_diff"}:
+            ctx.entry_state.done_reason = "empty_diff"
+        else:
+            ctx.entry_state.done_reason = "no_changes_needed"
+        ctx.entry_state.status = "done"
 
 
 def _cleanup_malformed(ctx: EntryContext) -> None:
