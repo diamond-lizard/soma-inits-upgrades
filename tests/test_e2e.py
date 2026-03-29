@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from e2e_helpers import GROUPED_RESULTS, pre_create_llm_outputs, write_stale_json
+from e2e_data import GROUPED_RESULTS
+from e2e_helpers import pre_create_llm_outputs, write_stale_json
 from e2e_setup import make_fake_git_for_e2e, run_setup_phase
 
 from soma_inits_upgrades.finalization import (

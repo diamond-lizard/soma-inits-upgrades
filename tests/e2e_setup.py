@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from e2e_helpers import DIFF_WITH_DEFUN, GROUPED_RESULTS, LATEST_REF
+from e2e_data import DIFF_WITH_DEFUN, GROUPED_RESULTS, LATEST_REF
 from fakes import make_fake_git
 
 from soma_inits_upgrades.setup_completion import (

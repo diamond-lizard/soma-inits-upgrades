@@ -14,49 +14,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pathlib import Path
 
-ENTRY_A = {
-    "init_file": "soma-alpha-init.el",
-    "repo_url": "https://github.com/test-org/alpha-mode",
-    "pinned_ref": "aaaa1111aaaa1111aaaa1111aaaa1111aaaa1111",
-}
-ENTRY_B = {
-    "init_file": "soma-beta-init.el",
-    "repo_url": "https://github.com/test-org/beta-mode",
-    "pinned_ref": "bbbb2222bbbb2222bbbb2222bbbb2222bbbb2222",
-}
-RESULTS: list[dict[str, str]] = [ENTRY_A, ENTRY_B]
-GROUPED_RESULTS: list[dict[str, object]] = [
-    {"init_file": ENTRY_A["init_file"], "repos": [
-        {"repo_url": ENTRY_A["repo_url"],
-         "pinned_ref": ENTRY_A["pinned_ref"]}]},
-    {"init_file": ENTRY_B["init_file"], "repos": [
-        {"repo_url": ENTRY_B["repo_url"],
-         "pinned_ref": ENTRY_B["pinned_ref"]}]},
-]
-
-DIFF_WITH_DEFUN = (
-    "diff --git a/alpha.el b/alpha.el\n"
-    "--- a/alpha.el\n"
-    "+++ b/alpha.el\n"
-    "@@ -1,2 +1,4 @@\n"
-    "-(defun alpha-old-fn ()\n"
-    "-  \"Old function.\")\n"
-    "+(defun alpha-new-fn ()\n"
-    "+  \"New function.\")\n"
-    "+(defun alpha-extra-fn (x)\n"
-    "+  \"Extra function.\")\n"
-)
-LATEST_REF = "abc123abc123abc123abc123abc123abc123abc1"
-
-_REPORT_TEMPLATE = (
-    "# Upgrade Process\n\n"
-    "## Summary of Changes\n\nMinor additions.\n\n"
-    "## Breaking Changes\n\nNone.\n\n"
-    "## New Dependencies\n\nNone.\n\n"
-    "## Removed or Changed Public API\n\nNone.\n\n"
-    "## Configuration Impact\n\nMinimal.\n\n"
-    "## Emacs Version\n\nNo change.\n\n"
-    "## Recommended Upgrade Approach\n\nDirect upgrade.\n"
+from e2e_data import (
+    LATEST_REF,
+    REPORT_TEMPLATE,
+    RESULTS,
 )
 
 
@@ -103,5 +64,5 @@ def _write_upgrade_analysis(td: Path, stem: str) -> None:
 def _write_upgrade_report(output_dir: Path, name: str) -> None:
     """Write an upgrade report with required section headers."""
     (output_dir / f"{name}-upgrade-process.md").write_text(
-        _REPORT_TEMPLATE, encoding="utf-8",
+        REPORT_TEMPLATE, encoding="utf-8",
     )
