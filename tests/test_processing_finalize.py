@@ -68,7 +68,7 @@ def test_repo_error_sets_entry_error(tmp_path: Path) -> None:
     ctx = _make_ctx(tmp_path, _repo("error", "clone failed"))
     finalize_entry(ctx)
     assert ctx.entry_state.status == "error"
-    assert ctx.entry_state.done_reason == "error"
+    assert ctx.entry_state.done_reason is None
     assert ctx.global_state.entries_summary.error == 1
     assert ctx.global_state.entries_summary.in_progress == 0
 

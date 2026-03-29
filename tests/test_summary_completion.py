@@ -6,10 +6,8 @@ from pathlib import Path
 
 from soma_inits_upgrades.state import atomic_write_json
 from soma_inits_upgrades.state_schema import EntryState, RepoState
-from soma_inits_upgrades.summary_completion import (
-    categorize_entries,
-    format_completion_message,
-)
+from soma_inits_upgrades.summary_completion import categorize_entries
+from soma_inits_upgrades.summary_format import format_completion_message
 
 
 def _write_entry(
