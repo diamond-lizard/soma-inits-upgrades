@@ -17,8 +17,12 @@ if TYPE_CHECKING:
 
 _P_T1 = "soma_inits_upgrades.processing.TIER_1_HANDLERS"
 _P_T2 = "soma_inits_upgrades.processing.TIER_2_HANDLERS"
-_P_CL = "soma_inits_upgrades.processing_runner.task_cleanup"
+_P_CC = "soma_inits_upgrades.processing_runner.clone_cleanup"
+_P_TC = "soma_inits_upgrades.processing_runner.task_temp_cleanup"
 
+
+def _noop_clone_cleanup(_repo_ctx: object) -> None:
+    """No-op clone cleanup for tests."""
 
 def _ok_t1(log: list[str], tag: str):
     """Tier 1 handler that succeeds and logs repo name."""
@@ -50,7 +54,11 @@ def test_tier1_failure_isolated_to_repo(tmp_path: Path) -> None:
     log: list[str] = []
     t1 = {t: _fail_t1_on("diff", "a", log, t) for t in TIER_1_TASKS}
     t2 = {t: tracking_handler(log, t) for t in TIER_2_TASKS}
-    with patch(_P_T1, t1), patch(_P_T2, t2), patch(_P_CL, fake_cleanup):
+    with (
+        patch(_P_T1, t1), patch(_P_T2, t2),
+        patch(_P_CC, _noop_clone_cleanup),
+        patch(_P_TC, fake_cleanup),
+    ):
         run_entry_task_loop(ctx)
     assert r1.done_reason == "error"
     assert r2.done_reason is None
@@ -75,7 +83,11 @@ def test_done_early_no_progress_error(tmp_path: Path) -> None:
     t1 = {t: _ok_t1(log, t) for t in TIER_1_TASKS}
     t1["latest_ref"] = latest_ref_skip
     t2 = {t: tracking_handler(log, t) for t in TIER_2_TASKS}
-    with patch(_P_T1, t1), patch(_P_T2, t2), patch(_P_CL, fake_cleanup):
+    with (
+        patch(_P_T1, t1), patch(_P_T2, t2),
+        patch(_P_CC, _noop_clone_cleanup),
+        patch(_P_TC, fake_cleanup),
+    ):
         run_entry_task_loop(ctx)
     assert repo.done_reason == "already_latest"
     assert "no progress" not in (repo.notes or "")
@@ -92,7 +104,11 @@ def test_resume_skips_done_repo(tmp_path: Path) -> None:
     log: list[str] = []
     t1 = {t: _ok_t1(log, t) for t in TIER_1_TASKS}
     t2 = {t: tracking_handler(log, t) for t in TIER_2_TASKS}
-    with patch(_P_T1, t1), patch(_P_T2, t2), patch(_P_CL, fake_cleanup):
+    with (
+        patch(_P_T1, t1), patch(_P_T2, t2),
+        patch(_P_CC, _noop_clone_cleanup),
+        patch(_P_TC, fake_cleanup),
+    ):
         run_entry_task_loop(ctx)
     a_calls = [e for e in log if ":a" in e]
     assert a_calls == [], "repo 'a' should be skipped entirely"

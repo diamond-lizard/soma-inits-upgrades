@@ -93,8 +93,8 @@ def test_upgrade_report_invalid(tmp_path: Path) -> None:
 
 def test_cleanup_malformed_files(tmp_path: Path) -> None:
     """Malformed files are deleted by cleanup."""
-    td = tmp_path / ".tmp"
-    td.mkdir()
+    td = tmp_path / ".tmp" / "x"
+    td.mkdir(parents=True)
     (tmp_path / "x.el-security-review.md.malformed").write_text("x")
     (tmp_path / "x.el-upgrade-process.md.malformed").write_text("x")
     (td / "x-upgrade-analysis.json.malformed").write_text("x")

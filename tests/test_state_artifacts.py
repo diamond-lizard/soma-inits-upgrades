@@ -22,16 +22,17 @@ def test_get_entry_artifact_paths() -> None:
 
     paths = get_entry_artifact_paths("soma-dash-init.el", Path("/out"))
     assert len(paths["permanent"]) == 5
-    assert len(paths["temp"]) == 7
+    assert len(paths["temp"]) == 1
+    assert paths["temp"][0] == Path("/out/.tmp/soma-dash-init")
     assert len(paths["state"]) == 1
-    assert Path("/out/.tmp/soma-dash-init.diff") in paths["temp"]
     assert Path("/out/.state/soma-dash-init.el.json") in paths["state"]
 
 
 def test_delete_entry_artifacts_temp_only(output_dir: Path) -> None:
     """Verify only temp files are deleted when include_permanent=False."""
-    tmp_dir = output_dir / ".tmp"
-    diff_file = tmp_dir / "soma-dash-init.diff"
+    init_tmp = output_dir / ".tmp" / "soma-dash-init"
+    init_tmp.mkdir(parents=True, exist_ok=True)
+    diff_file = init_tmp / "soma-dash-init.diff"
     perm_file = output_dir / "soma-dash-init.el-security-review.md"
     diff_file.write_text("diff", encoding="utf-8")
     perm_file.write_text("review", encoding="utf-8")
@@ -39,7 +40,7 @@ def test_delete_entry_artifacts_temp_only(output_dir: Path) -> None:
         "soma-dash-init.el", output_dir,
         include_permanent=False, include_temp=True,
     )
-    assert not diff_file.exists()
+    assert not init_tmp.exists()
     assert perm_file.exists()
 
 

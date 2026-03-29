@@ -113,7 +113,7 @@ def _write_global_state(state_dir: Path, stale_path: str) -> None:
 def _write_entry_state(state_dir: Path) -> None:
     """Write per-entry state with all tasks completed."""
     entry = _ENTRIES[0]
-    tasks = dict.fromkeys((*TIER_2_TASKS, "cleanup"), True)
+    tasks = dict.fromkeys((*TIER_2_TASKS, "temp_cleanup"), True)
     es = {
         "init_file": entry["init_file"],
         "repos": [{

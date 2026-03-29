@@ -47,8 +47,10 @@ def _pre_create_llm_outputs(tmp_path: Path, name: str) -> None:
     (tmp_path / f"{name}-security-review.md").write_text(
         "# Review\nRisk Rating: low\n", encoding="utf-8",
     )
-    td = tmp_path / ".tmp"
-    (td / f"{name.removesuffix('.el')}-upgrade-analysis.json").write_text(
+    stem = name.removesuffix(".el")
+    td = tmp_path / ".tmp" / stem
+    td.mkdir(parents=True, exist_ok=True)
+    (td / f"{stem}-upgrade-analysis.json").write_text(
         '{"change_summary": "ok"}', encoding="utf-8",
     )
     (tmp_path / f"{name}-upgrade-process.md").write_text(

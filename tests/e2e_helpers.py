@@ -63,7 +63,7 @@ def pre_create_llm_outputs(output_dir: Path, name: str) -> None:
     """Pre-create all LLM output files for one entry."""
     stem = name.removesuffix(".el")
     _write_security_review(output_dir, name, stem)
-    _write_upgrade_analysis(output_dir / ".tmp", stem)
+    _write_upgrade_analysis(output_dir / ".tmp" / stem, stem)
     _write_upgrade_report(output_dir, name)
 
 
@@ -78,6 +78,7 @@ def _write_security_review(d: Path, name: str, stem: str) -> None:
 
 def _write_upgrade_analysis(td: Path, stem: str) -> None:
     """Write valid upgrade analysis JSON matching UpgradeAnalysis schema."""
+    td.mkdir(parents=True, exist_ok=True)
     (td / f"{stem}-upgrade-analysis.json").write_text(
         json.dumps({
             "change_summary": "Minor API additions.",

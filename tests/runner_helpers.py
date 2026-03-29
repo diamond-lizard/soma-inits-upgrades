@@ -61,5 +61,5 @@ def tracking_handler(log: list[str], tag: str):
 
 def fake_cleanup(ctx: EntryContext) -> bool:
     """Fake cleanup handler that logs and marks complete."""
-    ctx.entry_state.tasks_completed["cleanup"] = True
+    ctx.entry_state.tasks_completed["temp_cleanup"] = True
     return False

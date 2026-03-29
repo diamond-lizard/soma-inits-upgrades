@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 def _done_tasks() -> dict[str, bool]:
     """Return tasks_completed with all tasks True."""
-    return dict.fromkeys((*TIER_2_TASKS, "cleanup"), True)
+    return dict.fromkeys((*TIER_2_TASKS, "temp_cleanup"), True)
 
 
 def _setup_done_entry(
@@ -57,7 +57,7 @@ def test_retry_in_progress(tmp_path: Path) -> None:
             repo_url="https://forge.test/r", pinned_ref="a",
         )],
         status="error", retries_remaining=3,
-        tasks_completed=dict.fromkeys((*TIER_2_TASKS, "cleanup"), False),
+        tasks_completed=dict.fromkeys((*TIER_2_TASKS, "temp_cleanup"), False),
     )
     atomic_write_json(sd / "x.el.json", es)
     gs = _gs(["x.el"], phase="in_progress")

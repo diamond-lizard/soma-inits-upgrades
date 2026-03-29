@@ -75,7 +75,7 @@ def _tamper_entry_alpha(
     es = read_entry_state(state_dir / "soma-alpha-init.el.json")
     assert es is not None
     es.tasks_completed["validate_outputs"] = False
-    es.tasks_completed["cleanup"] = False
+    es.tasks_completed["temp_cleanup"] = False
     es.status = "in_progress"
     atomic_write_json(state_dir / "soma-alpha-init.el.json", es)
 

@@ -61,7 +61,7 @@ def test_new_entry_detection(tmp_path: Path) -> None:
             repo_url="https://forge.test/r", pinned_ref="a",
         )],
         status="done",
-        tasks_completed=dict.fromkeys((*TIER_2_TASKS, "cleanup"), True),
+        tasks_completed=dict.fromkeys((*TIER_2_TASKS, "temp_cleanup"), True),
     )
     atomic_write_json(sd / "old.el.json", old_es)
     gs = GlobalState(
@@ -94,7 +94,7 @@ def test_modified_entry_detection(tmp_path: Path) -> None:
             repo_url="https://forge.test/r", pinned_ref="old",
         )],
         status="done",
-        tasks_completed=dict.fromkeys((*TIER_2_TASKS, "cleanup"), True),
+        tasks_completed=dict.fromkeys((*TIER_2_TASKS, "temp_cleanup"), True),
     )
     atomic_write_json(sd / "x.el.json", es)
     gs = GlobalState(
@@ -127,7 +127,7 @@ def test_orphan_removal(tmp_path: Path) -> None:
                 pinned_ref="a",
             )],
             status="done",
-            tasks_completed=dict.fromkeys((*TIER_2_TASKS, "cleanup"), True),
+            tasks_completed=dict.fromkeys((*TIER_2_TASKS, "temp_cleanup"), True),
         )
         atomic_write_json(sd / f"{name}.json", es)
     gs = GlobalState(

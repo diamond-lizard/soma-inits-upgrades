@@ -47,7 +47,7 @@ def test_tier2_keys_match_tasks_completed() -> None:
             repo_url="https://x/y", pinned_ref="abc",
         )],
     )
-    assert list(state.tasks_completed.keys()) == [*TIER_2_TASKS, "cleanup"]
+    assert list(state.tasks_completed.keys()) == [*TIER_2_TASKS, "temp_cleanup"]
     assert all(v is False for v in state.tasks_completed.values())
 
 
