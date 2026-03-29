@@ -52,7 +52,7 @@ The program expects a JSON file with the following structure:
 
 Each entry describes one elpaca-pinned package:
 
-- =init_file= -- the Emacs init file that pins this package (e.g.
+- =init_file= -- the Emacs init file containing the pin for this package (e.g.
   =soma-magit-init.el=).
 - =repo_url= -- the HTTPS URL of the package repository.
 - =pinned_ref= -- the git commit hash currently pinned.
