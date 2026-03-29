@@ -10,11 +10,11 @@ if TYPE_CHECKING:
 
     from soma_inits_upgrades.protocols import SubprocessRunner, UserInputFn, XclipChecker
     from soma_inits_upgrades.state_schema import EntryState, GlobalState
-    from soma_inits_upgrades.validation_schema import FlatEntryDict
+    from soma_inits_upgrades.validation_schema import GroupedEntryDict
 
 
 def ensure_entry_state(
-    entry: FlatEntryDict, state_dir: Path, global_state: GlobalState,
+    entry: GroupedEntryDict, state_dir: Path, global_state: GlobalState,
 ) -> EntryState | None:
     """Load or create per-entry state. Returns EntryState or None on error."""
     from soma_inits_upgrades.state import atomic_write_json, read_entry_state
@@ -26,10 +26,10 @@ def ensure_entry_state(
         print(f"Warning: state file missing for {name}, creating default", file=sys.stderr)
         state = EntryState(
             init_file=entry["init_file"],
-            repos=[RepoState(
-                repo_url=entry["repo_url"],
-                pinned_ref=entry["pinned_ref"],
-            )],
+            repos=[
+                RepoState(repo_url=r["repo_url"], pinned_ref=r["pinned_ref"])
+                for r in entry["repos"]
+            ],
         )
         atomic_write_json(path, state)
         global_state.entries_summary.total += 1
@@ -58,10 +58,10 @@ def initialize_entry(
 
 
 def process_single_entry(
-    entry: FlatEntryDict, idx: int, total: int,
+    entry: GroupedEntryDict, idx: int, total: int,
     state_dir: Path, output_dir: Path,
     global_state: GlobalState, global_state_path: Path,
-    run_fn: SubprocessRunner, results: list[FlatEntryDict],
+    run_fn: SubprocessRunner, results: list[GroupedEntryDict],
     xclip_checker: XclipChecker, input_fn: UserInputFn | None = None,
 ) -> bool:
     """Process a single entry. Returns needs_rerun."""

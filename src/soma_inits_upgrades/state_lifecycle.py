@@ -13,30 +13,32 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from soma_inits_upgrades.state_schema import GlobalState
-    from soma_inits_upgrades.validation_schema import FlatEntryDict
-
-
+    from soma_inits_upgrades.validation_schema import GroupedEntryDict
 
 
 def detect_entry_field_changes(
-    state: EntryState, entry_dict: FlatEntryDict,
+    state: EntryState, entry_dict: GroupedEntryDict,
 ) -> list[str]:
-    """Compare repo_url and pinned_ref between state and entry dict.
+    """Compare repos between state and entry dict.
 
-    Returns a list of field names that differ.
+    Uses set-based comparison of (repo_url, pinned_ref) pairs.
+    Returns ["repos"] if the sets differ, else [].
     """
-    changed: list[str] = []
-    if state.repos[0].repo_url != entry_dict["repo_url"]:
-        changed.append("repo_url")
-    if state.repos[0].pinned_ref != entry_dict["pinned_ref"]:
-        changed.append("pinned_ref")
-    return changed
+    state_pairs = {
+        (r.repo_url, r.pinned_ref) for r in state.repos
+    }
+    entry_pairs = {
+        (r["repo_url"], r["pinned_ref"]) for r in entry_dict["repos"]
+    }
+    if state_pairs != entry_pairs:
+        return ["repos"]
+    return []
 
 
 def reset_entry_state_if_modified(
-    entry_dict: FlatEntryDict, state_dir: Path, output_dir: Path,
+    entry_dict: GroupedEntryDict, state_dir: Path, output_dir: Path,
 ) -> bool:
-    """Reset entry state if repo_url or pinned_ref changed.
+    """Reset entry state if repos changed.
 
     Returns True if the entry was modified and reset, False otherwise.
     """
@@ -49,16 +51,17 @@ def reset_entry_state_if_modified(
         return False
     fields = ", ".join(changed)
     print(
-        f"Warning: {entry_dict['init_file']} changed ({fields}), resetting",
+        f"Warning: {entry_dict['init_file']} changed ({fields}),"
+        f" resetting",
         file=sys.stderr,
     )
     delete_entry_artifacts(entry_dict["init_file"], output_dir)
+    repos = [
+        RepoState(repo_url=r["repo_url"], pinned_ref=r["pinned_ref"])
+        for r in entry_dict["repos"]
+    ]
     new_state = EntryState(
-        init_file=entry_dict["init_file"],
-        repos=[RepoState(
-            repo_url=entry_dict["repo_url"],
-            pinned_ref=entry_dict["pinned_ref"],
-        )],
+        init_file=entry_dict["init_file"], repos=repos,
     )
     atomic_write_json(path, new_state)
     return True

@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Protocol, TypeAlias, runtime_checkable
 from pydantic import BaseModel, ConfigDict, Field
 
 from soma_inits_upgrades.state_schema import EntryState, GlobalState
-from soma_inits_upgrades.validation_schema import FlatEntryDict
+from soma_inits_upgrades.validation_schema import GroupedEntryDict
 
 if TYPE_CHECKING:
     import subprocess
@@ -63,7 +63,7 @@ class EntryContext(BaseModel):
     tmp_dir: Path
     state_dir: Path
     init_stem: str
-    results: list[FlatEntryDict]
+    results: list[GroupedEntryDict]
     xclip_checker: XclipChecker
     run_fn: SubprocessRunner
     input_fn: UserInputFn | None = None

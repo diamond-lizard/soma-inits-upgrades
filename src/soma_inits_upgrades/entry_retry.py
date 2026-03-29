@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from soma_inits_upgrades.state_schema import GlobalState, RepoState
-    from soma_inits_upgrades.validation_schema import FlatEntryDict
+    from soma_inits_upgrades.validation_schema import GroupedEntryDict
 
 
 def reset_phases_for_new_entries(
@@ -39,7 +39,7 @@ def _reset_errored_repo_reasons(repos: list[RepoState]) -> None:
             repo.done_reason = None
 
 
-def retry_errored_entries(results: list[FlatEntryDict], state_dir: Path) -> int:
+def retry_errored_entries(results: list[GroupedEntryDict], state_dir: Path) -> int:
     """Retry error-status entries with remaining retries.
 
     Resets status to in_progress, decrements retries_remaining.

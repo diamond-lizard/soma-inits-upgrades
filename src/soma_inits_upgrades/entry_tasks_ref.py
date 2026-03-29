@@ -27,7 +27,7 @@ def task_latest_ref(repo_ctx: RepoContext) -> bool:
     ctx = repo_ctx.entry_ctx
     if self_heal_repo_resource(repo_ctx.clone_dir, "clone", repo_ctx):
         return False
-    latest = resolve_latest_ref(ctx)
+    latest = resolve_latest_ref(repo_ctx)
     if latest is None:
         branch = repo_ctx.repo_state.default_branch
         set_repo_error(repo_ctx, f"could not resolve latest ref on branch {branch}")
@@ -39,7 +39,7 @@ def task_latest_ref(repo_ctx: RepoContext) -> bool:
         set_repo_done_early(repo_ctx, "already_latest", msg)
         _cleanup_repo_temp(repo_ctx)
         return False
-    if not verify_pinned_ref(ctx):
+    if not verify_pinned_ref(repo_ctx):
         pin = repo_ctx.repo_state.pinned_ref
         set_repo_error(repo_ctx, f"pinned ref {pin} does not exist in repository")
         _cleanup_repo_temp(repo_ctx)

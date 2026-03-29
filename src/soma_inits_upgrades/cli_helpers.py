@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from soma_inits_upgrades.state_schema import GlobalState
-    from soma_inits_upgrades.validation_schema import FlatEntryDict
+    from soma_inits_upgrades.validation_schema import GroupedEntryDict, RepoEntryDict
 
 
 def resolve_and_validate_paths(
@@ -59,11 +59,12 @@ def check_stale_inits_mismatch(
         sys.exit(1)
 
 
-def load_stale_inits(path: Path) -> list[FlatEntryDict]:
-    """Read and validate the stale inits JSON file.
+def load_stale_inits(path: Path) -> list[GroupedEntryDict]:
+    """Read, validate, and group the stale inits JSON file.
 
-    Returns the validated results list.  Exits with code 1 on
-    validation or JSON errors.  Exits with code 0 if results is empty.
+    Groups entries by init_file, returning one dict per unique
+    init_file with a repos list.  Exits with code 1 on validation
+    or JSON errors.  Exits with code 0 if results is empty.
     """
     from pydantic import ValidationError
 
@@ -81,7 +82,13 @@ def load_stale_inits(path: Path) -> list[FlatEntryDict]:
     if not validated.results:
         print("No stale entries found in input file.", file=sys.stderr)
         sys.exit(0)
+    grouped: dict[str, list[RepoEntryDict]] = {}
+    for e in validated.results:
+        repo: RepoEntryDict = {
+            "repo_url": e.repo_url, "pinned_ref": e.pinned_ref,
+        }
+        grouped.setdefault(e.init_file, []).append(repo)
     return [
-        {"init_file": e.init_file, "repo_url": e.repo_url, "pinned_ref": e.pinned_ref}
-        for e in validated.results
+        {"init_file": name, "repos": repos}
+        for name, repos in grouped.items()
     ]

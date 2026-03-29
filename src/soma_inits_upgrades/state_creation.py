@@ -11,7 +11,7 @@ from soma_inits_upgrades.state_schema import EntryState, RepoState
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from soma_inits_upgrades.validation_schema import FlatEntryDict
+    from soma_inits_upgrades.validation_schema import GroupedEntryDict
 
 
 def _check_state_version(path: Path) -> None:
@@ -37,7 +37,7 @@ def _check_state_version(path: Path) -> None:
 
 
 def create_entry_state_if_missing(
-    entry_dict: FlatEntryDict, state_dir: Path,
+    entry_dict: GroupedEntryDict, state_dir: Path,
 ) -> bool:
     """Create a per-entry state file if missing or corrupt.
 
@@ -52,12 +52,10 @@ def create_entry_state_if_missing(
         if existing is not None:
             return False
         print(f"Warning: recreating corrupt state for {path}", file=sys.stderr)
-    state = EntryState(
-        init_file=entry_dict["init_file"],
-        repos=[RepoState(
-            repo_url=entry_dict["repo_url"],
-            pinned_ref=entry_dict["pinned_ref"],
-        )],
-    )
+    repos = [
+        RepoState(repo_url=r["repo_url"], pinned_ref=r["pinned_ref"])
+        for r in entry_dict["repos"]
+    ]
+    state = EntryState(init_file=entry_dict["init_file"], repos=repos)
     atomic_write_json(path, state)
     return True

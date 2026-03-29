@@ -9,12 +9,18 @@ from typing import Any, TypedDict
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
-class FlatEntryDict(TypedDict):
-    """Entry dict with flat repo fields (Phases 150-500)."""
+class RepoEntryDict(TypedDict):
+    """Per-repo portion of a grouped entry dict."""
 
-    init_file: str
     repo_url: str
     pinned_ref: str
+
+
+class GroupedEntryDict(TypedDict):
+    """Entry dict grouped by init_file with a repos list."""
+
+    init_file: str
+    repos: list[RepoEntryDict]
 
 
 class StaleInitsEntry(BaseModel):
@@ -52,12 +58,17 @@ class StaleInitsFile(BaseModel):
     results: list[StaleInitsEntry]
 
     @model_validator(mode="after")
-    def check_duplicate_init_files(self) -> StaleInitsFile:
-        """Reject duplicate init_file values."""
-        names = [e.init_file for e in self.results]
-        dupes = [n for n in names if names.count(n) > 1]
-        if dupes:
-            raise ValueError(f"duplicate init_file: {dupes[0]!r}")
+    def check_duplicate_init_file_repo_pairs(self) -> StaleInitsFile:
+        """Reject duplicate (init_file, repo_url) pairs."""
+        pairs = [(e.init_file, e.repo_url) for e in self.results]
+        seen: set[tuple[str, str]] = set()
+        for pair in pairs:
+            if pair in seen:
+                raise ValueError(
+                    f"duplicate (init_file, repo_url) pair:"
+                    f" ({pair[0]!r}, {pair[1]!r})"
+                )
+            seen.add(pair)
         return self
 
 

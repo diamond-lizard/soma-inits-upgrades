@@ -72,12 +72,14 @@ def clone_cleanup(repo_ctx: RepoContext) -> None:
     if repo_ctx.clone_dir.is_dir():
         safe_rmtree(repo_ctx.clone_dir, repo_ctx.entry_ctx.output_dir)
 
-def resolve_latest_ref(ctx: EntryContext) -> str | None:
+def resolve_latest_ref(repo_ctx: RepoContext) -> str | None:
     """Resolve the latest commit SHA on the default branch."""
     from soma_inits_upgrades.git_ref_ops import rev_parse
-    clone_dir = ctx.tmp_dir / ctx.init_stem
-    branch = ctx.entry_state.repos[0].default_branch
-    return rev_parse(clone_dir, f"origin/{branch}", run_fn=ctx.run_fn)
+    branch = repo_ctx.repo_state.default_branch
+    return rev_parse(
+        repo_ctx.clone_dir, f"origin/{branch}",
+        run_fn=repo_ctx.entry_ctx.run_fn,
+    )
 
 
 def is_pin_current(pinned_ref: str, latest_ref: str) -> bool:
@@ -85,8 +87,10 @@ def is_pin_current(pinned_ref: str, latest_ref: str) -> bool:
     return pinned_ref == latest_ref
 
 
-def verify_pinned_ref(ctx: EntryContext) -> bool:
+def verify_pinned_ref(repo_ctx: RepoContext) -> bool:
     """Verify the pinned ref exists in the repository."""
     from soma_inits_upgrades.git_ref_ops import verify_ref
-    clone_dir = ctx.tmp_dir / ctx.init_stem
-    return verify_ref(clone_dir, ctx.entry_state.repos[0].pinned_ref, run_fn=ctx.run_fn)
+    return verify_ref(
+        repo_ctx.clone_dir, repo_ctx.repo_state.pinned_ref,
+        run_fn=repo_ctx.entry_ctx.run_fn,
+    )

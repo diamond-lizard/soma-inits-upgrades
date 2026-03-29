@@ -12,11 +12,11 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from soma_inits_upgrades.state_schema import GlobalState
-    from soma_inits_upgrades.validation_schema import FlatEntryDict
+    from soma_inits_upgrades.validation_schema import GroupedEntryDict
 
 
 def detect_entry_changes(
-    results: list[FlatEntryDict], state_dir: Path, output_dir: Path,
+    results: list[GroupedEntryDict], state_dir: Path, output_dir: Path,
 ) -> tuple[list[str], list[str]]:
     """Detect new and modified entries. Returns (new_names, modified_names)."""
     new: list[str] = []
@@ -30,7 +30,7 @@ def detect_entry_changes(
 
 
 def handle_orphaned_entries(
-    results: list[FlatEntryDict], state_dir: Path,
+    results: list[GroupedEntryDict], state_dir: Path,
     output_dir: Path, global_state: GlobalState,
 ) -> int:
     """Remove entries no longer in the input file.
@@ -59,7 +59,7 @@ def handle_orphaned_entries(
 
 
 def detect_new_or_modified_entries(
-    results: list[FlatEntryDict], state_dir: Path,
+    results: list[GroupedEntryDict], state_dir: Path,
     output_dir: Path, global_state: GlobalState,
 ) -> tuple[list[str], list[str], int]:
     """Detect new, modified, and orphaned entries.

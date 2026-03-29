@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from soma_inits_upgrades.state_schema import GlobalState
-    from soma_inits_upgrades.validation_schema import FlatEntryDict
+    from soma_inits_upgrades.validation_schema import GroupedEntryDict
 
 
 def initialize_dep_graph(graph_path: Path) -> None:
@@ -27,7 +27,7 @@ def initialize_dep_graph(graph_path: Path) -> None:
 def complete_setup(
     global_state: GlobalState,
     global_state_path: Path,
-    results: list[FlatEntryDict],
+    results: list[GroupedEntryDict],
 ) -> None:
     """Finalize the setup stage.
 
@@ -61,7 +61,7 @@ def _first_actionable_entry(
 
 
 def initialize_entry_states(
-    results: list[FlatEntryDict],
+    results: list[GroupedEntryDict],
     state_dir: Path,
     output_dir: Path,
     global_state: GlobalState,
