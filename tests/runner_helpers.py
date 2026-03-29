@@ -53,13 +53,9 @@ def tracking_handler(log: list[str], tag: str):
     def handler(ctx_or_repo: EntryContext | RepoContext) -> bool:
         log.append(tag)
         if isinstance(ctx_or_repo, RepoContext):
-            repo = ctx_or_repo.repo_state
-            if tag in repo.tier1_tasks_completed:
-                repo.tier1_tasks_completed[tag] = True
+            ctx_or_repo.repo_state.tier1_tasks_completed[tag] = True
         elif isinstance(ctx_or_repo, EntryContext):
-            if tag in ctx_or_repo.entry_state.tasks_completed:
-                ctx_or_repo.entry_state.tasks_completed[tag] = True
-        return False
+            ctx_or_repo.entry_state.tasks_completed[tag] = True
     return handler
 
 
