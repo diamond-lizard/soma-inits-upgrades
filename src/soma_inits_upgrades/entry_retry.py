@@ -19,7 +19,7 @@ def reset_phases_for_new_entries(
 
     Sets entry_processing to in_progress and appends truly new names.
     """
-    from soma_inits_upgrades.state import reset_downstream_phases
+    from soma_inits_upgrades.state_lifecycle import reset_downstream_phases
     reset_downstream_phases(global_state)
     global_state.phases.entry_processing = "in_progress"
     for name in new_names:

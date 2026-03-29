@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
@@ -12,6 +13,8 @@ from soma_inits_upgrades.validation_schema import FlatEntryDict
 
 if TYPE_CHECKING:
     import subprocess
+
+    from soma_inits_upgrades.state_schema import RepoState
 
 
 @runtime_checkable
@@ -28,6 +31,16 @@ class TaskHandler(Protocol):
     """Protocol for per-entry task handler functions."""
 
     def __call__(self, ctx: EntryContext) -> bool: ...
+
+
+@runtime_checkable
+class Tier1TaskHandler(Protocol):
+    """Protocol for Tier 1 per-repo task handler functions."""
+
+    def __call__(self, ctx: RepoContext) -> bool: ...
+
+
+Tier2TaskHandler = TaskHandler  # Alias: Tier 2 uses per-entry signature
 
 
 @runtime_checkable
@@ -71,3 +84,14 @@ class EntryContext(BaseModel):
     run_fn: SubprocessRunner
     input_fn: UserInputFn | None = None
     reset_counters: dict[str, int] = Field(default_factory=dict)
+
+
+@dataclass
+class RepoContext:
+    """Per-repo context for Tier 1 task handlers."""
+
+    entry_ctx: EntryContext
+    repo_state: RepoState
+    temp_dir: Path
+    clone_dir: Path
+    reset_counters: dict[str, int] = field(default_factory=dict)

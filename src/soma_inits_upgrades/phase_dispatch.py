@@ -70,7 +70,8 @@ def handle_retryable_errors(
     if not has_retryable:
         return False
     from soma_inits_upgrades.entry_retry import retry_errored_entries
-    from soma_inits_upgrades.state import reconcile_entries_summary, reset_downstream_phases
+    from soma_inits_upgrades.state import reconcile_entries_summary
+    from soma_inits_upgrades.state_lifecycle import reset_downstream_phases
 
     reset_downstream_phases(global_state)
     global_state.phases.entry_processing = "in_progress"

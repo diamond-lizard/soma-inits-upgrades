@@ -16,6 +16,8 @@ from soma_inits_upgrades.state_schema import (
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from soma_inits_upgrades.state_schema import RepoState
+
 
 def read_global_state(path: Path) -> GlobalState | None:
     """Read and validate the global state file, or None if missing."""
@@ -62,6 +64,14 @@ def mark_task_complete(state: EntryState, task_id: str, path: Path) -> None:
     atomic_write_json(path, state)
 
 
+def mark_repo_task_complete(
+    state: EntryState, repo_state: RepoState, task_id: str, path: Path,
+) -> None:
+    """Mark a per-repo Tier 1 task as completed and write state atomically."""
+    repo_state.tier1_tasks_completed[task_id] = True
+    atomic_write_json(path, state)
+
+
 def reset_task(state: EntryState, task_id: str, path: Path) -> None:
     """Reset a per-entry task to incomplete and write state atomically."""
     state.tasks_completed[task_id] = False
@@ -83,16 +93,3 @@ def reconcile_entries_summary(entry_names: list[str], state_dir: Path) -> Entrie
             counts["pending"] += 1
         counts["total"] += 1
     return EntriesSummary(**counts)
-
-
-def reset_downstream_phases(global_state: GlobalState) -> None:
-    """Reset entry_processing through summary, graph and completion flags."""
-    from soma_inits_upgrades.state_schema import GraphFinalizationTasks, SummaryTasks
-
-    global_state.phases.entry_processing = "pending"
-    global_state.phases.graph_finalization = "pending"
-    global_state.phases.summary = "pending"
-    global_state.graph_finalization_tasks = GraphFinalizationTasks()
-    global_state.summary_tasks = SummaryTasks()
-    global_state.completed = False
-    global_state.date_completed = None

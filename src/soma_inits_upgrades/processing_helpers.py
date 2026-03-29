@@ -51,10 +51,10 @@ def check_progress(
     return status in ("done", "error")
 
 
-def self_heal_resource(
+def self_heal_entry_resource(
     resource_path: Path, creating_task: str, ctx: EntryContext,
 ) -> bool:
-    """Check if a resource exists; reset its task if missing.
+    """Check if a Tier 2 resource exists; reset its entry task if missing.
 
     Returns True if a reset was triggered (caller should return early).
     Returns False if the resource exists (proceed normally).
@@ -80,3 +80,5 @@ def self_heal_resource(
     )
     return True
 
+
+self_heal_resource = self_heal_entry_resource  # Backward compat

@@ -70,9 +70,11 @@ def initialize_entry_states(
 
     Returns (created_count, modified_count).
     """
-    from soma_inits_upgrades.state import reset_downstream_phases
     from soma_inits_upgrades.state_creation import create_entry_state_if_missing
-    from soma_inits_upgrades.state_lifecycle import reset_entry_state_if_modified
+    from soma_inits_upgrades.state_lifecycle import (
+        reset_downstream_phases,
+        reset_entry_state_if_modified,
+    )
 
     created = modified = 0
     for entry in results:

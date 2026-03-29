@@ -12,6 +12,7 @@ from soma_inits_upgrades.state_schema import EntryState, RepoState
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from soma_inits_upgrades.state_schema import GlobalState
     from soma_inits_upgrades.validation_schema import FlatEntryDict
 
 
@@ -61,3 +62,16 @@ def reset_entry_state_if_modified(
     )
     atomic_write_json(path, new_state)
     return True
+
+
+def reset_downstream_phases(global_state: GlobalState) -> None:
+    """Reset entry_processing through summary, graph and completion flags."""
+    from soma_inits_upgrades.state_schema import GraphFinalizationTasks, SummaryTasks
+
+    global_state.phases.entry_processing = "pending"
+    global_state.phases.graph_finalization = "pending"
+    global_state.phases.summary = "pending"
+    global_state.graph_finalization_tasks = GraphFinalizationTasks()
+    global_state.summary_tasks = SummaryTasks()
+    global_state.completed = False
+    global_state.date_completed = None
