@@ -194,11 +194,12 @@ quit at any time (=q= at a prompt, =Ctrl-C=, or =SIGTERM=) and re-run the
 same command to resume.
 
 If the input file changes between runs (e.g. a =repo_url= or =pinned_ref=
-is updated), the affected packages are automatically reset and
-reprocessed.  New packages are picked up; packages no longer in the input
-are orphaned and their graph entries removed.
+is updated, or a repository is added to or removed from an init file),
+the affected init files are automatically reset and reprocessed.  New
+init files are picked up; init files no longer in the input are orphaned
+and their graph entries removed.
 
-Packages that encounter errors are retried automatically (up to five
+Entries that encounter errors are retried automatically (up to five
 times) on subsequent runs.
 
 * Process Locking
