@@ -8,10 +8,10 @@ Given a JSON file listing packages with outdated pinned refs, the program:
 1. Clones each repository and generates a diff between the pinned ref and the
    latest commit.
 2. Extracts Emacs Lisp symbols used by your configuration.
-3. Pauses at three LLM-assisted review steps per package, where you paste a
+3. Pauses at three LLM-assisted review steps per init file, where you paste a
    generated prompt into your LLM of choice and save its response.
 4. Validates LLM output and builds a dependency graph across all packages.
-5. Produces per-package upgrade reports and a cross-package summary.
+5. Produces per-init-file upgrade reports and a cross-package summary.
 
 Processing is fully resumable.  If you quit at any point, re-running the
 command picks up exactly where you left off.
