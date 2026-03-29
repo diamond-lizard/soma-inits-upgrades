@@ -54,7 +54,7 @@ def dispatch_entry_processing(
     input_fn: UserInputFn | None = None,
 ) -> None:
     """Orchestrate entry processing: resume or run, then complete."""
-    from soma_inits_upgrades.phase_dispatch import resume_completed_entry_processing
+    from soma_inits_upgrades.phase_dispatch_resume import resume_completed_entry_processing
     from soma_inits_upgrades.processing_batch import process_all_entries
     if global_state.phases.entry_processing == "done":
         if not resume_completed_entry_processing(

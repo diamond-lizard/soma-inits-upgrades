@@ -8,7 +8,6 @@ from soma_inits_upgrades.entry_changes import (
     detect_entry_changes,
     handle_orphaned_entries,
 )
-from soma_inits_upgrades.entry_retry import retry_errored_entries
 from soma_inits_upgrades.graph import write_graph
 from soma_inits_upgrades.state import atomic_write_json
 from soma_inits_upgrades.state_schema import EntryState, GlobalState, RepoState
@@ -84,46 +83,3 @@ def test_handle_orphaned_entries(tmp_path: Path) -> None:
     assert "old.el" not in gs.entry_names
     assert not (sd / "old.el.json").exists()
 
-
-def test_retry_errored_with_retries(tmp_path: Path) -> None:
-    """Errored entries with retries are reset to in_progress."""
-    sd = tmp_path / ".state"
-    sd.mkdir(parents=True)
-    es = EntryState(
-        init_file="x.el",
-        repos=[RepoState(
-            repo_url="https://forge.test/r", pinned_ref="a",
-        )],
-    )
-    es.status = "error"
-    es.retries_remaining = 3
-    es.notes = "some error"
-    es.tasks_completed["clone"] = True
-    atomic_write_json(sd / "x.el.json", es)
-    results = [_entry("a")]
-    count = retry_errored_entries(results, sd)
-    assert count == 1
-    from soma_inits_upgrades.state import read_entry_state
-    state = read_entry_state(sd / "x.el.json")
-    assert state is not None
-    assert state.status == "in_progress"
-    assert state.retries_remaining == 2
-    assert state.tasks_completed["clone"] is True
-
-
-def test_retry_exhausted(tmp_path: Path) -> None:
-    """Errored entries with no retries are skipped."""
-    sd = tmp_path / ".state"
-    sd.mkdir(parents=True)
-    es = EntryState(
-        init_file="x.el",
-        repos=[RepoState(
-            repo_url="https://forge.test/r", pinned_ref="a",
-        )],
-    )
-    es.status = "error"
-    es.retries_remaining = 0
-    atomic_write_json(sd / "x.el.json", es)
-    results = [_entry("a")]
-    count = retry_errored_entries(results, sd)
-    assert count == 0

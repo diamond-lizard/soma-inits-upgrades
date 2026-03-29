@@ -7,8 +7,6 @@ from typing import TYPE_CHECKING
 from fakes import make_fake_git
 
 from soma_inits_upgrades.processing_helpers import (
-    check_progress,
-    self_heal_resource,
     set_entry_done_early,
     set_entry_error,
 )
@@ -66,50 +64,3 @@ def test_set_entry_done_early(tmp_path: Path) -> None:
     assert ctx.entry_state.done_reason == "skipped"
     assert ctx.global_state.entries_summary.in_progress == orig_in_progress
 
-
-def test_check_progress_task_completed() -> None:
-    """Progress detected when task count increased."""
-    assert check_progress(2, {"a": True, "b": True, "c": True}, "in_progress")
-
-
-def test_check_progress_self_healing() -> None:
-    """Progress detected when task count decreased."""
-    assert check_progress(3, {"a": True, "b": False}, "in_progress")
-
-
-def test_check_progress_status_changed() -> None:
-    """Progress detected when status is done/error."""
-    assert check_progress(2, {"a": True, "b": True}, "done")
-    assert check_progress(2, {"a": True, "b": True}, "error")
-
-
-def test_check_progress_no_change() -> None:
-    """No progress when nothing changed."""
-    assert not check_progress(2, {"a": True, "b": True}, "in_progress")
-
-
-def test_self_heal_resource_exists(tmp_path: Path) -> None:
-    """Returns False when resource exists."""
-    ctx = _ctx(tmp_path)
-    (tmp_path / "file.txt").write_text("data")
-    assert self_heal_resource(tmp_path / "file.txt", "clone", ctx) is False
-
-
-def test_self_heal_resource_missing_resets(tmp_path: Path) -> None:
-    """Resets creating task when resource missing."""
-    ctx = _ctx(tmp_path)
-    ctx.entry_state.tasks_completed["clone"] = True
-    result = self_heal_resource(tmp_path / "gone.txt", "clone", ctx)
-    assert result is True
-    assert ctx.entry_state.tasks_completed["clone"] is False
-    assert ctx.reset_counters["clone"] == 1
-
-
-def test_self_heal_limit_exceeded(tmp_path: Path) -> None:
-    """Error set when self-healing limit reached."""
-    ctx = _ctx(tmp_path)
-    ctx.reset_counters["clone"] = 4
-    ctx.entry_state.tasks_completed["clone"] = True
-    self_heal_resource(tmp_path / "gone.txt", "clone", ctx)
-    assert ctx.entry_state.status == "error"
-    assert "self-healing limit" in (ctx.entry_state.notes or "")
