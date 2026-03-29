@@ -97,6 +97,11 @@ soma-inits-upgrades STALE_INITS_FILE [--output-dir DIR]
 On first run, the program prompts for your Emacs version.  This is used
 to detect packages that require a newer Emacs than you have.
 
+All files and directories that the program creates, deletes, or modifies
+are confined to the output directory.  No files under =~/.emacs.d/= or
+anywhere else on the filesystem are touched.  The input JSON file is
+read but never modified.
+
 * Workflow
 
 Processing follows a two-tier model.  Tier 1 operations run
