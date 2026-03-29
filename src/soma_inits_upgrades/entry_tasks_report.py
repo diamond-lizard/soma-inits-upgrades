@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from soma_inits_upgrades.prompts_report import ReportRepoInfo
     from soma_inits_upgrades.protocols import EntryContext
 
 
@@ -14,27 +15,32 @@ def task_upgrade_report(ctx: EntryContext) -> bool:
     from soma_inits_upgrades.llm_task import run_llm_task
     from soma_inits_upgrades.processing_helpers import self_heal_entry_resource
     from soma_inits_upgrades.prompts_report import generate_upgrade_report_prompt
-
     name = ctx.entry_state.init_file
-    analysis_path = ctx.tmp_dir / f"{ctx.init_stem}-upgrade-analysis.json"
-    output_path = ctx.output_dir / f"{name}-upgrade-process.md"
-    prompt_path = ctx.tmp_dir / f"{ctx.init_stem}-upgrade-report.prompt.md"
-    malformed = output_path.with_suffix(output_path.suffix + ".malformed")
+    analysis = ctx.tmp_dir / f"{ctx.init_stem}-upgrade-analysis.json"
+    output = ctx.output_dir / f"{name}-upgrade-process.md"
+    prompt = ctx.tmp_dir / f"{ctx.init_stem}-upgrade-report.prompt.md"
+    malformed = output.with_suffix(output.suffix + ".malformed")
     mal_arg = malformed if malformed.exists() else None
     dep_ctx = _build_dep_context(ctx)
-    pkg = ctx.entry_state.repos[0].package_name or ctx.init_stem
-
+    repos_info: list[ReportRepoInfo] = []
+    for repo in ctx.entry_state.repos:
+        if repo.done_reason is not None:
+            continue
+        repos_info.append({
+            "package_name": repo.package_name or ctx.init_stem,
+            "repo_url": repo.repo_url,
+            "pinned_ref": repo.pinned_ref,
+            "latest_ref": repo.latest_ref or "",
+        })
     def prompt_fn() -> str:
         """Generate the upgrade report prompt."""
         return generate_upgrade_report_prompt(
-            pkg, ctx.entry_state.repos[0].repo_url, ctx.entry_state.repos[0].pinned_ref,
-            ctx.entry_state.repos[0].latest_ref or "", analysis_path,
-            output_path, dep_ctx, malformed_report_path=mal_arg,
+            repos_info, analysis, output, dep_ctx,
+            malformed_report_path=mal_arg,
         )
-
     result = run_llm_task(
-        ctx, "upgrade_report", prompt_fn, prompt_path, output_path,
-        [(analysis_path, "upgrade_analysis")],
+        ctx, "upgrade_report", prompt_fn, prompt, output,
+        [(analysis, "upgrade_analysis")],
         self_heal_entry_resource, "Upgrade Report",
     )
     return result == "break"

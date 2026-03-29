@@ -68,11 +68,30 @@ def task_version_check(repo_ctx: RepoContext) -> bool:
 
 
 def _build_dep_context(ctx: EntryContext) -> str:
-    """Build dependency context string for upgrade prompts."""
-    from soma_inits_upgrades.prompts_upgrade import format_dependency_context
-    return format_dependency_context(
-        ctx.entry_state.repos[0].depends_on or [],
-        ctx.entry_state.repos[0].min_emacs_version,
-        ctx.entry_state.repos[0].emacs_upgrade_required,
-        ctx.global_state.emacs_version,
-    )
+    """Build multi-repo dependency context string for upgrade prompts.
+
+    For a single repo, returns output equivalent to the original format.
+    For multiple repos, labels each repo's dependency section with the
+    package name so the LLM can distinguish per-repo dependencies.
+    """
+    from soma_inits_upgrades.prompts_helpers import format_dependency_context
+    repos = [r for r in ctx.entry_state.repos if r.done_reason is None]
+    if len(repos) == 1:
+        repo = repos[0]
+        return format_dependency_context(
+            repo.depends_on or [],
+            repo.min_emacs_version,
+            repo.emacs_upgrade_required,
+            ctx.global_state.emacs_version,
+        )
+    parts: list[str] = []
+    for repo in repos:
+        label = repo.package_name or repo.repo_url
+        section = format_dependency_context(
+            repo.depends_on or [],
+            repo.min_emacs_version,
+            repo.emacs_upgrade_required,
+            ctx.global_state.emacs_version,
+        )
+        parts.append(f"### {label}\n{section}")
+    return "\n".join(parts) if parts else ""
