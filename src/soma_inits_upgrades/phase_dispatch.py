@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from soma_inits_upgrades.state_schema import EntriesSummary, GlobalState
+    from soma_inits_upgrades.validation_schema import FlatEntryDict
 
 
 def check_processing_viability(
@@ -29,7 +30,7 @@ def check_processing_viability(
 
 
 def handle_detected_changes(
-    results: list[dict[str, str]], state_dir: Path, output_dir: Path,
+    results: list[FlatEntryDict], state_dir: Path, output_dir: Path,
     global_state: GlobalState, new_names: list[str],
     modified_names: list[str], orphan_count: int,
 ) -> bool:
@@ -56,7 +57,7 @@ def handle_detected_changes(
 
 
 def handle_retryable_errors(
-    results: list[dict[str, str]], state_dir: Path, global_state: GlobalState,
+    results: list[FlatEntryDict], state_dir: Path, global_state: GlobalState,
 ) -> bool:
     """Retry errored entries if any have remaining retries. Returns True if retried."""
     from soma_inits_upgrades.state import read_entry_state
@@ -79,7 +80,7 @@ def handle_retryable_errors(
 
 
 def resume_completed_entry_processing(
-    results: list[dict[str, str]], state_dir: Path,
+    results: list[FlatEntryDict], state_dir: Path,
     output_dir: Path, global_state: GlobalState,
 ) -> bool:
     """Handle entry_processing already done. Returns True to reprocess."""

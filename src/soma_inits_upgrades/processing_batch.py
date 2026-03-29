@@ -10,10 +10,11 @@ if TYPE_CHECKING:
 
     from soma_inits_upgrades.protocols import SubprocessRunner, UserInputFn
     from soma_inits_upgrades.state_schema import GlobalState
+    from soma_inits_upgrades.validation_schema import FlatEntryDict
 
 
 def cleanup_orphaned_temp_files(
-    results: list[dict[str, str]], state_dir: Path, output_dir: Path,
+    results: list[FlatEntryDict], state_dir: Path, output_dir: Path,
 ) -> None:
     """Reclaim orphaned temp files from prior interrupted runs."""
     from soma_inits_upgrades.state import atomic_write_json, read_entry_state
@@ -35,7 +36,7 @@ def cleanup_orphaned_temp_files(
 
 
 def process_all_entries(
-    results: list[dict[str, str]], state_dir: Path, output_dir: Path,
+    results: list[FlatEntryDict], state_dir: Path, output_dir: Path,
     global_state: GlobalState, run_fn: SubprocessRunner,
     input_fn: UserInputFn | None = None,
 ) -> bool:

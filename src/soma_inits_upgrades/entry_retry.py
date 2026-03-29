@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from soma_inits_upgrades.state_schema import GlobalState
+    from soma_inits_upgrades.validation_schema import FlatEntryDict
 
 
 def reset_phases_for_new_entries(
@@ -28,7 +29,7 @@ def reset_phases_for_new_entries(
     print(f"Detected {count} new/modified entries, resuming processing", file=sys.stderr)
 
 
-def retry_errored_entries(results: list[dict[str, str]], state_dir: Path) -> int:
+def retry_errored_entries(results: list[FlatEntryDict], state_dir: Path) -> int:
     """Retry error-status entries with remaining retries.
 
     Resets status to in_progress, decrements retries_remaining.

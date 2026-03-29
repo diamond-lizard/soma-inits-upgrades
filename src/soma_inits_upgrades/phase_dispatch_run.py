@@ -9,10 +9,11 @@ if TYPE_CHECKING:
 
     from soma_inits_upgrades.protocols import SubprocessRunner, UserInputFn
     from soma_inits_upgrades.state_schema import GlobalState
+    from soma_inits_upgrades.validation_schema import FlatEntryDict
 
 
 def run_entry_processing(
-    results: list[dict[str, str]], state_dir: Path, output_dir: Path,
+    results: list[FlatEntryDict], state_dir: Path, output_dir: Path,
     global_state: GlobalState, run_fn: SubprocessRunner,
     input_fn: UserInputFn | None = None,
 ) -> bool:
@@ -48,7 +49,7 @@ def complete_entry_processing(
 
 
 def dispatch_entry_processing(
-    results: list[dict[str, str]], state_dir: Path, output_dir: Path,
+    results: list[FlatEntryDict], state_dir: Path, output_dir: Path,
     global_state: GlobalState, run_fn: SubprocessRunner,
     input_fn: UserInputFn | None = None,
 ) -> None:

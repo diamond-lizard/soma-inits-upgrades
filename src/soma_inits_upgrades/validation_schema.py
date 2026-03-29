@@ -4,9 +4,17 @@ from __future__ import annotations
 
 import re
 import urllib.parse
-from typing import Any
+from typing import Any, TypedDict
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator, model_validator
+
+
+class FlatEntryDict(TypedDict):
+    """Entry dict with flat repo fields (Phases 150-500)."""
+
+    init_file: str
+    repo_url: str
+    pinned_ref: str
 
 
 class StaleInitsEntry(BaseModel):

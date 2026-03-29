@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from soma_inits_upgrades.state_schema import GlobalState
+    from soma_inits_upgrades.validation_schema import FlatEntryDict
 
 
 def resolve_and_validate_paths(
@@ -58,7 +59,7 @@ def check_stale_inits_mismatch(
         sys.exit(1)
 
 
-def load_stale_inits(path: Path) -> list[dict[str, str]]:
+def load_stale_inits(path: Path) -> list[FlatEntryDict]:
     """Read and validate the stale inits JSON file.
 
     Returns the validated results list.  Exits with code 1 on
@@ -80,4 +81,7 @@ def load_stale_inits(path: Path) -> list[dict[str, str]]:
     if not validated.results:
         print("No stale entries found in input file.", file=sys.stderr)
         sys.exit(0)
-    return [e.model_dump() for e in validated.results]
+    return [
+        {"init_file": e.init_file, "repo_url": e.repo_url, "pinned_ref": e.pinned_ref}
+        for e in validated.results
+    ]

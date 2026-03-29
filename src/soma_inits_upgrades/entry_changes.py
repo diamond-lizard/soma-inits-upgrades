@@ -5,19 +5,18 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING
 
-from soma_inits_upgrades.state_lifecycle import (
-    create_entry_state_if_missing,
-    reset_entry_state_if_modified,
-)
+from soma_inits_upgrades.state_creation import create_entry_state_if_missing
+from soma_inits_upgrades.state_lifecycle import reset_entry_state_if_modified
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from soma_inits_upgrades.state_schema import GlobalState
+    from soma_inits_upgrades.validation_schema import FlatEntryDict
 
 
 def detect_entry_changes(
-    results: list[dict[str, str]], state_dir: Path, output_dir: Path,
+    results: list[FlatEntryDict], state_dir: Path, output_dir: Path,
 ) -> tuple[list[str], list[str]]:
     """Detect new and modified entries. Returns (new_names, modified_names)."""
     new: list[str] = []
@@ -31,7 +30,7 @@ def detect_entry_changes(
 
 
 def handle_orphaned_entries(
-    results: list[dict[str, str]], state_dir: Path,
+    results: list[FlatEntryDict], state_dir: Path,
     output_dir: Path, global_state: GlobalState,
 ) -> int:
     """Remove entries no longer in the input file.
@@ -59,7 +58,7 @@ def handle_orphaned_entries(
 
 
 def detect_new_or_modified_entries(
-    results: list[dict[str, str]], state_dir: Path,
+    results: list[FlatEntryDict], state_dir: Path,
     output_dir: Path, global_state: GlobalState,
 ) -> tuple[list[str], list[str], int]:
     """Detect new, modified, and orphaned entries.

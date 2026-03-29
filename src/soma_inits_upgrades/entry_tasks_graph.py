@@ -10,15 +10,16 @@ if TYPE_CHECKING:
 
     from soma_inits_upgrades.graph import GraphDict
     from soma_inits_upgrades.protocols import EntryContext
+    from soma_inits_upgrades.validation_schema import FlatEntryDict
 
 
 def recover_single_graph_entry(
     init_file: str, graph: GraphDict, state_dir: Path,
-    results: list[dict[str, str]], output_dir: Path,
+    results: list[FlatEntryDict], output_dir: Path,
 ) -> bool:
     """Recover a single entry's graph data. Returns True if rerun needed."""
     from soma_inits_upgrades.state import read_entry_state
-    from soma_inits_upgrades.state_lifecycle import create_entry_state_if_missing
+    from soma_inits_upgrades.state_creation import create_entry_state_if_missing
 
     path = state_dir / f"{init_file}.json"
     state = read_entry_state(path)
@@ -45,7 +46,7 @@ def recover_single_graph_entry(
 
 
 def recover_graph_from_backup(
-    graph: GraphDict, results: list[dict[str, str]],
+    graph: GraphDict, results: list[FlatEntryDict],
     state_dir: Path, output_dir: Path,
 ) -> tuple[GraphDict, bool]:
     """Rebuild missing graph entries from state files. Returns (graph, needs_rerun)."""

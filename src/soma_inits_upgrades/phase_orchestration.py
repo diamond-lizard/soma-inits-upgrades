@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
     from soma_inits_upgrades.protocols import SubprocessRunner
     from soma_inits_upgrades.state_schema import GlobalState
+    from soma_inits_upgrades.validation_schema import FlatEntryDict
 
 
 def run_setup(
@@ -18,7 +19,7 @@ def run_setup(
     resolved_stale: Path,
     resolved_output: Path,
     state_dir: Path,
-    results: list[dict[str, str]],
+    results: list[FlatEntryDict],
 ) -> GlobalState:
     """Execute the Setup stage and return the updated global state."""
     from soma_inits_upgrades.setup_completion import (
@@ -48,7 +49,7 @@ def run_all_phases(
     resolved_stale: Path,
     resolved_output: Path,
     state_dir: Path,
-    results: list[dict[str, str]],
+    results: list[FlatEntryDict],
     run_fn: SubprocessRunner,
 ) -> None:
     """Execute all four phases in order, resuming from where left off."""

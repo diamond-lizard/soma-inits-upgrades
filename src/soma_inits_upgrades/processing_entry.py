@@ -10,10 +10,11 @@ if TYPE_CHECKING:
 
     from soma_inits_upgrades.protocols import SubprocessRunner, UserInputFn, XclipChecker
     from soma_inits_upgrades.state_schema import EntryState, GlobalState
+    from soma_inits_upgrades.validation_schema import FlatEntryDict
 
 
 def ensure_entry_state(
-    entry: dict[str, str], state_dir: Path, global_state: GlobalState,
+    entry: FlatEntryDict, state_dir: Path, global_state: GlobalState,
 ) -> EntryState | None:
     """Load or create per-entry state. Returns EntryState or None on error."""
     from soma_inits_upgrades.state import atomic_write_json, read_entry_state
@@ -57,10 +58,10 @@ def initialize_entry(
 
 
 def process_single_entry(
-    entry: dict[str, str], idx: int, total: int,
+    entry: FlatEntryDict, idx: int, total: int,
     state_dir: Path, output_dir: Path,
     global_state: GlobalState, global_state_path: Path,
-    run_fn: SubprocessRunner, results: list[dict[str, str]],
+    run_fn: SubprocessRunner, results: list[FlatEntryDict],
     xclip_checker: XclipChecker, input_fn: UserInputFn | None = None,
 ) -> bool:
     """Process a single entry. Returns needs_rerun."""
