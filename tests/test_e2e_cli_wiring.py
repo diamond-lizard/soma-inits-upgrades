@@ -14,7 +14,7 @@ from click.testing import CliRunner
 
 from soma_inits_upgrades.main import cli
 from soma_inits_upgrades.state import read_global_state
-from soma_inits_upgrades.state_schema import TASK_ORDER
+from soma_inits_upgrades.state_schema import TIER_2_TASKS
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -113,7 +113,7 @@ def _write_global_state(state_dir: Path, stale_path: str) -> None:
 def _write_entry_state(state_dir: Path) -> None:
     """Write per-entry state with all tasks completed."""
     entry = _ENTRIES[0]
-    tasks = dict.fromkeys(TASK_ORDER, True)
+    tasks = dict.fromkeys((*TIER_2_TASKS, "cleanup"), True)
     es = {
         "init_file": entry["init_file"],
         "repos": [{

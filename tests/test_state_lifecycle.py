@@ -72,13 +72,13 @@ def test_read_entry_state_and_task_ops(tmp_path: Path) -> None:
     atomic_write_json(path, state)
     loaded = read_entry_state(path)
     assert loaded is not None
-    assert loaded.tasks_completed["clone"] is False
-    mark_task_complete(loaded, "clone", path)
+    assert loaded.tasks_completed["security_review"] is False
+    mark_task_complete(loaded, "security_review", path)
     reloaded = read_entry_state(path)
     assert reloaded is not None
-    assert reloaded.tasks_completed["clone"] is True
-    reset_task(reloaded, "clone", path)
+    assert reloaded.tasks_completed["security_review"] is True
+    reset_task(reloaded, "security_review", path)
     final = read_entry_state(path)
     assert final is not None
-    assert final.tasks_completed["clone"] is False
+    assert final.tasks_completed["security_review"] is False
 

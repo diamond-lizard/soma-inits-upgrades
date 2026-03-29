@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from soma_inits_upgrades.state_schema import (
-    TASK_ORDER,
+    TIER_2_TASKS,
     EntryState,
     GlobalState,
     RepoState,
@@ -39,15 +39,15 @@ def test_entry_state_requires_fields() -> None:
     assert state.retries_remaining == 5
 
 
-def test_task_order_matches_tasks_completed() -> None:
-    """Verify TASK_ORDER list matches keys from default tasks_completed."""
+def test_tier2_keys_match_tasks_completed() -> None:
+    """Verify Tier 2 + cleanup keys match default tasks_completed."""
     state = EntryState(
         init_file="a.el",
         repos=[RepoState(
             repo_url="https://x/y", pinned_ref="abc",
         )],
     )
-    assert list(state.tasks_completed.keys()) == TASK_ORDER
+    assert list(state.tasks_completed.keys()) == [*TIER_2_TASKS, "cleanup"]
     assert all(v is False for v in state.tasks_completed.values())
 
 

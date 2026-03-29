@@ -20,12 +20,6 @@ from soma_inits_upgrades.state_schema_global import (
     SummaryTasks as SummaryTasks,
 )
 
-TASK_ORDER: list[str] = [
-    "clone", "default_branch", "latest_ref", "diff", "deps",
-    "version_check", "security_review", "symbols", "upgrade_analysis",
-    "upgrade_report", "graph_update", "validate_outputs", "cleanup",
-]
-
 TIER_1_TASKS: tuple[str, ...] = (
     "clone", "default_branch", "latest_ref", "diff",
     "deps", "version_check", "symbols",
@@ -38,8 +32,8 @@ TIER_2_TASKS: tuple[str, ...] = (
 
 
 def _default_tasks_completed() -> dict[str, bool]:
-    """Build default tasks_completed dict from TASK_ORDER."""
-    return dict.fromkeys(TASK_ORDER, False)
+    """Build default tasks_completed dict for Tier 2 and cleanup."""
+    return dict.fromkeys((*TIER_2_TASKS, "cleanup"), False)
 
 
 def _default_tier1_tasks_completed() -> dict[str, bool]:

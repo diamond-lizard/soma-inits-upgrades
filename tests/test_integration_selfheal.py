@@ -10,7 +10,7 @@ from soma_inits_upgrades.graph import read_graph, write_graph
 from soma_inits_upgrades.phase_dispatch_run import dispatch_entry_processing
 from soma_inits_upgrades.processing_entry import process_single_entry
 from soma_inits_upgrades.state import atomic_write_json, read_entry_state
-from soma_inits_upgrades.state_schema import TASK_ORDER, EntryState, GlobalState, RepoState
+from soma_inits_upgrades.state_schema import TIER_2_TASKS, EntryState, GlobalState, RepoState
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -61,7 +61,7 @@ def test_new_entry_detection(tmp_path: Path) -> None:
             repo_url="https://forge.test/r", pinned_ref="a",
         )],
         status="done",
-        tasks_completed=dict.fromkeys(TASK_ORDER, True),
+        tasks_completed=dict.fromkeys((*TIER_2_TASKS, "cleanup"), True),
     )
     atomic_write_json(sd / "old.el.json", old_es)
     gs = GlobalState(
@@ -94,7 +94,7 @@ def test_modified_entry_detection(tmp_path: Path) -> None:
             repo_url="https://forge.test/r", pinned_ref="old",
         )],
         status="done",
-        tasks_completed=dict.fromkeys(TASK_ORDER, True),
+        tasks_completed=dict.fromkeys((*TIER_2_TASKS, "cleanup"), True),
     )
     atomic_write_json(sd / "x.el.json", es)
     gs = GlobalState(
@@ -127,7 +127,7 @@ def test_orphan_removal(tmp_path: Path) -> None:
                 pinned_ref="a",
             )],
             status="done",
-            tasks_completed=dict.fromkeys(TASK_ORDER, True),
+            tasks_completed=dict.fromkeys((*TIER_2_TASKS, "cleanup"), True),
         )
         atomic_write_json(sd / f"{name}.json", es)
     gs = GlobalState(

@@ -9,7 +9,7 @@ from fakes import make_fake_git
 from soma_inits_upgrades.graph import write_graph
 from soma_inits_upgrades.phase_dispatch_run import dispatch_entry_processing
 from soma_inits_upgrades.state import atomic_write_json, read_entry_state
-from soma_inits_upgrades.state_schema import TASK_ORDER, EntryState, GlobalState, RepoState
+from soma_inits_upgrades.state_schema import TIER_2_TASKS, EntryState, GlobalState, RepoState
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 def _done_tasks() -> dict[str, bool]:
     """Return tasks_completed with all tasks True."""
-    return dict.fromkeys(TASK_ORDER, True)
+    return dict.fromkeys((*TIER_2_TASKS, "cleanup"), True)
 
 
 def _setup_done_entry(
@@ -57,8 +57,7 @@ def test_retry_in_progress(tmp_path: Path) -> None:
             repo_url="https://forge.test/r", pinned_ref="a",
         )],
         status="error", retries_remaining=3,
-        tasks_completed={**dict.fromkeys(TASK_ORDER, False),
-                         "clone": True, "default_branch": True},
+        tasks_completed=dict.fromkeys((*TIER_2_TASKS, "cleanup"), False),
     )
     atomic_write_json(sd / "x.el.json", es)
     gs = _gs(["x.el"], phase="in_progress")
