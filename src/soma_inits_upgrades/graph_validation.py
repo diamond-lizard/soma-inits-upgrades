@@ -1,36 +1,23 @@
-"""Dependency graph: inversion and validation."""
+"""Dependency graph: validation checks."""
 
 from __future__ import annotations
 
-from soma_inits_upgrades.graph import GraphDict, build_package_to_key_map
+from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.graph_entry import build_package_to_key_map
 
-def invert_dependencies(graph: GraphDict) -> GraphDict:
-    """Populate depended_on_by from depends_on lists.
-
-    Only includes packages that have entries in the graph.
-    """
-    pkg_map = build_package_to_key_map(graph)
-    inverted: dict[str, list[str]] = {key: [] for key in graph}
-    for _key, entry in graph.items():
-        src_pkg = entry["package"]
-        for dep_pkg in entry.get("depends_on", []):
-            dep_key = pkg_map.get(dep_pkg)
-            if dep_key is not None:
-                inverted[dep_key].append(src_pkg)
-    for key in graph:
-        graph[key]["depended_on_by"] = sorted(set(inverted[key]))
-    return graph
+if TYPE_CHECKING:
+    from soma_inits_upgrades.graph import GraphDict
 
 
 def check_duplicate_packages(
     graph: GraphDict, package_map: dict[str, str],
 ) -> list[str]:
-    """Check no two entries share the same package name."""
+    """Check no two init-file entries share the same package name."""
     seen: dict[str, list[str]] = {}
     for key, entry in graph.items():
-        pkg = entry["package"]
-        seen.setdefault(pkg, []).append(key)
+        for pkg in entry.get("packages", []):
+            seen.setdefault(pkg["package"], []).append(key)
     return [
         f"Duplicate package '{pkg}': {', '.join(keys)}"
         for pkg, keys in seen.items()
@@ -41,46 +28,56 @@ def check_duplicate_packages(
 def check_depended_on_by_entries(
     graph: GraphDict, package_map: dict[str, str],
 ) -> list[str]:
-    """Check all depended_on_by entries exist in the graph."""
+    """Check all depended_on_by entries exist in the graph.
+
+    depended_on_by contains init-file keys, so look up in graph.
+    """
     return [
-        f"{key}: depended_on_by '{pkg}' not in graph"
+        f"{key}: depended_on_by '{dep_key}' not in graph"
         for key, entry in graph.items()
-        for pkg in entry.get("depended_on_by", [])
-        if pkg not in package_map
+        for dep_key in entry.get("depended_on_by", [])
+        if dep_key not in graph
     ]
 
 def check_inverse_symmetry(
     graph: GraphDict, package_map: dict[str, str],
 ) -> list[str]:
-    """Check depends_on/depended_on_by are symmetric within graph."""
+    """Check depends_on/depended_on_by are symmetric within graph.
+
+    depends_on contains package names; depended_on_by contains
+    init-file keys.  Bridge via package_map.  Intra-init-file
+    deps are intentionally absent from depended_on_by.
+    """
     warnings: list[str] = []
-    for _key, entry in graph.items():
-        src_pkg = entry["package"]
-        for dep_pkg in entry.get("depends_on", []):
-            dep_key = package_map.get(dep_pkg)
-            if dep_key is None:
-                continue
-            dep_entry = graph[dep_key]
-            if src_pkg not in dep_entry.get("depended_on_by", []):
-                warnings.append(
-                    f"{dep_pkg} missing {src_pkg} in depended_on_by"
-                )
+    for src_key, entry in graph.items():
+        for pkg in entry.get("packages", []):
+            for dep_pkg in pkg.get("depends_on", []):
+                dep_key = package_map.get(dep_pkg)
+                if dep_key is None or dep_key == src_key:
+                    continue
+                dep_entry = graph[dep_key]
+                if src_key not in dep_entry.get("depended_on_by", []):
+                    warnings.append(
+                        f"{dep_pkg} missing {src_key} in depended_on_by"
+                    )
     return warnings
 
 
 def check_circular_dependencies(
     graph: GraphDict, package_map: dict[str, str],
 ) -> list[str]:
-    """Detect circular dependencies via TopologicalSorter."""
+    """Detect circular dependencies at init-file level."""
     import graphlib
 
     sorter: graphlib.TopologicalSorter[str] = graphlib.TopologicalSorter()
-    for _key, entry in graph.items():
-        pkg = entry["package"]
-        in_graph_deps = [
-            d for d in entry.get("depends_on", []) if d in package_map
-        ]
-        sorter.add(pkg, *in_graph_deps)
+    for key, entry in graph.items():
+        dep_keys: set[str] = set()
+        for pkg in entry.get("packages", []):
+            for dep_pkg in pkg.get("depends_on", []):
+                dep_key = package_map.get(dep_pkg)
+                if dep_key is not None and dep_key != key:
+                    dep_keys.add(dep_key)
+        sorter.add(key, *dep_keys)
     try:
         sorter.prepare()
     except graphlib.CycleError as exc:

@@ -66,32 +66,3 @@ def write_graph(path: Path, graph: GraphDict) -> None:
     tmp.write_text(content, encoding="utf-8")
     tmp.rename(path)
 
-
-def add_entry(
-    graph: GraphDict,
-    init_file: str,
-    package: str,
-    min_emacs_version: str | None,
-    depends_on: list[str],
-) -> GraphDict:
-    """Add or update an entry in the dependency graph."""
-    graph[init_file] = {
-        "package": package,
-        "min_emacs_version": min_emacs_version,
-        "depends_on": depends_on,
-        "depended_on_by": [],
-    }
-    return graph
-
-
-def remove_entries(graph: GraphDict, keys: list[str]) -> GraphDict:
-    """Remove all specified keys from the graph in a single pass."""
-    for key in keys:
-        graph.pop(key, None)
-    return graph
-
-
-def build_package_to_key_map(graph: GraphDict) -> dict[str, str]:
-    """Build mapping from package name to init file name (key)."""
-    return {entry["package"]: key for key, entry in graph.items()}
-

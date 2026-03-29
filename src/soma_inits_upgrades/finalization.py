@@ -33,7 +33,7 @@ def _run_inversion(
     if global_state.graph_finalization_tasks.inversion:
         return
     from soma_inits_upgrades.graph import read_graph, write_graph
-    from soma_inits_upgrades.graph_validation import invert_dependencies
+    from soma_inits_upgrades.graph_inversion import invert_dependencies
     from soma_inits_upgrades.state import atomic_write_json
 
     graph, _ = read_graph(graph_path)

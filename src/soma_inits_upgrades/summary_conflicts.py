@@ -2,20 +2,20 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from pathlib import Path
 
 
 def identify_version_conflicts(
-    graph: dict[str, dict[str, object]],
+    graph: dict[str, dict[str, Any]],
     entry_names: list[str],
     emacs_version: str,
 ) -> list[dict[str, str]]:
-    """Identify entries requiring a newer Emacs than the user has.
+    """Identify packages requiring a newer Emacs than the user has.
 
-    Filters graph entries to those in entry_names, checks each entry's
+    Iterates each entry's packages list, checks each package's
     min_emacs_version against the user's version.  Returns a list of
     dicts with keys 'package', 'min_emacs_version', 'user_version'.
     """
@@ -26,15 +26,16 @@ def identify_version_conflicts(
         entry = graph.get(name)
         if entry is None:
             continue
-        min_ver = entry.get("min_emacs_version")
-        if not isinstance(min_ver, str):
-            continue
-        if requires_newer_emacs(min_ver, emacs_version):
-            conflicts.append({
-                "package": str(entry.get("package", name)),
-                "min_emacs_version": min_ver,
-                "user_version": emacs_version,
-            })
+        for pkg in entry.get("packages", []):
+            min_ver = pkg.get("min_emacs_version")
+            if not isinstance(min_ver, str):
+                continue
+            if requires_newer_emacs(min_ver, emacs_version):
+                conflicts.append({
+                    "package": str(pkg.get("package", name)),
+                    "min_emacs_version": min_ver,
+                    "user_version": emacs_version,
+                })
     return conflicts
 
 
@@ -65,7 +66,7 @@ def format_version_conflicts_report(
 
 
 def write_version_conflicts(
-    graph: dict[str, dict[str, object]],
+    graph: dict[str, dict[str, Any]],
     entry_names: list[str],
     emacs_version: str,
     output_path: Path,

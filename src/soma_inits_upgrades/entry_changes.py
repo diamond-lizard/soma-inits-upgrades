@@ -38,7 +38,8 @@ def handle_orphaned_entries(
     Deletes state files, output files, and graph entries for orphans.
     Returns the count of orphans removed.
     """
-    from soma_inits_upgrades.graph import read_graph, remove_entries, write_graph
+    from soma_inits_upgrades.graph import read_graph, write_graph
+    from soma_inits_upgrades.graph_entry import remove_entries
     from soma_inits_upgrades.state_artifacts import delete_entry_artifacts
 
     current_names = {e["init_file"] for e in results}

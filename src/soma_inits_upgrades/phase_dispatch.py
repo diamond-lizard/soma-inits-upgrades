@@ -41,7 +41,8 @@ def handle_detected_changes(
         reset_phases_for_new_entries,
         retry_errored_entries,
     )
-    from soma_inits_upgrades.graph import read_graph, remove_entries, write_graph
+    from soma_inits_upgrades.graph import read_graph, write_graph
+    from soma_inits_upgrades.graph_entry import remove_entries
     from soma_inits_upgrades.state import atomic_write_json, reconcile_entries_summary
 
     if modified_names:
