@@ -9,9 +9,9 @@ from fakes import make_fake_git
 from soma_inits_upgrades.entry_tasks import (
     task_clone,
     task_default_branch,
-    task_latest_ref,
 )
 from soma_inits_upgrades.entry_tasks_diff import task_diff
+from soma_inits_upgrades.entry_tasks_ref import task_latest_ref
 from soma_inits_upgrades.protocols import EntryContext
 from soma_inits_upgrades.state import atomic_write_json
 from soma_inits_upgrades.state_schema import EntryState, GlobalState, RepoState

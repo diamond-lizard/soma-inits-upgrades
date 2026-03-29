@@ -4,15 +4,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from soma_inits_upgrades.entry_tasks import task_clone, task_default_branch, task_latest_ref
-from soma_inits_upgrades.entry_tasks_analysis import task_deps, task_symbols, task_version_check
+from soma_inits_upgrades.entry_tasks import task_clone, task_default_branch
+from soma_inits_upgrades.entry_tasks_analysis import task_deps, task_version_check
 from soma_inits_upgrades.entry_tasks_diff import task_cleanup, task_diff
 from soma_inits_upgrades.entry_tasks_graph import task_graph_update
 from soma_inits_upgrades.entry_tasks_llm import (
     task_security_review,
     task_upgrade_analysis,
 )
+from soma_inits_upgrades.entry_tasks_ref import task_latest_ref
 from soma_inits_upgrades.entry_tasks_report import task_upgrade_report
+from soma_inits_upgrades.entry_tasks_symbols import task_symbols
 from soma_inits_upgrades.output_validation_tasks import task_validate_outputs
 from soma_inits_upgrades.state_schema import TASK_ORDER
 
