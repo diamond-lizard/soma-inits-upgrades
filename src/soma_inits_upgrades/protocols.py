@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, TypeAlias, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -24,23 +25,6 @@ class SubprocessRunner(Protocol):
     def __call__(
         self, args: list[str] | str, **kwargs: object,
     ) -> subprocess.CompletedProcess[str]: ...
-
-
-@runtime_checkable
-class TaskHandler(Protocol):
-    """Protocol for per-entry task handler functions."""
-
-    def __call__(self, ctx: EntryContext) -> bool: ...
-
-
-@runtime_checkable
-class Tier1TaskHandler(Protocol):
-    """Protocol for Tier 1 per-repo task handler functions."""
-
-    def __call__(self, ctx: RepoContext) -> bool: ...
-
-
-Tier2TaskHandler = TaskHandler  # Alias: Tier 2 uses per-entry signature
 
 
 @runtime_checkable
@@ -95,3 +79,13 @@ class RepoContext:
     temp_dir: Path
     clone_dir: Path
     reset_counters: dict[str, int] = field(default_factory=dict)
+
+
+Tier1TaskHandler: TypeAlias = Callable[[RepoContext], bool]
+"""Type alias for Tier 1 per-repo task handler functions."""
+
+@runtime_checkable
+class Tier2TaskHandler(Protocol):
+    """Protocol for Tier 2 per-entry task handler functions."""
+
+    def __call__(self, ctx: EntryContext) -> bool: ...

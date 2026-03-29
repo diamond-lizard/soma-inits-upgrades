@@ -12,7 +12,7 @@ def task_upgrade_report(ctx: EntryContext) -> bool:
     """Run the upgrade report LLM pause."""
     from soma_inits_upgrades.entry_tasks_analysis import _build_dep_context
     from soma_inits_upgrades.llm_task import run_llm_task
-    from soma_inits_upgrades.processing_helpers import self_heal_resource
+    from soma_inits_upgrades.processing_helpers import self_heal_entry_resource
     from soma_inits_upgrades.prompts_report import generate_upgrade_report_prompt
 
     name = ctx.entry_state.init_file
@@ -35,6 +35,6 @@ def task_upgrade_report(ctx: EntryContext) -> bool:
     result = run_llm_task(
         ctx, "upgrade_report", prompt_fn, prompt_path, output_path,
         [(analysis_path, "upgrade_analysis")],
-        self_heal_resource, "Upgrade Report",
+        self_heal_entry_resource, "Upgrade Report",
     )
     return result == "break"

@@ -6,43 +6,44 @@ import sys
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from soma_inits_upgrades.protocols import EntryContext
+    from soma_inits_upgrades.protocols import EntryContext, RepoContext
 
 
-def task_diff(ctx: EntryContext) -> bool:
+def task_diff(repo_ctx: RepoContext) -> bool:
     """Generate the diff between pinned and latest refs."""
-    if ctx.entry_state.tasks_completed.get("diff", False):
+    if repo_ctx.repo_state.tier1_tasks_completed.get("diff", False):
         return False
     from soma_inits_upgrades.git_cleanup import generate_diff
-    from soma_inits_upgrades.processing_helpers import (
-        self_heal_resource,
-        set_entry_done_early,
-        set_entry_error,
+    from soma_inits_upgrades.processing_helpers_repo import (
+        self_heal_repo_resource,
+        set_repo_done_early,
+        set_repo_error,
     )
-    from soma_inits_upgrades.state import mark_task_complete
-
-    clone_dir = ctx.tmp_dir / ctx.init_stem
-    if self_heal_resource(clone_dir, "clone", ctx):
+    from soma_inits_upgrades.state import mark_repo_task_complete
+    ctx = repo_ctx.entry_ctx
+    if self_heal_repo_resource(repo_ctx.clone_dir, "clone", repo_ctx):
         return False
     label = f"[{ctx.entry_idx}/{ctx.total}]"
     print(f"{label} {ctx.entry_state.init_file}: generating diff...", file=sys.stderr)
-    diff_path = ctx.tmp_dir / f"{ctx.init_stem}.diff"
+    diff_path = repo_ctx.temp_dir / f"{ctx.init_stem}.diff"
     try:
         has_diff = generate_diff(
-            clone_dir, ctx.entry_state.repos[0].pinned_ref,
-            ctx.entry_state.repos[0].latest_ref or "",
+            repo_ctx.clone_dir, repo_ctx.repo_state.pinned_ref,
+            repo_ctx.repo_state.latest_ref or "",
             diff_path, run_fn=ctx.run_fn,
         )
     except Exception as exc:
-        set_entry_error(ctx, f"diff generation failed: {exc}")
-        _cleanup_temp(ctx)
+        set_repo_error(repo_ctx, f"diff generation failed: {exc}")
+        _cleanup_repo_temp(repo_ctx)
         return False
     if not has_diff:
         msg = "empty diff - no changes between pinned and latest ref"
-        set_entry_done_early(ctx, "empty_diff", msg)
-        _cleanup_temp(ctx)
+        set_repo_done_early(repo_ctx, "empty_diff", msg)
+        _cleanup_repo_temp(repo_ctx)
         return False
-    mark_task_complete(ctx.entry_state, "diff", ctx.entry_state_path)
+    mark_repo_task_complete(
+        ctx.entry_state, repo_ctx.repo_state, "diff", ctx.entry_state_path,
+    )
     return False
 
 
@@ -61,9 +62,10 @@ def task_cleanup(ctx: EntryContext) -> bool:
     return False
 
 
-def _cleanup_temp(ctx: EntryContext) -> None:
-    """Delete temp artifacts on error or early exit."""
+def _cleanup_repo_temp(repo_ctx: RepoContext) -> None:
+    """Delete temp artifacts on error or early exit (per-repo)."""
     from soma_inits_upgrades.state_artifacts import delete_entry_artifacts
+    ctx = repo_ctx.entry_ctx
     delete_entry_artifacts(
         ctx.entry_state.init_file, ctx.output_dir,
         include_permanent=False, include_temp=True,

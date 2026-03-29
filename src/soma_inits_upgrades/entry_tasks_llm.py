@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 def task_security_review(ctx: EntryContext) -> bool:
     """Run the security review LLM pause."""
     from soma_inits_upgrades.llm_task import run_llm_task
-    from soma_inits_upgrades.processing_helpers import self_heal_resource
+    from soma_inits_upgrades.processing_helpers import self_heal_entry_resource
     from soma_inits_upgrades.prompts import generate_security_review_prompt
     name = ctx.entry_state.init_file
     diff_path = ctx.tmp_dir / f"{ctx.init_stem}.diff"
@@ -28,7 +28,7 @@ def task_security_review(ctx: EntryContext) -> bool:
         )
     result = run_llm_task(
         ctx, "security_review", prompt_fn, prompt_path, output_path,
-        [(diff_path, "diff")], self_heal_resource, "Security Review",
+        [(diff_path, "diff")], self_heal_entry_resource, "Security Review",
     )
     return result == "break"
 
@@ -38,7 +38,7 @@ def task_upgrade_analysis(ctx: EntryContext) -> bool:
     from soma_inits_upgrades.entry_tasks_analysis import _build_dep_context
     from soma_inits_upgrades.llm_task import run_llm_task
     from soma_inits_upgrades.output_validation import validate_upgrade_analysis_output
-    from soma_inits_upgrades.processing_helpers import self_heal_resource
+    from soma_inits_upgrades.processing_helpers import self_heal_entry_resource
     from soma_inits_upgrades.prompts_upgrade import generate_upgrade_analysis_prompt
     diff_path = ctx.tmp_dir / f"{ctx.init_stem}.diff"
     usage_path = ctx.tmp_dir / f"{ctx.init_stem}-usage-analysis.json"
@@ -57,13 +57,13 @@ def task_upgrade_analysis(ctx: EntryContext) -> bool:
     result = run_llm_task(
         ctx, "upgrade_analysis", prompt_fn, prompt_path, output_path,
         [(diff_path, "diff"), (usage_path, "symbols")],
-        self_heal_resource, "Upgrade Analysis",
+        self_heal_entry_resource, "Upgrade Analysis",
     )
     if result == "break":
         return True
     is_done = ctx.entry_state.tasks_completed.get("upgrade_analysis", False)
     if is_done and not validate_upgrade_analysis_output(
-        output_path, self_heal_resource, ctx,
+        output_path, self_heal_entry_resource, ctx,
     ):
         ctx.entry_state.tasks_completed["upgrade_analysis"] = False
     return False

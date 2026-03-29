@@ -48,19 +48,19 @@ def task_validate_outputs(ctx: EntryContext) -> bool:
         validate_file_exists,
         validate_security_review_content,
     )
-    from soma_inits_upgrades.processing_helpers import self_heal_resource
+    from soma_inits_upgrades.processing_helpers import self_heal_entry_resource
     if ctx.entry_state.tasks_completed.get("validate_outputs", False):
         return False
     name = ctx.entry_state.init_file
     sec_path = ctx.output_dir / f"{name}-security-review.md"
     rpt_path = ctx.output_dir / f"{name}-upgrade-process.md"
-    if not validate_file_exists(sec_path, "security_review", self_heal_resource, ctx):
+    if not validate_file_exists(sec_path, "security_review", self_heal_entry_resource, ctx):
         return False
-    if not validate_file_exists(rpt_path, "upgrade_report", self_heal_resource, ctx):
+    if not validate_file_exists(rpt_path, "upgrade_report", self_heal_entry_resource, ctx):
         return False
-    if not validate_security_review_content(sec_path, self_heal_resource, ctx):
+    if not validate_security_review_content(sec_path, self_heal_entry_resource, ctx):
         return False
-    if not validate_upgrade_report_content(rpt_path, self_heal_resource, ctx):
+    if not validate_upgrade_report_content(rpt_path, self_heal_entry_resource, ctx):
         return False
     cleanup_malformed_files(ctx.output_dir, name)
     from soma_inits_upgrades.state import mark_task_complete
