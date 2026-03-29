@@ -26,20 +26,25 @@ TASK_ORDER: list[str] = [
     "upgrade_report", "graph_update", "validate_outputs", "cleanup",
 ]
 
+TIER_1_TASKS: tuple[str, ...] = (
+    "clone", "default_branch", "latest_ref", "diff",
+    "deps", "version_check", "symbols",
+)
+
+TIER_2_TASKS: tuple[str, ...] = (
+    "security_review", "upgrade_analysis", "upgrade_report",
+    "graph_update", "validate_outputs",
+)
+
 
 def _default_tasks_completed() -> dict[str, bool]:
     """Build default tasks_completed dict from TASK_ORDER."""
     return dict.fromkeys(TASK_ORDER, False)
 
 
-
 def _default_tier1_tasks_completed() -> dict[str, bool]:
     """Build default tier1_tasks_completed dict."""
-    keys = [
-        "clone", "default_branch", "latest_ref", "diff",
-        "deps", "version_check", "symbols",
-    ]
-    return dict.fromkeys(keys, False)
+    return dict.fromkeys(TIER_1_TASKS, False)
 
 
 class RepoState(BaseModel):
