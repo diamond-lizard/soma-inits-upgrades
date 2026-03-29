@@ -15,7 +15,7 @@ from soma_inits_upgrades.state_lifecycle import (
     create_entry_state_if_missing,
     detect_entry_field_changes,
 )
-from soma_inits_upgrades.state_schema import EntryState
+from soma_inits_upgrades.state_schema import EntryState, RepoState
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -52,8 +52,16 @@ def test_create_entry_state_recreates_corrupt(tmp_path: Path) -> None:
 def test_reconcile_entries_summary(tmp_path: Path) -> None:
     """Verify correct counting of per-entry states by status."""
     state_dir = tmp_path
-    e1 = EntryState(init_file="a.el", repo_url="https://x/y", pinned_ref="1", status="done")
-    e2 = EntryState(init_file="b.el", repo_url="https://x/z", pinned_ref="2", status="error")
+    e1 = EntryState(
+        init_file="a.el",
+        repos=[RepoState(repo_url="https://x/y", pinned_ref="1")],
+        status="done",
+    )
+    e2 = EntryState(
+        init_file="b.el",
+        repos=[RepoState(repo_url="https://x/z", pinned_ref="2")],
+        status="error",
+    )
     atomic_write_json(state_dir / "a.el.json", e1)
     atomic_write_json(state_dir / "b.el.json", e2)
     summary = reconcile_entries_summary(["a.el", "b.el", "c.el"], state_dir)
@@ -66,7 +74,10 @@ def test_reconcile_entries_summary(tmp_path: Path) -> None:
 def test_detect_entry_field_changes() -> None:
     """Verify field change detection."""
     state = EntryState(
-        init_file="a.el", repo_url="https://old", pinned_ref="old_ref",
+        init_file="a.el",
+        repos=[RepoState(
+            repo_url="https://old", pinned_ref="old_ref",
+        )],
     )
     no_change = {"repo_url": "https://old", "pinned_ref": "old_ref"}
     assert detect_entry_field_changes(state, no_change) == []
@@ -84,8 +95,10 @@ def test_read_entry_state_and_task_ops(tmp_path: Path) -> None:
     path = tmp_path / "entry.json"
     state = EntryState(
         init_file="soma-dash-init.el",
-        repo_url="https://github.com/magnars/dash.el",
-        pinned_ref="abc123",
+        repos=[RepoState(
+            repo_url="https://github.com/magnars/dash.el",
+            pinned_ref="abc123",
+        )],
     )
     atomic_write_json(path, state)
     loaded = read_entry_state(path)

@@ -10,7 +10,7 @@ from soma_inits_upgrades.state_artifacts import (
     get_entry_artifact_paths,
 )
 from soma_inits_upgrades.state_lifecycle import reset_entry_state_if_modified
-from soma_inits_upgrades.state_schema import EntryState
+from soma_inits_upgrades.state_schema import EntryState, RepoState
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -56,7 +56,13 @@ def test_reset_entry_state_if_modified_no_change(output_dir: Path) -> None:
         "repo_url": "https://github.com/magnars/dash.el",
         "pinned_ref": "abc123",
     }
-    state = EntryState(**entry)
+    state = EntryState(
+        init_file=entry["init_file"],
+        repos=[RepoState(
+            repo_url=entry["repo_url"],
+            pinned_ref=entry["pinned_ref"],
+        )],
+    )
     atomic_write_json(state_dir / "soma-dash-init.el.json", state)
     assert reset_entry_state_if_modified(entry, state_dir, output_dir) is False
 
@@ -66,8 +72,10 @@ def test_reset_entry_state_if_modified_url_change(output_dir: Path) -> None:
     state_dir = output_dir / ".state"
     old_state = EntryState(
         init_file="soma-dash-init.el",
-        repo_url="https://github.com/old/repo",
-        pinned_ref="abc123",
+        repos=[RepoState(
+            repo_url="https://github.com/old/repo",
+            pinned_ref="abc123",
+        )],
     )
     atomic_write_json(state_dir / "soma-dash-init.el.json", old_state)
     perm_file = output_dir / "soma-dash-init.el-security-review.md"

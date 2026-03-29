@@ -10,7 +10,7 @@ from soma_inits_upgrades.graph import read_graph, write_graph
 from soma_inits_upgrades.phase_dispatch_run import dispatch_entry_processing
 from soma_inits_upgrades.processing_entry import process_single_entry
 from soma_inits_upgrades.state import atomic_write_json, read_entry_state
-from soma_inits_upgrades.state_schema import TASK_ORDER, EntryState, GlobalState
+from soma_inits_upgrades.state_schema import TASK_ORDER, EntryState, GlobalState, RepoState
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -22,7 +22,12 @@ def test_self_healing_reclone(tmp_path: Path) -> None:
     sd.mkdir(parents=True)
     td = tmp_path / ".tmp"
     td.mkdir()
-    es = EntryState(init_file="x.el", repo_url="https://forge.test/r", pinned_ref="old")
+    es = EntryState(
+        init_file="x.el",
+        repos=[RepoState(
+            repo_url="https://forge.test/r", pinned_ref="old",
+        )],
+    )
     es.status = "in_progress"
     es.tasks_completed["clone"] = True
     atomic_write_json(sd / "x.el.json", es)
@@ -50,8 +55,12 @@ def test_new_entry_detection(tmp_path: Path) -> None:
     td = tmp_path / ".tmp"
     td.mkdir()
     old_es = EntryState(
-        init_file="old.el", repo_url="https://forge.test/r", pinned_ref="a",
-        status="done", tasks_completed=dict.fromkeys(TASK_ORDER, True),
+        init_file="old.el",
+        repos=[RepoState(
+            repo_url="https://forge.test/r", pinned_ref="a",
+        )],
+        status="done",
+        tasks_completed=dict.fromkeys(TASK_ORDER, True),
     )
     atomic_write_json(sd / "old.el.json", old_es)
     gs = GlobalState(
@@ -79,8 +88,12 @@ def test_modified_entry_detection(tmp_path: Path) -> None:
     td = tmp_path / ".tmp"
     td.mkdir()
     es = EntryState(
-        init_file="x.el", repo_url="https://forge.test/r", pinned_ref="old",
-        status="done", tasks_completed=dict.fromkeys(TASK_ORDER, True),
+        init_file="x.el",
+        repos=[RepoState(
+            repo_url="https://forge.test/r", pinned_ref="old",
+        )],
+        status="done",
+        tasks_completed=dict.fromkeys(TASK_ORDER, True),
     )
     atomic_write_json(sd / "x.el.json", es)
     gs = GlobalState(
@@ -96,7 +109,7 @@ def test_modified_entry_detection(tmp_path: Path) -> None:
     )
     state = read_entry_state(sd / "x.el.json")
     assert state is not None
-    assert state.pinned_ref == "NEW"
+    assert state.repos[0].pinned_ref == "NEW"
 
 
 def test_orphan_removal(tmp_path: Path) -> None:
@@ -107,8 +120,13 @@ def test_orphan_removal(tmp_path: Path) -> None:
     td.mkdir()
     for name in ("keep.el", "drop.el"):
         es = EntryState(
-            init_file=name, repo_url="https://forge.test/r", pinned_ref="a",
-            status="done", tasks_completed=dict.fromkeys(TASK_ORDER, True),
+            init_file=name,
+            repos=[RepoState(
+                repo_url="https://forge.test/r",
+                pinned_ref="a",
+            )],
+            status="done",
+            tasks_completed=dict.fromkeys(TASK_ORDER, True),
         )
         atomic_write_json(sd / f"{name}.json", es)
     gs = GlobalState(

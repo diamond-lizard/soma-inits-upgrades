@@ -8,7 +8,7 @@ import pytest
 
 from soma_inits_upgrades.phase_dispatch import check_processing_viability
 from soma_inits_upgrades.state import atomic_write_json
-from soma_inits_upgrades.state_schema import EntriesSummary, EntryState
+from soma_inits_upgrades.state_schema import EntriesSummary, EntryState, RepoState
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -26,8 +26,10 @@ def test_viability_fails_with_zero_done(tmp_path: Path) -> None:
     state_dir.mkdir()
     errored = EntryState(
         init_file="a.el",
-        repo_url="https://github.com/x/y",
-        pinned_ref="abc",
+        repos=[RepoState(
+            repo_url="https://github.com/x/y",
+            pinned_ref="abc",
+        )],
         status="error",
         notes="clone failed",
     )
@@ -46,8 +48,10 @@ def test_viability_prints_error_notes(
     state_dir.mkdir()
     errored = EntryState(
         init_file="a.el",
-        repo_url="https://github.com/x/y",
-        pinned_ref="abc",
+        repos=[RepoState(
+            repo_url="https://github.com/x/y",
+            pinned_ref="abc",
+        )],
         status="error",
         notes="timeout during clone",
     )
@@ -68,7 +72,10 @@ def test_resume_returns_false_no_changes(tmp_path: Path) -> None:
     sd.mkdir(parents=True)
     (tmp_path / ".tmp").mkdir()
     es = EntryState(
-        init_file="x.el", repo_url="https://forge.test/r", pinned_ref="a",
+        init_file="x.el",
+        repos=[RepoState(
+            repo_url="https://forge.test/r", pinned_ref="a",
+        )],
         status="done",
     )
     atomic_write_json(sd / "x.el.json", es)
@@ -89,7 +96,10 @@ def test_resume_returns_true_retryable_errors(tmp_path: Path) -> None:
     sd.mkdir(parents=True)
     (tmp_path / ".tmp").mkdir()
     es = EntryState(
-        init_file="x.el", repo_url="https://forge.test/r", pinned_ref="a",
+        init_file="x.el",
+        repos=[RepoState(
+            repo_url="https://forge.test/r", pinned_ref="a",
+        )],
         status="error", retries_remaining=3,
     )
     atomic_write_json(sd / "x.el.json", es)

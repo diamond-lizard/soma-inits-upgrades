@@ -9,7 +9,7 @@ from fakes import make_fake_git
 from soma_inits_upgrades.entry_tasks_analysis import task_deps, task_version_check
 from soma_inits_upgrades.protocols import EntryContext
 from soma_inits_upgrades.state import atomic_write_json
-from soma_inits_upgrades.state_schema import EntryState, GlobalState
+from soma_inits_upgrades.state_schema import EntryState, GlobalState, RepoState
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -24,8 +24,12 @@ def _ctx(
     td = tmp_path / ".tmp"
     td.mkdir(exist_ok=True)
     es = EntryState(
-        init_file="soma-pkg-init.el", repo_url="https://forge.test/r",
-        pinned_ref="old", latest_ref="new", default_branch="main",
+        init_file="soma-pkg-init.el",
+        repos=[RepoState(
+            repo_url="https://forge.test/r",
+            pinned_ref="old", latest_ref="new",
+            default_branch="main",
+        )],
     )
     es.status = "in_progress"
     esp = sd / "soma-pkg-init.el.json"
@@ -60,8 +64,8 @@ def test_deps_no_metadata(tmp_path: Path) -> None:
     ctx.entry_state.tasks_completed["clone"] = True
     task_deps(ctx)
     assert ctx.entry_state.tasks_completed["deps"] is True
-    assert ctx.entry_state.depends_on == []
-    assert ctx.entry_state.package_name == "pkg"
+    assert ctx.entry_state.repos[0].depends_on == []
+    assert ctx.entry_state.repos[0].package_name == "pkg"
 
 
 def test_deps_with_pkg_el(tmp_path: Path) -> None:
@@ -77,24 +81,24 @@ def test_deps_with_pkg_el(tmp_path: Path) -> None:
     ctx.entry_state.tasks_completed["clone"] = True
     task_deps(ctx)
     assert ctx.entry_state.tasks_completed["deps"] is True
-    assert "dash" in (ctx.entry_state.depends_on or [])
-    assert ctx.entry_state.min_emacs_version == "27.1"
-    assert ctx.entry_state.package_name == "pkg"
+    assert "dash" in (ctx.entry_state.repos[0].depends_on or [])
+    assert ctx.entry_state.repos[0].min_emacs_version == "27.1"
+    assert ctx.entry_state.repos[0].package_name == "pkg"
 
 
 def test_version_check_upgrade_required(tmp_path: Path) -> None:
     """Version check detects newer Emacs requirement."""
     ctx = _ctx(tmp_path)
-    ctx.entry_state.min_emacs_version = "30.1"
+    ctx.entry_state.repos[0].min_emacs_version = "30.1"
     ctx.global_state.emacs_version = "29.1"
     task_version_check(ctx)
-    assert ctx.entry_state.emacs_upgrade_required is True
+    assert ctx.entry_state.repos[0].emacs_upgrade_required is True
 
 
 def test_version_check_no_upgrade(tmp_path: Path) -> None:
     """Version check passes when Emacs is sufficient."""
     ctx = _ctx(tmp_path)
-    ctx.entry_state.min_emacs_version = "28.1"
+    ctx.entry_state.repos[0].min_emacs_version = "28.1"
     ctx.global_state.emacs_version = "29.1"
     task_version_check(ctx)
-    assert ctx.entry_state.emacs_upgrade_required is False
+    assert ctx.entry_state.repos[0].emacs_upgrade_required is False

@@ -61,7 +61,7 @@ def test_repo_url_change_resets_entry(tmp_path: Path) -> None:
     run_setup(gs, gs_path, inp.resolve(), out, state_dir, results)
 
     es = json.loads((state_dir / "a.el.json").read_text())
-    assert es["repo_url"] == "https://github.com/new/repo"
+    assert es["repos"][0]["repo_url"] == "https://github.com/new/repo"
 
 
 def test_pinned_ref_change_resets_entry(tmp_path: Path) -> None:
@@ -83,4 +83,4 @@ def test_pinned_ref_change_resets_entry(tmp_path: Path) -> None:
     run_setup(gs, gs_path, inp.resolve(), out, state_dir, results)
 
     es = json.loads((state_dir / "a.el.json").read_text())
-    assert es["pinned_ref"] == "new222"
+    assert es["repos"][0]["pinned_ref"] == "new222"

@@ -63,13 +63,18 @@ def test_run_llm_task_skips_when_done(tmp_path: Path) -> None:
     from soma_inits_upgrades.llm_task import run_llm_task
     from soma_inits_upgrades.protocols import EntryContext
     from soma_inits_upgrades.state import atomic_write_json
-    from soma_inits_upgrades.state_schema import EntryState, GlobalState
+    from soma_inits_upgrades.state_schema import EntryState, GlobalState, RepoState
 
     sd = tmp_path / ".state"
     sd.mkdir(parents=True)
     td = tmp_path / ".tmp"
     td.mkdir()
-    es = EntryState(init_file="x.el", repo_url="https://forge.test/r", pinned_ref="a")
+    es = EntryState(
+        init_file="x.el",
+        repos=[RepoState(
+            repo_url="https://forge.test/r", pinned_ref="a",
+        )],
+    )
     es.tasks_completed["security_review"] = True
     esp = sd / "x.el.json"
     atomic_write_json(esp, es)

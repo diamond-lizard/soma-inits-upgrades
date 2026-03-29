@@ -14,7 +14,7 @@ from soma_inits_upgrades.entry_tasks import (
 from soma_inits_upgrades.entry_tasks_diff import task_diff
 from soma_inits_upgrades.protocols import EntryContext
 from soma_inits_upgrades.state import atomic_write_json
-from soma_inits_upgrades.state_schema import EntryState, GlobalState
+from soma_inits_upgrades.state_schema import EntryState, GlobalState, RepoState
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -26,7 +26,12 @@ def _ctx(tmp_path: Path, **git_kw: object) -> EntryContext:
     sd.mkdir(parents=True, exist_ok=True)
     td = tmp_path / ".tmp"
     td.mkdir(exist_ok=True)
-    es = EntryState(init_file="x.el", repo_url="https://forge.test/r", pinned_ref="old")
+    es = EntryState(
+        init_file="x.el",
+        repos=[RepoState(
+            repo_url="https://forge.test/r", pinned_ref="old",
+        )],
+    )
     es.status = "in_progress"
     esp = sd / "x.el.json"
     atomic_write_json(esp, es)
@@ -76,7 +81,7 @@ def test_pinned_ref_not_found(tmp_path: Path) -> None:
     ctx = _ctx(tmp_path, ref_exists=False)
     ctx.entry_state.tasks_completed["clone"] = True
     ctx.entry_state.tasks_completed["default_branch"] = True
-    ctx.entry_state.default_branch = "main"
+    ctx.entry_state.repos[0].default_branch = "main"
     (ctx.tmp_dir / ctx.init_stem).mkdir()
     task_latest_ref(ctx)
     assert ctx.entry_state.status == "error"
@@ -89,9 +94,9 @@ def test_empty_diff(tmp_path: Path) -> None:
     ctx.entry_state.tasks_completed["clone"] = True
     ctx.entry_state.tasks_completed["default_branch"] = True
     ctx.entry_state.tasks_completed["latest_ref"] = True
-    ctx.entry_state.default_branch = "main"
-    ctx.entry_state.pinned_ref = "old"
-    ctx.entry_state.latest_ref = "new"
+    ctx.entry_state.repos[0].default_branch = "main"
+    ctx.entry_state.repos[0].pinned_ref = "old"
+    ctx.entry_state.repos[0].latest_ref = "new"
     (ctx.tmp_dir / ctx.init_stem).mkdir()
     task_diff(ctx)
     assert ctx.entry_state.status == "done"

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from soma_inits_upgrades.finalization import dispatch_summary_stage
 from soma_inits_upgrades.graph import add_entry, write_graph
 from soma_inits_upgrades.state import atomic_write_json
-from soma_inits_upgrades.state_schema import EntryState, GlobalState
+from soma_inits_upgrades.state_schema import EntryState, GlobalState, RepoState
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -30,8 +30,12 @@ def _setup_summary(tmp_path: Path) -> tuple[GlobalState, Path]:
     atomic_write_json(gs_path, gs)
     for name in names:
         es = EntryState(
-            init_file=name, repo_url="https://github.com/test/repo",
-            pinned_ref="abc123", status="done",
+            init_file=name,
+            repos=[RepoState(
+                repo_url="https://github.com/test/repo",
+                pinned_ref="abc123",
+            )],
+            status="done",
         )
         atomic_write_json(state_dir / f"{name}.json", es)
     (tmp_path / "soma-dash-init.el-security-review.md").write_text(

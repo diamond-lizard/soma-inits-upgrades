@@ -6,6 +6,7 @@ from soma_inits_upgrades.state_schema import (
     TASK_ORDER,
     EntryState,
     GlobalState,
+    RepoState,
 )
 
 
@@ -26,11 +27,14 @@ def test_global_state_defaults() -> None:
 def test_entry_state_requires_fields() -> None:
     """Verify EntryState requires init_file, repo_url, pinned_ref."""
     state = EntryState(
-        init_file="a.el", repo_url="https://x/y", pinned_ref="abc",
+        init_file="a.el",
+        repos=[RepoState(
+            repo_url="https://x/y", pinned_ref="abc",
+        )],
     )
     assert state.status == "pending"
-    assert state.package_name is None
-    assert state.emacs_upgrade_required is False
+    assert state.repos[0].package_name is None
+    assert state.repos[0].emacs_upgrade_required is False
     assert state.done_reason is None
     assert state.retries_remaining == 5
 
@@ -38,7 +42,10 @@ def test_entry_state_requires_fields() -> None:
 def test_task_order_matches_tasks_completed() -> None:
     """Verify TASK_ORDER list matches keys from default tasks_completed."""
     state = EntryState(
-        init_file="a.el", repo_url="https://x/y", pinned_ref="abc",
+        init_file="a.el",
+        repos=[RepoState(
+            repo_url="https://x/y", pinned_ref="abc",
+        )],
     )
     assert list(state.tasks_completed.keys()) == TASK_ORDER
     assert all(v is False for v in state.tasks_completed.values())
@@ -51,7 +58,10 @@ def test_entry_context_construction() -> None:
     from soma_inits_upgrades.protocols import EntryContext
 
     es = EntryState(
-        init_file="a.el", repo_url="https://x/y", pinned_ref="abc",
+        init_file="a.el",
+        repos=[RepoState(
+            repo_url="https://x/y", pinned_ref="abc",
+        )],
     )
     gs = GlobalState()
     ctx = EntryContext(

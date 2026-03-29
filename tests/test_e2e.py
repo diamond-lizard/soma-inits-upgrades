@@ -69,7 +69,7 @@ def _verify_entry_processing(
         es = read_entry_state(state_dir / f"{entry['init_file']}.json")
         assert es is not None
         assert es.status == "done", f"{entry['init_file']}: {es.status} / {es.notes}"
-        assert es.package_name is not None
+        assert es.repos[0].package_name is not None
 
 
 def _verify_graph_finalization(gs: object, output_dir: Path) -> None:

@@ -14,7 +14,7 @@ from soma_inits_upgrades.processing_helpers import (
 )
 from soma_inits_upgrades.protocols import EntryContext
 from soma_inits_upgrades.state import atomic_write_json
-from soma_inits_upgrades.state_schema import EntryState, GlobalState
+from soma_inits_upgrades.state_schema import EntryState, GlobalState, RepoState
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -26,7 +26,12 @@ def _ctx(tmp_path: Path) -> EntryContext:
     sd.mkdir(parents=True)
     td = tmp_path / ".tmp"
     td.mkdir()
-    es = EntryState(init_file="x.el", repo_url="https://forge.test/r", pinned_ref="a")
+    es = EntryState(
+        init_file="x.el",
+        repos=[RepoState(
+            repo_url="https://forge.test/r", pinned_ref="a",
+        )],
+    )
     es.status = "in_progress"
     esp = sd / "x.el.json"
     atomic_write_json(esp, es)

@@ -9,7 +9,7 @@ from fakes import make_fake_git
 from soma_inits_upgrades.graph import write_graph
 from soma_inits_upgrades.processing_entry import process_single_entry
 from soma_inits_upgrades.state import atomic_write_json, read_entry_state
-from soma_inits_upgrades.state_schema import EntryState, GlobalState
+from soma_inits_upgrades.state_schema import EntryState, GlobalState, RepoState
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -24,7 +24,12 @@ def _setup(
     td = tmp_path / ".tmp"
     td.mkdir()
     entry = {"init_file": "x.el", "repo_url": "https://forge.test/r", "pinned_ref": "old"}
-    es = EntryState(init_file="x.el", repo_url="https://forge.test/r", pinned_ref="old")
+    es = EntryState(
+        init_file="x.el",
+        repos=[RepoState(
+            repo_url="https://forge.test/r", pinned_ref="old",
+        )],
+    )
     atomic_write_json(sd / "x.el.json", es)
     gs = GlobalState(
         entry_names=["x.el"], emacs_version="29.1",

@@ -9,7 +9,7 @@ from fakes import make_fake_git
 from soma_inits_upgrades.graph import write_graph
 from soma_inits_upgrades.phase_dispatch_run import dispatch_entry_processing
 from soma_inits_upgrades.state import atomic_write_json, read_entry_state
-from soma_inits_upgrades.state_schema import TASK_ORDER, EntryState, GlobalState
+from soma_inits_upgrades.state_schema import TASK_ORDER, EntryState, GlobalState, RepoState
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -25,7 +25,10 @@ def _setup_done_entry(
 ) -> EntryState:
     """Create a fully-done entry state file."""
     es = EntryState(
-        init_file=name, repo_url="https://forge.test/r", pinned_ref="a",
+        init_file=name,
+        repos=[RepoState(
+            repo_url="https://forge.test/r", pinned_ref="a",
+        )],
         status="done", tasks_completed=_done_tasks(),
     )
     atomic_write_json(sd / f"{name}.json", es)
@@ -49,7 +52,10 @@ def test_retry_in_progress(tmp_path: Path) -> None:
     td = tmp_path / ".tmp"
     td.mkdir()
     es = EntryState(
-        init_file="x.el", repo_url="https://forge.test/r", pinned_ref="a",
+        init_file="x.el",
+        repos=[RepoState(
+            repo_url="https://forge.test/r", pinned_ref="a",
+        )],
         status="error", retries_remaining=3,
         tasks_completed={**dict.fromkeys(TASK_ORDER, False),
                          "clone": True, "default_branch": True},
@@ -74,7 +80,10 @@ def test_retry_done_phase(tmp_path: Path) -> None:
     td = tmp_path / ".tmp"
     td.mkdir()
     es = EntryState(
-        init_file="x.el", repo_url="https://forge.test/r", pinned_ref="a",
+        init_file="x.el",
+        repos=[RepoState(
+            repo_url="https://forge.test/r", pinned_ref="a",
+        )],
         status="error", retries_remaining=3,
     )
     atomic_write_json(sd / "x.el.json", es)
@@ -97,7 +106,10 @@ def test_retry_exhaustion(tmp_path: Path) -> None:
     td.mkdir()
     _setup_done_entry(sd, "good.el", tmp_path)
     es = EntryState(
-        init_file="x.el", repo_url="https://forge.test/r", pinned_ref="a",
+        init_file="x.el",
+        repos=[RepoState(
+            repo_url="https://forge.test/r", pinned_ref="a",
+        )],
         status="error", retries_remaining=0,
     )
     atomic_write_json(sd / "x.el.json", es)

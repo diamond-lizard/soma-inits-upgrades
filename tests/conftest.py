@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from soma_inits_upgrades.state_schema import EntryState, GlobalState
+from soma_inits_upgrades.state_schema import EntryState, GlobalState, RepoState
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -35,8 +35,10 @@ def sample_entry_state() -> EntryState:
     """Return a default EntryState model instance."""
     return EntryState(
         init_file="soma-dash-init.el",
-        repo_url="https://github.com/magnars/dash.el",
-        pinned_ref="abc1234567890abcdef1234567890abcdef123456",
+        repos=[RepoState(
+            repo_url="https://github.com/magnars/dash.el",
+            pinned_ref="abc1234567890abcdef1234567890abcdef123456",
+        )],
     )
 
 

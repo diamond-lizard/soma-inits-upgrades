@@ -11,7 +11,7 @@ from soma_inits_upgrades.entry_changes import (
 from soma_inits_upgrades.entry_retry import retry_errored_entries
 from soma_inits_upgrades.graph import write_graph
 from soma_inits_upgrades.state import atomic_write_json
-from soma_inits_upgrades.state_schema import EntryState, GlobalState
+from soma_inits_upgrades.state_schema import EntryState, GlobalState, RepoState
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -19,7 +19,13 @@ if TYPE_CHECKING:
 
 def _write_entry(sd: Path, name: str, **kw: object) -> None:
     """Write an entry state file."""
-    es = EntryState(init_file=name, repo_url="https://forge.test/r", pinned_ref="a", **kw)
+    es = EntryState(
+        init_file=name,
+        repos=[RepoState(
+            repo_url="https://forge.test/r", pinned_ref="a",
+        )],
+        **kw,
+    )
     atomic_write_json(sd / f"{name}.json", es)
 
 
@@ -76,7 +82,12 @@ def test_retry_errored_with_retries(tmp_path: Path) -> None:
     """Errored entries with retries are reset to in_progress."""
     sd = tmp_path / ".state"
     sd.mkdir(parents=True)
-    es = EntryState(init_file="x.el", repo_url="https://forge.test/r", pinned_ref="a")
+    es = EntryState(
+        init_file="x.el",
+        repos=[RepoState(
+            repo_url="https://forge.test/r", pinned_ref="a",
+        )],
+    )
     es.status = "error"
     es.retries_remaining = 3
     es.notes = "some error"
@@ -97,7 +108,12 @@ def test_retry_exhausted(tmp_path: Path) -> None:
     """Errored entries with no retries are skipped."""
     sd = tmp_path / ".state"
     sd.mkdir(parents=True)
-    es = EntryState(init_file="x.el", repo_url="https://forge.test/r", pinned_ref="a")
+    es = EntryState(
+        init_file="x.el",
+        repos=[RepoState(
+            repo_url="https://forge.test/r", pinned_ref="a",
+        )],
+    )
     es.status = "error"
     es.retries_remaining = 0
     atomic_write_json(sd / "x.el.json", es)

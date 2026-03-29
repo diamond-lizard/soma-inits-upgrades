@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from soma_inits_upgrades.state import atomic_write_json
-from soma_inits_upgrades.state_schema import EntryState
+from soma_inits_upgrades.state_schema import EntryState, RepoState
 from soma_inits_upgrades.summary_completion import (
     categorize_entries,
     format_completion_message,
@@ -18,8 +18,12 @@ def _write_entry(
 ) -> None:
     """Write a per-entry state file with given status and reason."""
     es = EntryState(
-        init_file=name, repo_url="https://github.com/test/repo",
-        pinned_ref="abc123", status=status,
+        init_file=name,
+        repos=[RepoState(
+            repo_url="https://github.com/test/repo",
+            pinned_ref="abc123",
+        )],
+        status=status,
         done_reason=done_reason, notes=notes,
     )
     atomic_write_json(state_dir / f"{name}.json", es)

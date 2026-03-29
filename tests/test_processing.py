@@ -47,13 +47,18 @@ def test_run_entry_task_loop_exception(tmp_path: object) -> None:
     from soma_inits_upgrades.processing import TASK_HANDLERS, run_entry_task_loop
     from soma_inits_upgrades.protocols import EntryContext
     from soma_inits_upgrades.state import atomic_write_json
-    from soma_inits_upgrades.state_schema import EntryState, GlobalState
+    from soma_inits_upgrades.state_schema import EntryState, GlobalState, RepoState
     p = Path(str(tmp_path))
     sd = p / ".state"
     sd.mkdir(parents=True)
     td = p / ".tmp"
     td.mkdir()
-    es = EntryState(init_file="x.el", repo_url="https://forge.test/r", pinned_ref="a")
+    es = EntryState(
+        init_file="x.el",
+        repos=[RepoState(
+            repo_url="https://forge.test/r", pinned_ref="a",
+        )],
+    )
     es.status = "in_progress"
     esp = sd / "x.el.json"
     atomic_write_json(esp, es)
@@ -94,13 +99,18 @@ def test_run_entry_task_loop_keyboard_interrupt(tmp_path: object) -> None:
     from soma_inits_upgrades.processing import TASK_HANDLERS, run_entry_task_loop
     from soma_inits_upgrades.protocols import EntryContext
     from soma_inits_upgrades.state import atomic_write_json
-    from soma_inits_upgrades.state_schema import EntryState, GlobalState
+    from soma_inits_upgrades.state_schema import EntryState, GlobalState, RepoState
     p = Path(str(tmp_path))
     sd = p / ".state"
     sd.mkdir(parents=True)
     td = p / ".tmp"
     td.mkdir()
-    es = EntryState(init_file="x.el", repo_url="https://forge.test/r", pinned_ref="a")
+    es = EntryState(
+        init_file="x.el",
+        repos=[RepoState(
+            repo_url="https://forge.test/r", pinned_ref="a",
+        )],
+    )
     es.status = "in_progress"
     esp = sd / "x.el.json"
     atomic_write_json(esp, es)
