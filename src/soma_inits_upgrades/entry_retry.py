@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from soma_inits_upgrades.state_schema import GlobalState
+    from soma_inits_upgrades.state_schema import GlobalState, RepoState
     from soma_inits_upgrades.validation_schema import FlatEntryDict
 
 
@@ -27,6 +27,14 @@ def reset_phases_for_new_entries(
             global_state.entry_names.append(name)
     count = len(new_names)
     print(f"Detected {count} new/modified entries, resuming processing", file=sys.stderr)
+
+
+
+def _reset_errored_repo_reasons(repos: list[RepoState]) -> None:
+    """Reset done_reason to None for repos with error status."""
+    for repo in repos:
+        if repo.done_reason == "error":
+            repo.done_reason = None
 
 
 def retry_errored_entries(results: list[FlatEntryDict], state_dir: Path) -> int:
@@ -50,6 +58,7 @@ def retry_errored_entries(results: list[FlatEntryDict], state_dir: Path) -> int:
         state.status = "in_progress"
         state.notes = None
         state.done_reason = None
+        _reset_errored_repo_reasons(state.repos)
         atomic_write_json(path, state)
         print(f"Retrying {name} ({state.retries_remaining} retries remaining)", file=sys.stderr)
         retried += 1

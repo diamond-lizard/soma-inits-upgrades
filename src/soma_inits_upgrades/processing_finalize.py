@@ -13,6 +13,17 @@ def finalize_entry(ctx: EntryContext) -> None:
     """Post-loop cleanup and bookkeeping for a completed entry."""
     from soma_inits_upgrades.state import atomic_write_json
     from soma_inits_upgrades.state_artifacts import delete_entry_artifacts
+
+    # Two-tier: passthrough repo done_reason to entry level
+    if ctx.entry_state.status not in ("done", "error"):
+        repos = ctx.entry_state.repos
+        ctx.entry_state.done_reason = repos[0].done_reason
+        if repos[0].done_reason == "error":
+            from soma_inits_upgrades.processing_helpers import set_entry_error
+            set_entry_error(ctx, repos[0].notes or "Tier 1 error")
+        elif all(r.done_reason is not None for r in repos):
+            ctx.entry_state.status = "done"
+
     status = ctx.entry_state.status
     cleanup_done = ctx.entry_state.tasks_completed.get("cleanup", False)
     is_permanent_error = status == "error" and ctx.entry_state.retries_remaining == 0
