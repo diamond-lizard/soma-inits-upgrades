@@ -84,7 +84,7 @@ def test_clone_failure(tmp_path: Path) -> None:
         fg, [entry], lambda: False,
     )
     state = read_entry_state(sd / "x.el.json")
-    assert state is not None and state.status == "error"
+    assert state is not None and state.repos[0].done_reason == "error"
 
 
 def test_empty_diff_early_exit(tmp_path: Path) -> None:
@@ -97,13 +97,12 @@ def test_empty_diff_early_exit(tmp_path: Path) -> None:
     )
     state = read_entry_state(sd / "x.el.json")
     assert state is not None
-    assert state.status == "done"
-    assert state.done_reason == "empty_diff"
+    assert state.repos[0].done_reason == "empty_diff"
 
 
 def test_progress_guard(tmp_path: Path) -> None:
     """Stuck iteration sets error."""
-    from soma_inits_upgrades.processing import TASK_HANDLERS
+    from soma_inits_upgrades.processing import TIER_1_HANDLERS
 
     entry, gs, sd, gsp = _setup(tmp_path)
     es = read_entry_state(sd / "x.el.json")
@@ -115,15 +114,15 @@ def test_progress_guard(tmp_path: Path) -> None:
     atomic_write_json(gsp, gs)
     def noop(ctx: object) -> bool:
         return False
-    orig = TASK_HANDLERS["clone"]
-    TASK_HANDLERS["clone"] = noop  # type: ignore[assignment]
+    orig = TIER_1_HANDLERS["clone"]
+    TIER_1_HANDLERS["clone"] = noop  # type: ignore[assignment]
     try:
         process_single_entry(
             entry, 1, 1, sd, tmp_path, gs, gsp,
             make_fake_git(), [entry], lambda: False,
         )
         state = read_entry_state(sd / "x.el.json")
-        assert state is not None and state.status == "error"
-        assert "no progress" in (state.notes or "")
+        assert state is not None and state.repos[0].done_reason == "error"
+        assert "no progress" in (state.repos[0].notes or "")
     finally:
-        TASK_HANDLERS["clone"] = orig
+        TIER_1_HANDLERS["clone"] = orig

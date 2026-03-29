@@ -45,7 +45,8 @@ def test_self_healing_reclone(tmp_path: Path) -> None:
     )
     state = read_entry_state(sd / "x.el.json")
     assert state is not None
-    assert state.tasks_completed["clone"] is False or state.status == "error"
+    repo = state.repos[0]
+    assert repo.tier1_tasks_completed["clone"] is False or repo.done_reason == "error"
 
 
 def test_new_entry_detection(tmp_path: Path) -> None:
