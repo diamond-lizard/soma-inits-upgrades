@@ -25,6 +25,14 @@ ENTRY_B = {
     "pinned_ref": "bbbb2222bbbb2222bbbb2222bbbb2222bbbb2222",
 }
 RESULTS: list[dict[str, str]] = [ENTRY_A, ENTRY_B]
+GROUPED_RESULTS: list[dict[str, object]] = [
+    {"init_file": ENTRY_A["init_file"], "repos": [
+        {"repo_url": ENTRY_A["repo_url"],
+         "pinned_ref": ENTRY_A["pinned_ref"]}]},
+    {"init_file": ENTRY_B["init_file"], "repos": [
+        {"repo_url": ENTRY_B["repo_url"],
+         "pinned_ref": ENTRY_B["pinned_ref"]}]},
+]
 
 DIFF_WITH_DEFUN = (
     "diff --git a/alpha.el b/alpha.el\n"

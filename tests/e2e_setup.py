@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from e2e_helpers import DIFF_WITH_DEFUN, LATEST_REF, RESULTS
+from e2e_helpers import DIFF_WITH_DEFUN, GROUPED_RESULTS, LATEST_REF
 from fakes import make_fake_git
 
 from soma_inits_upgrades.setup_completion import (
@@ -46,9 +46,9 @@ def run_setup_phase(
     gs = initialize_global_state(None, gs_path, stale_path)
     prompt_emacs_version(gs, gs_path, prompt_fn=lambda _: "29.1")
     create_tmp_directory(output_dir)
-    initialize_entry_states(RESULTS, state_dir, output_dir, gs)
+    initialize_entry_states(GROUPED_RESULTS, state_dir, output_dir, gs)
     initialize_dep_graph(output_dir / "soma-inits-dependency-graphs.json")
-    complete_setup(gs, gs_path, RESULTS)
+    complete_setup(gs, gs_path, GROUPED_RESULTS)
     return gs, gs_path
 
 

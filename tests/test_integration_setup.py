@@ -37,7 +37,8 @@ def test_fresh_setup_creates_all_artifacts(tmp_path: Path) -> None:
     out = tmp_path / "out"
     state_dir = out / ".state"
     state_dir.mkdir(parents=True)
-    results = json.loads(inp.read_text())["results"]
+    from soma_inits_upgrades.cli_helpers import load_stale_inits
+    results = load_stale_inits(inp)
     gs_path = state_dir / "global.json"
     pre_gs = GlobalState(emacs_version="29.1")
 
@@ -65,7 +66,8 @@ def test_setup_skip_when_already_done(tmp_path: Path) -> None:
     out = tmp_path / "out"
     state_dir = out / ".state"
     state_dir.mkdir(parents=True)
-    results = json.loads(inp.read_text())["results"]
+    from soma_inits_upgrades.cli_helpers import load_stale_inits
+    results = load_stale_inits(inp)
     gs_path = state_dir / "global.json"
     pre_gs = GlobalState(emacs_version="29.1")
 

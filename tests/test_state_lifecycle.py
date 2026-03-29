@@ -48,15 +48,23 @@ def test_detect_entry_field_changes() -> None:
             repo_url="https://old", pinned_ref="old_ref",
         )],
     )
-    no_change = {"repo_url": "https://old", "pinned_ref": "old_ref"}
+    no_change: dict[str, object] = {"init_file": "a.el",
+        "repos": [{"repo_url": "https://old",
+            "pinned_ref": "old_ref"}]}
     assert detect_entry_field_changes(state, no_change) == []
-    url_change = {"repo_url": "https://new", "pinned_ref": "old_ref"}
-    assert detect_entry_field_changes(state, url_change) == ["repo_url"]
-    ref_change = {"repo_url": "https://old", "pinned_ref": "new_ref"}
-    assert detect_entry_field_changes(state, ref_change) == ["pinned_ref"]
-    both_change = {"repo_url": "https://new", "pinned_ref": "new_ref"}
+    url_change: dict[str, object] = {"init_file": "a.el",
+        "repos": [{"repo_url": "https://new",
+            "pinned_ref": "old_ref"}]}
+    assert detect_entry_field_changes(state, url_change) == ["repos"]
+    ref_change: dict[str, object] = {"init_file": "a.el",
+        "repos": [{"repo_url": "https://old",
+            "pinned_ref": "new_ref"}]}
+    assert detect_entry_field_changes(state, ref_change) == ["repos"]
+    both_change: dict[str, object] = {"init_file": "a.el",
+        "repos": [{"repo_url": "https://new",
+            "pinned_ref": "new_ref"}]}
     changes = detect_entry_field_changes(state, both_change)
-    assert "repo_url" in changes and "pinned_ref" in changes
+    assert changes == ["repos"]
 
 
 def test_read_entry_state_and_task_ops(tmp_path: Path) -> None:

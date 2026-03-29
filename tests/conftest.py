@@ -14,19 +14,17 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 @pytest.fixture()
-def sample_stale_inits() -> list[dict[str, str]]:
+def sample_stale_inits() -> list[dict[str, object]]:
     """Return a valid stale inits results list with 2 sample entries."""
     return [
-        {
-            "init_file": "soma-dash-init.el",
-            "repo_url": "https://github.com/magnars/dash.el",
-            "pinned_ref": "abc1234567890abcdef1234567890abcdef123456",
-        },
-        {
-            "init_file": "soma-magit-init.el",
-            "repo_url": "https://github.com/magit/magit",
-            "pinned_ref": "def4567890abcdef1234567890abcdef12345678",
-        },
+        {"init_file": "soma-dash-init.el", "repos": [
+            {"repo_url": "https://github.com/magnars/dash.el",
+             "pinned_ref": "abc1234567890abcdef1234567890abcdef123456"},
+        ]},
+        {"init_file": "soma-magit-init.el", "repos": [
+            {"repo_url": "https://github.com/magit/magit",
+             "pinned_ref": "def4567890abcdef1234567890abcdef12345678"},
+        ]},
     ]
 
 

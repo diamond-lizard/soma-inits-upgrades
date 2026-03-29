@@ -88,8 +88,8 @@ def test_run_entry_task_loop_exception(tmp_path: object) -> None:
             entry_idx=1, total=1, output_dir=p, tmp_dir=td,
             state_dir=sd, init_stem="x",
             results=[{
-                "init_file": "x.el", "repo_url": "https://forge.test/r",
-                "pinned_ref": "a",
+                "init_file": "x.el",
+                "repos": [{"repo_url": "https://forge.test/r", "pinned_ref": "a"}],
             }],
             xclip_checker=lambda: False, run_fn=make_fake_git(),
         )
@@ -140,8 +140,8 @@ def test_run_entry_task_loop_keyboard_interrupt(tmp_path: object) -> None:
             entry_idx=1, total=1, output_dir=p, tmp_dir=td,
             state_dir=sd, init_stem="x",
             results=[{
-                "init_file": "x.el", "repo_url": "https://forge.test/r",
-                "pinned_ref": "a",
+                "init_file": "x.el",
+                "repos": [{"repo_url": "https://forge.test/r", "pinned_ref": "a"}],
             }],
             xclip_checker=lambda: False, run_fn=make_fake_git(),
         )

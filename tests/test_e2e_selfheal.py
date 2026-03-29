@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from e2e_helpers import RESULTS, pre_create_llm_outputs, write_stale_json
+from e2e_helpers import GROUPED_RESULTS, pre_create_llm_outputs, write_stale_json
 from e2e_setup import make_fake_git_for_e2e, run_setup_phase
 
 from soma_inits_upgrades.phase_dispatch_run import (
@@ -30,13 +30,13 @@ def test_e2e_self_healing(tmp_path: Path) -> None:
     output_dir = tmp_path / "output"
     state_dir = output_dir / ".state"
 
-    for entry in RESULTS:
+    for entry in GROUPED_RESULTS:
         pre_create_llm_outputs(output_dir, entry["init_file"])
 
     # First run: complete all entries
     fg = make_fake_git_for_e2e(output_dir / ".tmp")
     needs_rerun = run_entry_processing(
-        RESULTS, state_dir, output_dir, gs, fg,
+        GROUPED_RESULTS, state_dir, output_dir, gs, fg,
         input_fn=lambda _: "c",
     )
     complete_entry_processing(gs, state_dir, needs_rerun)
@@ -51,7 +51,7 @@ def test_e2e_self_healing(tmp_path: Path) -> None:
     # Second run: should recover via self-healing
     fg2 = make_fake_git_for_e2e(output_dir / ".tmp")
     needs_rerun = run_entry_processing(
-        RESULTS, state_dir, output_dir, gs, fg2,
+        GROUPED_RESULTS, state_dir, output_dir, gs, fg2,
         input_fn=lambda _: "c",
     )
     complete_entry_processing(gs, state_dir, needs_rerun)

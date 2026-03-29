@@ -52,16 +52,16 @@ def test_delete_entry_artifacts_missing_files(output_dir: Path) -> None:
 def test_reset_entry_state_if_modified_no_change(output_dir: Path) -> None:
     """Verify no-op when entry is unchanged."""
     state_dir = output_dir / ".state"
-    entry = {
+    entry: dict[str, object] = {
         "init_file": "soma-dash-init.el",
-        "repo_url": "https://github.com/magnars/dash.el",
-        "pinned_ref": "abc123",
+        "repos": [{"repo_url": "https://github.com/magnars/dash.el",
+            "pinned_ref": "abc123"}],
     }
     state = EntryState(
         init_file=entry["init_file"],
         repos=[RepoState(
-            repo_url=entry["repo_url"],
-            pinned_ref=entry["pinned_ref"],
+            repo_url=entry["repos"][0]["repo_url"],
+            pinned_ref=entry["repos"][0]["pinned_ref"],
         )],
     )
     atomic_write_json(state_dir / "soma-dash-init.el.json", state)
@@ -81,10 +81,10 @@ def test_reset_entry_state_if_modified_url_change(output_dir: Path) -> None:
     atomic_write_json(state_dir / "soma-dash-init.el.json", old_state)
     perm_file = output_dir / "soma-dash-init.el-security-review.md"
     perm_file.write_text("old review", encoding="utf-8")
-    entry = {
+    entry: dict[str, object] = {
         "init_file": "soma-dash-init.el",
-        "repo_url": "https://github.com/new/repo",
-        "pinned_ref": "abc123",
+        "repos": [{"repo_url": "https://github.com/new/repo",
+            "pinned_ref": "abc123"}],
     }
     result = reset_entry_state_if_modified(entry, state_dir, output_dir)
     assert result is True

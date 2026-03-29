@@ -33,7 +33,7 @@ def test_retry_resets_repo_done_reason(tmp_path: Path) -> None:
         status="error", done_reason="error", notes="clone failed",
     )
     atomic_write_json(state_dir / "x.el.json", es)
-    results = [{"init_file": "x.el", "repo_url": "u", "pinned_ref": "p"}]
+    results = [{"init_file": "x.el", "repos": [{"repo_url": "u", "pinned_ref": "p"}]}]
     retry_errored_entries(results, state_dir)
     reloaded = read_entry_state(state_dir / "x.el.json")
     assert reloaded is not None

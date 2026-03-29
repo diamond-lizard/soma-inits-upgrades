@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from e2e_helpers import RESULTS, pre_create_llm_outputs, write_stale_json
+from e2e_helpers import GROUPED_RESULTS, pre_create_llm_outputs, write_stale_json
 from e2e_setup import make_fake_git_for_e2e, run_setup_phase
 
 from soma_inits_upgrades.finalization import (
@@ -31,12 +31,12 @@ def test_e2e_full_lifecycle(tmp_path: Path) -> None:
 
     _verify_setup(gs, state_dir, output_dir)
 
-    for entry in RESULTS:
+    for entry in GROUPED_RESULTS:
         pre_create_llm_outputs(output_dir, entry["init_file"])
 
     fg = make_fake_git_for_e2e(output_dir / ".tmp")
     needs_rerun = run_entry_processing(
-        RESULTS, state_dir, output_dir, gs, fg,
+        GROUPED_RESULTS, state_dir, output_dir, gs, fg,
         input_fn=lambda _: "c",
     )
     complete_entry_processing(gs, state_dir, needs_rerun)
@@ -65,7 +65,7 @@ def _verify_entry_processing(
     """Check Per-Entry Processing completed both entries."""
     assert gs.phases.entry_processing == "done"
     assert not needs_rerun
-    for entry in RESULTS:
+    for entry in GROUPED_RESULTS:
         es = read_entry_state(state_dir / f"{entry['init_file']}.json")
         assert es is not None
         assert es.status == "done", f"{entry['init_file']}: {es.status} / {es.notes}"

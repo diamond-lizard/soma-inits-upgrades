@@ -28,7 +28,8 @@ def _setup_and_force_rerun(
     out = tmp_path / "out"
     state_dir = out / ".state"
     state_dir.mkdir(parents=True)
-    results = json.loads(inp.read_text())["results"]
+    from soma_inits_upgrades.cli_helpers import load_stale_inits
+    results = load_stale_inits(inp)
     gs_path = state_dir / "global.json"
     pre_gs = GlobalState(emacs_version="29.1")
 
@@ -57,7 +58,8 @@ def test_repo_url_change_resets_entry(tmp_path: Path) -> None:
 
     from soma_inits_upgrades.state import read_global_state
     gs = read_global_state(gs_path)
-    results = json.loads(inp.read_text())["results"]
+    from soma_inits_upgrades.cli_helpers import load_stale_inits
+    results = load_stale_inits(inp)
     run_setup(gs, gs_path, inp.resolve(), out, state_dir, results)
 
     es = json.loads((state_dir / "a.el.json").read_text())
@@ -79,7 +81,8 @@ def test_pinned_ref_change_resets_entry(tmp_path: Path) -> None:
 
     from soma_inits_upgrades.state import read_global_state
     gs = read_global_state(gs_path)
-    results = json.loads(inp.read_text())["results"]
+    from soma_inits_upgrades.cli_helpers import load_stale_inits
+    results = load_stale_inits(inp)
     run_setup(gs, gs_path, inp.resolve(), out, state_dir, results)
 
     es = json.loads((state_dir / "a.el.json").read_text())

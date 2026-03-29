@@ -47,8 +47,8 @@ def _ctx(
         state_dir=sd, init_stem="soma-pkg-init",
         results=[{
             "init_file": "soma-pkg-init.el",
-            "repo_url": "https://forge.test/r",
-            "pinned_ref": "old",
+            "repos": [{"repo_url": "https://forge.test/r",
+                        "pinned_ref": "old"}],
         }],
         xclip_checker=lambda: False,
         run_fn=make_fake_git(checkout_ok=True, **git_kw),

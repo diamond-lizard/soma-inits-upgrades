@@ -15,6 +15,13 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
+_URL = "https://forge.test/r"
+
+
+def _entry(name: str, ref: str) -> dict[str, object]:
+    return {"init_file": name, "repos": [{"repo_url": _URL, "pinned_ref": ref}]}
+
+
 def _done_tasks() -> dict[str, bool]:
     """Return tasks_completed with all tasks True."""
     return dict.fromkeys((*TIER_2_TASKS, "temp_cleanup"), True)
@@ -65,7 +72,7 @@ def test_retry_in_progress(tmp_path: Path) -> None:
     gs.entries_summary.error = 1
     atomic_write_json(sd / "global.json", gs)
     write_graph(tmp_path / "soma-inits-dependency-graphs.json", {})
-    results = [{"init_file": "x.el", "repo_url": "https://forge.test/r", "pinned_ref": "a"}]
+    results = [_entry("x.el", "a")]
     dispatch_entry_processing(results, sd, tmp_path, gs, make_fake_git(clone_ok=False))
     state = read_entry_state(sd / "x.el.json")
     assert state is not None
@@ -91,7 +98,7 @@ def test_retry_done_phase(tmp_path: Path) -> None:
     gs.entries_summary.error = 1
     atomic_write_json(sd / "global.json", gs)
     write_graph(tmp_path / "soma-inits-dependency-graphs.json", {})
-    results = [{"init_file": "x.el", "repo_url": "https://forge.test/r", "pinned_ref": "a"}]
+    results = [_entry("x.el", "a")]
     dispatch_entry_processing(results, sd, tmp_path, gs, make_fake_git(clone_ok=False))
     state = read_entry_state(sd / "x.el.json")
     assert state is not None and state.retries_remaining == 2
@@ -118,8 +125,8 @@ def test_retry_exhaustion(tmp_path: Path) -> None:
     atomic_write_json(sd / "global.json", gs)
     write_graph(tmp_path / "soma-inits-dependency-graphs.json", {})
     results = [
-        {"init_file": "good.el", "repo_url": "https://forge.test/r", "pinned_ref": "a"},
-        {"init_file": "x.el", "repo_url": "https://forge.test/r", "pinned_ref": "a"},
+        _entry("good.el", "a"),
+        _entry("x.el", "a"),
     ]
     dispatch_entry_processing(results, sd, tmp_path, gs, make_fake_git())
     state = read_entry_state(sd / "x.el.json")

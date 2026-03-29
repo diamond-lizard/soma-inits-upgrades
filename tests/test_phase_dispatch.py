@@ -14,6 +14,12 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
+_URL = "https://forge.test/r"
+
+
+def _entry(ref: str) -> dict[str, object]:
+    return {"init_file": "x.el", "repos": [{"repo_url": _URL, "pinned_ref": ref}]}
+
 def test_viability_passes_with_done_entries(tmp_path: Path) -> None:
     """Returns normally when at least one entry succeeded."""
     summary = EntriesSummary(total=2, done=1, error=1)
@@ -83,7 +89,7 @@ def test_resume_returns_false_no_changes(tmp_path: Path) -> None:
     atomic_write_json(sd / "global.json", gs)
     gp = tmp_path / "soma-inits-dependency-graphs.json"
     gp.write_text("{}", encoding="utf-8")
-    results = [{"init_file": "x.el", "repo_url": "https://forge.test/r", "pinned_ref": "a"}]
+    results = [_entry("a")]
     assert resume_completed_entry_processing(results, sd, tmp_path, gs) is False
 
 
@@ -107,5 +113,5 @@ def test_resume_returns_true_retryable_errors(tmp_path: Path) -> None:
     atomic_write_json(sd / "global.json", gs)
     gp = tmp_path / "soma-inits-dependency-graphs.json"
     gp.write_text("{}", encoding="utf-8")
-    results = [{"init_file": "x.el", "repo_url": "https://forge.test/r", "pinned_ref": "a"}]
+    results = [_entry("a")]
     assert resume_completed_entry_processing(results, sd, tmp_path, gs) is True

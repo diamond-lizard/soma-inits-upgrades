@@ -23,7 +23,8 @@ def _setup(
     sd.mkdir(parents=True)
     td = tmp_path / ".tmp"
     td.mkdir()
-    entry = {"init_file": "x.el", "repo_url": "https://forge.test/r", "pinned_ref": "old"}
+    _url = "https://forge.test/r"
+    entry = {"init_file": "x.el", "repos": [{"repo_url": _url, "pinned_ref": "old"}]}
     es = EntryState(
         init_file="x.el",
         repos=[RepoState(

@@ -44,8 +44,8 @@ def _ctx(tmp_path: Path, **git_kw: object) -> RepoContext:
         entry_idx=1, total=1, output_dir=tmp_path, tmp_dir=td,
         state_dir=sd, init_stem="x",
         results=[{
-            "init_file": "x.el", "repo_url": "https://forge.test/r",
-            "pinned_ref": "old",
+            "init_file": "x.el",
+            "repos": [{"repo_url": "https://forge.test/r", "pinned_ref": "old"}],
         }],
         xclip_checker=lambda: False, run_fn=make_fake_git(**git_kw),
     )

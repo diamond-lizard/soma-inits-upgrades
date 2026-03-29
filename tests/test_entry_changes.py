@@ -13,6 +13,12 @@ from soma_inits_upgrades.graph import write_graph
 from soma_inits_upgrades.state import atomic_write_json
 from soma_inits_upgrades.state_schema import EntryState, GlobalState, RepoState
 
+_URL = "https://forge.test/r"
+
+
+def _entry(ref: str) -> dict[str, object]:
+    return {"init_file": "x.el", "repos": [{"repo_url": _URL, "pinned_ref": ref}]}
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -33,7 +39,7 @@ def test_detect_new_entries(tmp_path: Path) -> None:
     """New entries appear in new_entry_names."""
     sd = tmp_path / ".state"
     sd.mkdir(parents=True)
-    results = [{"init_file": "x.el", "repo_url": "https://forge.test/r", "pinned_ref": "a"}]
+    results = [_entry("a")]
     new, modified = detect_entry_changes(results, sd, tmp_path)
     assert new == ["x.el"]
     assert modified == []
@@ -44,7 +50,7 @@ def test_detect_modified_entries(tmp_path: Path) -> None:
     sd = tmp_path / ".state"
     sd.mkdir(parents=True)
     _write_entry(sd, "x.el")
-    results = [{"init_file": "x.el", "repo_url": "https://forge.test/r", "pinned_ref": "b"}]
+    results = [_entry("b")]
     new, modified = detect_entry_changes(results, sd, tmp_path)
     assert new == []
     assert modified == ["x.el"]
@@ -55,7 +61,7 @@ def test_detect_unchanged(tmp_path: Path) -> None:
     sd = tmp_path / ".state"
     sd.mkdir(parents=True)
     _write_entry(sd, "x.el")
-    results = [{"init_file": "x.el", "repo_url": "https://forge.test/r", "pinned_ref": "a"}]
+    results = [_entry("a")]
     new, modified = detect_entry_changes(results, sd, tmp_path)
     assert new == [] and modified == []
 
@@ -94,7 +100,7 @@ def test_retry_errored_with_retries(tmp_path: Path) -> None:
     es.notes = "some error"
     es.tasks_completed["clone"] = True
     atomic_write_json(sd / "x.el.json", es)
-    results = [{"init_file": "x.el", "repo_url": "https://forge.test/r", "pinned_ref": "a"}]
+    results = [_entry("a")]
     count = retry_errored_entries(results, sd)
     assert count == 1
     from soma_inits_upgrades.state import read_entry_state
@@ -118,6 +124,6 @@ def test_retry_exhausted(tmp_path: Path) -> None:
     es.status = "error"
     es.retries_remaining = 0
     atomic_write_json(sd / "x.el.json", es)
-    results = [{"init_file": "x.el", "repo_url": "https://forge.test/r", "pinned_ref": "a"}]
+    results = [_entry("a")]
     count = retry_errored_entries(results, sd)
     assert count == 0

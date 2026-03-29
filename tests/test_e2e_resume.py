@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from e2e_helpers import RESULTS, pre_create_llm_outputs, write_stale_json
+from e2e_helpers import GROUPED_RESULTS, pre_create_llm_outputs, write_stale_json
 from e2e_setup import make_fake_git_for_e2e, run_setup_phase
 
 from soma_inits_upgrades.finalization import (
@@ -39,12 +39,12 @@ def test_e2e_resumability(tmp_path: Path) -> None:
     assert gs2.phases.setup == "done"
     assert gs2.phases.entry_processing == "pending"
 
-    for entry in RESULTS:
+    for entry in GROUPED_RESULTS:
         pre_create_llm_outputs(output_dir, entry["init_file"])
 
     fg = make_fake_git_for_e2e(output_dir / ".tmp")
     needs_rerun = run_entry_processing(
-        RESULTS, state_dir, output_dir, gs2, fg,
+        GROUPED_RESULTS, state_dir, output_dir, gs2, fg,
         input_fn=lambda _: "c",
     )
     complete_entry_processing(gs2, state_dir, needs_rerun)

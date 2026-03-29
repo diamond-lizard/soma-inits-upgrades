@@ -16,6 +16,13 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
+_URL = "https://forge.test/r"
+
+
+def _entry(name: str, ref: str) -> dict[str, object]:
+    return {"init_file": name, "repos": [{"repo_url": _URL, "pinned_ref": ref}]}
+
+
 def test_self_healing_reclone(tmp_path: Path) -> None:
     """Missing clone dir triggers self-healing re-clone."""
     sd = tmp_path / ".state"
@@ -38,7 +45,7 @@ def test_self_healing_reclone(tmp_path: Path) -> None:
     gsp = sd / "global.json"
     atomic_write_json(gsp, gs)
     write_graph(tmp_path / "soma-inits-dependency-graphs.json", {})
-    entry = {"init_file": "x.el", "repo_url": "https://forge.test/r", "pinned_ref": "old"}
+    entry = _entry("x.el", "old")
     fg = make_fake_git(clone_ok=False)
     process_single_entry(
         entry, 1, 1, sd, tmp_path, gs, gsp, fg, [entry], lambda: False,
@@ -72,8 +79,8 @@ def test_new_entry_detection(tmp_path: Path) -> None:
     atomic_write_json(sd / "global.json", gs)
     write_graph(tmp_path / "soma-inits-dependency-graphs.json", {})
     results = [
-        {"init_file": "old.el", "repo_url": "https://forge.test/r", "pinned_ref": "a"},
-        {"init_file": "new.el", "repo_url": "https://forge.test/r", "pinned_ref": "b"},
+        _entry("old.el", "a"),
+        _entry("new.el", "b"),
     ]
     dispatch_entry_processing(
         results, sd, tmp_path, gs, make_fake_git(clone_ok=False),
@@ -104,7 +111,7 @@ def test_modified_entry_detection(tmp_path: Path) -> None:
     )
     atomic_write_json(sd / "global.json", gs)
     write_graph(tmp_path / "soma-inits-dependency-graphs.json", {})
-    results = [{"init_file": "x.el", "repo_url": "https://forge.test/r", "pinned_ref": "NEW"}]
+    results = [_entry("x.el", "NEW")]
     dispatch_entry_processing(
         results, sd, tmp_path, gs, make_fake_git(clone_ok=False),
     )
@@ -142,7 +149,7 @@ def test_orphan_removal(tmp_path: Path) -> None:
              "depends_on": [], "min_emacs_version": None},
         ], "depended_on_by": []},
     })
-    results = [{"init_file": "keep.el", "repo_url": "https://forge.test/r", "pinned_ref": "a"}]
+    results = [_entry("keep.el", "a")]
     dispatch_entry_processing(results, sd, tmp_path, gs, make_fake_git())
     assert "drop.el" not in gs.entry_names
     assert not (sd / "drop.el.json").exists()

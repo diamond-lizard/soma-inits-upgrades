@@ -62,13 +62,22 @@ def test_pinned_ref_empty_rejected() -> None:
         )
 
 
-def test_stale_inits_file_duplicate_rejected() -> None:
-    """Verify duplicate init_file values are rejected."""
-    with pytest.raises(ValidationError):
+def test_stale_inits_file_duplicate_pair_rejected() -> None:
+    """Verify duplicate (init_file, repo_url) pairs are rejected."""
+    with pytest.raises(ValidationError, match=r"duplicate.*init_file.*repo_url"):
         StaleInitsFile(results=[
             {"init_file": "a.el", "repo_url": "https://x/y", "pinned_ref": "1"},
-            {"init_file": "a.el", "repo_url": "https://x/z", "pinned_ref": "2"},
+            {"init_file": "a.el", "repo_url": "https://x/y", "pinned_ref": "2"},
         ])
+
+
+def test_stale_inits_file_same_init_different_repo_accepted() -> None:
+    """Verify same init_file with different repo_url is accepted."""
+    f = StaleInitsFile(results=[
+        {"init_file": "a.el", "repo_url": "https://x/y", "pinned_ref": "1"},
+        {"init_file": "a.el", "repo_url": "https://x/z", "pinned_ref": "2"},
+    ])
+    assert len(f.results) == 2
 
 
 def test_stale_inits_file_empty_results() -> None:
