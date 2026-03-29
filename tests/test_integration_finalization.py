@@ -6,7 +6,8 @@ import json
 from typing import TYPE_CHECKING
 
 from soma_inits_upgrades.finalization import dispatch_graph_finalization
-from soma_inits_upgrades.graph import add_entry, write_graph
+from soma_inits_upgrades.graph import write_graph
+from soma_inits_upgrades.graph_entry import add_entry
 from soma_inits_upgrades.state import atomic_write_json
 from soma_inits_upgrades.state_schema import GlobalState
 
@@ -31,8 +32,14 @@ def _setup_graph_finalization(
     gs_path = state_dir / "global.json"
     atomic_write_json(gs_path, gs)
     graph: dict = {}
-    add_entry(graph, "soma-dash-init.el", "dash", "26.1", [])
-    add_entry(graph, "soma-magit-init.el", "magit", "27.1", ["dash"])
+    add_entry(graph, "soma-dash-init.el", [
+        {"package": "dash", "repo_url": "https://github.com/test/dash",
+         "min_emacs_version": "26.1", "depends_on": []},
+    ])
+    add_entry(graph, "soma-magit-init.el", [
+        {"package": "magit", "repo_url": "https://github.com/test/magit",
+         "min_emacs_version": "27.1", "depends_on": ["dash"]},
+    ])
     graph_path = tmp_path / "soma-inits-dependency-graphs.json"
     write_graph(graph_path, graph)
     return gs, gs_path, graph_path
@@ -45,7 +52,7 @@ def test_graph_finalization_populates_depended_on_by(
     gs, gs_path, graph_path = _setup_graph_finalization(tmp_path)
     dispatch_graph_finalization(gs, gs_path, tmp_path)
     graph = json.loads(graph_path.read_text(encoding="utf-8"))
-    assert graph["soma-dash-init.el"]["depended_on_by"] == ["magit"]
+    assert graph["soma-dash-init.el"]["depended_on_by"] == ["soma-magit-init.el"]
     assert graph["soma-magit-init.el"]["depended_on_by"] == []
     assert gs.phases.graph_finalization == "done"
     assert gs.graph_finalization_tasks.inversion is True
@@ -66,7 +73,10 @@ def test_graph_finalization_writes_warnings(tmp_path: Path) -> None:
     """Graph Finalization writes warnings file when validation issues exist."""
     gs, gs_path, graph_path = _setup_graph_finalization(tmp_path)
     graph = json.loads(graph_path.read_text(encoding="utf-8"))
-    add_entry(graph, "soma-dup-init.el", "dash", None, [])
+    add_entry(graph, "soma-dup-init.el", [
+        {"package": "dash", "repo_url": "https://github.com/test/dash",
+         "min_emacs_version": None, "depends_on": []},
+    ])
     write_graph(graph_path, graph)
     dispatch_graph_finalization(gs, gs_path, tmp_path)
     warnings_path = tmp_path / "dependency-graph-warnings.md"

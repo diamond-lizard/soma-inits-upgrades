@@ -148,9 +148,10 @@ def _write_dep_graph(output_dir: Path) -> None:
     """Write a dependency graph with one entry."""
     graph = {
         "soma-alpha-init.el": {
-            "package": "alpha",
-            "min_emacs_version": None,
-            "depends_on": [],
+            "packages": [
+                {"package": "alpha", "repo_url": "https://github.com/t/alpha",
+                 "min_emacs_version": None, "depends_on": []},
+            ],
             "depended_on_by": [],
         },
     }

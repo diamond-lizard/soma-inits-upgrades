@@ -69,8 +69,9 @@ def test_handle_orphaned_entries(tmp_path: Path) -> None:
     gs = GlobalState(entry_names=["old.el"])
     gp = tmp_path / "soma-inits-dependency-graphs.json"
     write_graph(gp, {"old.el": {
-        "package": "old", "depends_on": [],
-        "depended_on_by": [], "min_emacs_version": None,
+        "packages": [{"package": "old", "repo_url": "https://github.com/t/old",
+                      "depends_on": [], "min_emacs_version": None}],
+        "depended_on_by": [],
     }})
     count = handle_orphaned_entries([], sd, tmp_path, gs)
     assert count == 1

@@ -137,8 +137,10 @@ def test_orphan_removal(tmp_path: Path) -> None:
     )
     atomic_write_json(sd / "global.json", gs)
     write_graph(tmp_path / "soma-inits-dependency-graphs.json", {
-        "drop.el": {"package": "drop", "depends_on": [],
-                    "depended_on_by": [], "min_emacs_version": None},
+        "drop.el": {"packages": [
+            {"package": "drop", "repo_url": "https://github.com/t/drop",
+             "depends_on": [], "min_emacs_version": None},
+        ], "depended_on_by": []},
     })
     results = [{"init_file": "keep.el", "repo_url": "https://forge.test/r", "pinned_ref": "a"}]
     dispatch_entry_processing(results, sd, tmp_path, gs, make_fake_git())

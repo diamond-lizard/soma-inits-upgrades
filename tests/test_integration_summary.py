@@ -5,7 +5,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from soma_inits_upgrades.finalization import dispatch_summary_stage
-from soma_inits_upgrades.graph import add_entry, write_graph
+from soma_inits_upgrades.graph import write_graph
+from soma_inits_upgrades.graph_entry import add_entry
 from soma_inits_upgrades.state import atomic_write_json
 from soma_inits_upgrades.state_schema import EntryState, GlobalState, RepoState
 
@@ -45,8 +46,14 @@ def _setup_summary(tmp_path: Path) -> tuple[GlobalState, Path]:
         "# Review\n\nRisk Rating: low\n", encoding="utf-8",
     )
     graph: dict = {}
-    add_entry(graph, "soma-dash-init.el", "dash", "26.1", [])
-    add_entry(graph, "soma-magit-init.el", "magit", "29.1", ["dash"])
+    add_entry(graph, "soma-dash-init.el", [
+        {"package": "dash", "repo_url": "https://github.com/test/dash",
+         "min_emacs_version": "26.1", "depends_on": []},
+    ])
+    add_entry(graph, "soma-magit-init.el", [
+        {"package": "magit", "repo_url": "https://github.com/test/magit",
+         "min_emacs_version": "29.1", "depends_on": ["dash"]},
+    ])
     graph_path = tmp_path / "soma-inits-dependency-graphs.json"
     write_graph(graph_path, graph)
     return gs, gs_path

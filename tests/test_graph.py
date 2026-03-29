@@ -18,15 +18,17 @@ def _sample_graph() -> dict:
     """Return a sample graph with two entries."""
     return {
         "soma-dash-init.el": {
-            "package": "dash",
-            "min_emacs_version": "26.1",
-            "depends_on": [],
+            "packages": [
+                {"package": "dash", "repo_url": "https://github.com/test/dash",
+                 "min_emacs_version": "26.1", "depends_on": []},
+            ],
             "depended_on_by": [],
         },
         "soma-magit-init.el": {
-            "package": "magit",
-            "min_emacs_version": "27.1",
-            "depends_on": ["dash"],
+            "packages": [
+                {"package": "magit", "repo_url": "https://github.com/test/magit",
+                 "min_emacs_version": "27.1", "depends_on": ["dash"]},
+            ],
             "depended_on_by": [],
         },
     }
@@ -74,7 +76,7 @@ def test_read_invalid_no_backup(tmp_path: Path) -> None:
 def test_write_creates_backup(tmp_path: Path) -> None:
     """Write creates a .bak before overwriting."""
     path = tmp_path / "graph.json"
-    original = {"old": {"package": "old", "depends_on": []}}
+    original = {"old": {"packages": [{"package": "old"}], "depended_on_by": []}}
     path.write_text(json.dumps(original), encoding="utf-8")
     write_graph(path, _sample_graph())
     bak = tmp_path / "graph.json.bak"

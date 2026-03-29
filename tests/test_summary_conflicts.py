@@ -17,14 +17,12 @@ if TYPE_CHECKING:
 def test_identify_version_conflicts_found() -> None:
     """Identifies packages requiring newer Emacs."""
     graph = {
-        "a.el": {
-            "package": "pkg-a",
-            "min_emacs_version": "30.1",
-        },
-        "b.el": {
-            "package": "pkg-b",
-            "min_emacs_version": "27.1",
-        },
+        "a.el": {"packages": [
+            {"package": "pkg-a", "min_emacs_version": "30.1"},
+        ]},
+        "b.el": {"packages": [
+            {"package": "pkg-b", "min_emacs_version": "27.1"},
+        ]},
     }
     result = identify_version_conflicts(graph, ["a.el", "b.el"], "28.1")
     assert len(result) == 1
@@ -35,10 +33,9 @@ def test_identify_version_conflicts_found() -> None:
 def test_identify_version_conflicts_none() -> None:
     """Returns empty list when no conflicts."""
     graph = {
-        "a.el": {
-            "package": "pkg-a",
-            "min_emacs_version": "27.1",
-        },
+        "a.el": {"packages": [
+            {"package": "pkg-a", "min_emacs_version": "27.1"},
+        ]},
     }
     result = identify_version_conflicts(graph, ["a.el"], "29.1")
     assert result == []
@@ -52,7 +49,7 @@ def test_identify_version_conflicts_missing_entry() -> None:
 
 def test_identify_version_conflicts_no_min_version() -> None:
     """Skips entries with no min_emacs_version."""
-    graph = {"a.el": {"package": "pkg-a", "min_emacs_version": None}}
+    graph = {"a.el": {"packages": [{"package": "pkg-a", "min_emacs_version": None}]}}
     result = identify_version_conflicts(graph, ["a.el"], "28.1")
     assert result == []
 
@@ -80,7 +77,9 @@ def test_format_version_conflicts_report_content() -> None:
 def test_write_version_conflicts_creates_file(tmp_path: Path) -> None:
     """Writes conflict report when conflicts exist."""
     graph = {
-        "a.el": {"package": "pkg-a", "min_emacs_version": "30.1"},
+        "a.el": {"packages": [
+            {"package": "pkg-a", "min_emacs_version": "30.1"},
+        ]},
     }
     out = tmp_path / "conflicts.md"
     write_version_conflicts(graph, ["a.el"], "28.1", out)
@@ -92,7 +91,9 @@ def test_write_version_conflicts_creates_file(tmp_path: Path) -> None:
 def test_write_version_conflicts_no_file(tmp_path: Path) -> None:
     """Does not create file when no conflicts."""
     graph = {
-        "a.el": {"package": "pkg-a", "min_emacs_version": "27.1"},
+        "a.el": {"packages": [
+            {"package": "pkg-a", "min_emacs_version": "27.1"},
+        ]},
     }
     out = tmp_path / "conflicts.md"
     write_version_conflicts(graph, ["a.el"], "29.1", out)

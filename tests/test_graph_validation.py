@@ -2,29 +2,35 @@
 
 from __future__ import annotations
 
-from soma_inits_upgrades.graph import add_entry, remove_entries
-from soma_inits_upgrades.graph_validation import (
-    invert_dependencies,
-    validate_graph,
-)
+from soma_inits_upgrades.graph_entry import add_entry, remove_entries
+from soma_inits_upgrades.graph_inversion import invert_dependencies
+from soma_inits_upgrades.graph_validation import validate_graph
+
+
+def _pkgs(
+    name: str, ver: str | None = None, deps: list[str] | None = None,
+) -> list[dict[str, object]]:
+    """Build a single-element packages list for add_entry."""
+    return [{"package": name, "repo_url": f"https://github.com/t/{name}",
+             "min_emacs_version": ver, "depends_on": deps or []}]
 
 
 def _two_entry_graph() -> dict:
     """Graph where magit depends on dash."""
     g: dict = {}
-    add_entry(g, "soma-dash-init.el", "dash", "26.1", [])
-    add_entry(g, "soma-magit-init.el", "magit", "27.1", ["dash"])
+    add_entry(g, "soma-dash-init.el", _pkgs("dash", "26.1"))
+    add_entry(g, "soma-magit-init.el", _pkgs("magit", "27.1", ["dash"]))
     return g
 
 
 def test_add_entry_fields() -> None:
     """Verify add_entry sets all fields correctly."""
     g: dict = {}
-    add_entry(g, "soma-dash-init.el", "dash", "26.1", ["cl-lib"])
+    add_entry(g, "soma-dash-init.el", _pkgs("dash", "26.1", ["cl-lib"]))
     entry = g["soma-dash-init.el"]
-    assert entry["package"] == "dash"
-    assert entry["min_emacs_version"] == "26.1"
-    assert entry["depends_on"] == ["cl-lib"]
+    assert entry["packages"][0]["package"] == "dash"
+    assert entry["packages"][0]["min_emacs_version"] == "26.1"
+    assert entry["packages"][0]["depends_on"] == ["cl-lib"]
     assert entry["depended_on_by"] == []
 
 
@@ -50,14 +56,6 @@ def test_remove_empty_list() -> None:
     assert len(g) == 2
 
 
-def test_inversion() -> None:
-    """Verify depended_on_by is computed from depends_on."""
-    g = _two_entry_graph()
-    invert_dependencies(g)
-    assert g["soma-dash-init.el"]["depended_on_by"] == ["magit"]
-    assert g["soma-magit-init.el"]["depended_on_by"] == []
-
-
 def test_validate_consistent() -> None:
     """A consistent graph produces no warnings."""
     g = _two_entry_graph()
@@ -75,8 +73,8 @@ def test_validate_broken_symmetry() -> None:
 def test_validate_duplicate_packages() -> None:
     """Two entries with same package name triggers a warning."""
     g: dict = {}
-    add_entry(g, "soma-a-init.el", "dash", None, [])
-    add_entry(g, "soma-b-init.el", "dash", None, [])
+    add_entry(g, "soma-a-init.el", _pkgs("dash"))
+    add_entry(g, "soma-b-init.el", _pkgs("dash"))
     warnings = validate_graph(g)
     assert any("Duplicate" in w for w in warnings)
 
@@ -84,8 +82,8 @@ def test_validate_duplicate_packages() -> None:
 def test_validate_cycle_detection() -> None:
     """Circular dependency is detected."""
     g: dict = {}
-    add_entry(g, "soma-a-init.el", "pkg-a", None, ["pkg-b"])
-    add_entry(g, "soma-b-init.el", "pkg-b", None, ["pkg-a"])
+    add_entry(g, "soma-a-init.el", _pkgs("pkg-a", deps=["pkg-b"]))
+    add_entry(g, "soma-b-init.el", _pkgs("pkg-b", deps=["pkg-a"]))
     warnings = validate_graph(g)
     assert any("Circular" in w for w in warnings)
 
