@@ -25,7 +25,7 @@ def finalize_entry(ctx: EntryContext) -> None:
             ctx.entry_state.status = "done"
 
     status = ctx.entry_state.status
-    cleanup_done = ctx.entry_state.tasks_completed.get("cleanup", False)
+    cleanup_done = ctx.entry_state.tasks_completed.get("temp_cleanup", False)
     is_permanent_error = status == "error" and ctx.entry_state.retries_remaining == 0
     can_cleanup = status == "done" or is_permanent_error
     if not cleanup_done and can_cleanup:
@@ -33,7 +33,7 @@ def finalize_entry(ctx: EntryContext) -> None:
             ctx.entry_state.init_file, ctx.output_dir,
             include_permanent=False, include_temp=True,
         )
-        ctx.entry_state.tasks_completed["cleanup"] = True
+        ctx.entry_state.tasks_completed["temp_cleanup"] = True
         if status == "error":
             _cleanup_malformed(ctx)
             atomic_write_json(ctx.entry_state_path, ctx.entry_state)

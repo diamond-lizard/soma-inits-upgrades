@@ -31,9 +31,11 @@ def reset_phases_for_new_entries(
 
 
 def _reset_errored_repo_reasons(repos: list[RepoState]) -> None:
-    """Reset done_reason to None for repos with error status."""
+    """Reset tier1_tasks_completed and done_reason for errored repos."""
     for repo in repos:
         if repo.done_reason == "error":
+            for key in repo.tier1_tasks_completed:
+                repo.tier1_tasks_completed[key] = False
             repo.done_reason = None
 
 

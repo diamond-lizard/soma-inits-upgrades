@@ -83,7 +83,7 @@ def process_single_entry(
         entry_idx=idx,
         total=total,
         output_dir=output_dir,
-        tmp_dir=output_dir / ".tmp",
+        tmp_dir=output_dir / ".tmp" / init_stem,
         state_dir=state_dir,
         init_stem=init_stem,
         results=results,

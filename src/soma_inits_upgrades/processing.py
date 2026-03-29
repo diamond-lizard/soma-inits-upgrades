@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from soma_inits_upgrades.entry_tasks import task_clone, task_default_branch
 from soma_inits_upgrades.entry_tasks_analysis import task_deps, task_version_check
-from soma_inits_upgrades.entry_tasks_diff import task_diff
+from soma_inits_upgrades.entry_tasks_diff import task_diff, task_temp_cleanup
 from soma_inits_upgrades.entry_tasks_graph import task_graph_update
 from soma_inits_upgrades.entry_tasks_llm import (
     task_security_review,
@@ -19,7 +19,7 @@ from soma_inits_upgrades.output_validation_tasks import task_validate_outputs
 from soma_inits_upgrades.processing_runner import (
     run_entry_task_loop as run_entry_task_loop,
 )
-from soma_inits_upgrades.state_schema import TIER_1_TASKS, TIER_2_TASKS
+from soma_inits_upgrades.state_schema import CLEANUP_TASKS, TIER_1_TASKS, TIER_2_TASKS
 
 if TYPE_CHECKING:
     from soma_inits_upgrades.protocols import (
@@ -43,6 +43,10 @@ TIER_2_HANDLERS: dict[str, Tier2TaskHandler] = {
     "upgrade_report": task_upgrade_report,
     "graph_update": task_graph_update,
     "validate_outputs": task_validate_outputs,
+}
+
+CLEANUP_HANDLERS: dict[str, Tier2TaskHandler] = {
+    "temp_cleanup": task_temp_cleanup,
 }
 
 
@@ -69,6 +73,7 @@ def _validate_handlers() -> None:
     for name, handlers, tasks in (
         ("TIER_1", TIER_1_HANDLERS, TIER_1_TASKS),
         ("TIER_2", TIER_2_HANDLERS, TIER_2_TASKS),
+        ("CLEANUP", CLEANUP_HANDLERS, CLEANUP_TASKS),
     ):
         keys = set(handlers.keys())
         expected = set(tasks)

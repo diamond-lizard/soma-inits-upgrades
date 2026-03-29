@@ -18,7 +18,7 @@ def get_entry_artifact_paths(
     Returns a dict with keys 'permanent', 'temp', and 'state'.
     """
     init_stem = init_file_name.removesuffix(".el")
-    tmp_dir = output_dir / ".tmp"
+    tmp_dir = output_dir / ".tmp" / init_stem
     state_dir = output_dir / ".state"
 
     permanent: list[Path] = [
@@ -29,15 +29,7 @@ def get_entry_artifact_paths(
         tmp_dir / f"{init_stem}-upgrade-analysis.json.malformed",
     ]
 
-    temp: list[Path] = [
-        tmp_dir / f"{init_stem}.diff",
-        tmp_dir / f"{init_stem}-usage-analysis.json",
-        tmp_dir / f"{init_stem}-upgrade-analysis.json",
-        tmp_dir / f"{init_stem}-security-review.prompt.md",
-        tmp_dir / f"{init_stem}-upgrade-analysis.prompt.md",
-        tmp_dir / f"{init_stem}-upgrade-report.prompt.md",
-        tmp_dir / init_stem,
-    ]
+    temp: list[Path] = [tmp_dir]
 
     state: list[Path] = [state_dir / f"{init_file_name}.json"]
 

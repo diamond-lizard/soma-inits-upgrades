@@ -30,10 +30,12 @@ TIER_2_TASKS: tuple[str, ...] = (
     "graph_update", "validate_outputs",
 )
 
+CLEANUP_TASKS: tuple[str, ...] = ("temp_cleanup",)
+
 
 def _default_tasks_completed() -> dict[str, bool]:
     """Build default tasks_completed dict for Tier 2 and cleanup."""
-    return dict.fromkeys((*TIER_2_TASKS, "cleanup"), False)
+    return dict.fromkeys((*TIER_2_TASKS, *CLEANUP_TASKS), False)
 
 
 def _default_tier1_tasks_completed() -> dict[str, bool]:

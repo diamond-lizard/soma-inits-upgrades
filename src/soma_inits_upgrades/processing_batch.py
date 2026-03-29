@@ -25,13 +25,13 @@ def cleanup_orphaned_temp_files(
         state = read_entry_state(path)
         if state is None:
             continue
-        cleanup_done = state.tasks_completed.get("cleanup", False)
+        cleanup_done = state.tasks_completed.get("temp_cleanup", False)
         is_terminal = state.status == "done" or (
             state.status == "error" and state.retries_remaining == 0
         )
         if not cleanup_done and is_terminal:
             delete_entry_artifacts(name, output_dir, include_permanent=False, include_temp=True)
-            state.tasks_completed["cleanup"] = True
+            state.tasks_completed["temp_cleanup"] = True
             atomic_write_json(path, state)
 
 

@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from soma_inits_upgrades.entry_tasks_diff import task_cleanup
+from soma_inits_upgrades.entry_tasks_diff import clone_cleanup, task_temp_cleanup
+from soma_inits_upgrades.repo_utils import derive_repo_dir_name
 
 if TYPE_CHECKING:
     from soma_inits_upgrades.protocols import EntryContext
@@ -23,10 +24,11 @@ def run_entry_task_loop(ctx: EntryContext) -> bool:
     for repo_state in ctx.entry_state.repos:
         if repo_state.done_reason is not None:
             continue
+        repo_temp = ctx.tmp_dir / derive_repo_dir_name(repo_state.repo_url)
         repo_ctx = RepoContext(
             entry_ctx=ctx, repo_state=repo_state,
-            temp_dir=ctx.tmp_dir,
-            clone_dir=ctx.tmp_dir / ctx.init_stem,
+            temp_dir=repo_temp,
+            clone_dir=repo_temp / "clone",
         )
         while True:
             task_name = find_next_tier1_task(repo_state.tier1_tasks_completed)
@@ -53,9 +55,10 @@ def run_entry_task_loop(ctx: EntryContext) -> bool:
                     f"internal error: no progress made processing {url}",
                 )
                 break
+        clone_cleanup(repo_ctx)
     if any(r.done_reason is None for r in ctx.entry_state.repos):
         needs_rerun = _run_tier2_loop(ctx, needs_rerun)
-    task_cleanup(ctx)
+    task_temp_cleanup(ctx)
     return needs_rerun
 
 

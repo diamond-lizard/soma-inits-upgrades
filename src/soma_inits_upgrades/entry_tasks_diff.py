@@ -47,30 +47,30 @@ def task_diff(repo_ctx: RepoContext) -> bool:
     return False
 
 
-def task_cleanup(ctx: EntryContext) -> bool:
-    """Clean up temporary files for this entry."""
-    if ctx.entry_state.tasks_completed.get("cleanup", False):
+def task_temp_cleanup(ctx: EntryContext) -> bool:
+    """Delete remaining temp artifacts under the per-init-file directory."""
+    if ctx.entry_state.tasks_completed.get("temp_cleanup", False):
         return False
+    from soma_inits_upgrades.git_ops import safe_rmtree
     from soma_inits_upgrades.state import mark_task_complete
-    from soma_inits_upgrades.state_artifacts import delete_entry_artifacts
-
-    delete_entry_artifacts(
-        ctx.entry_state.init_file, ctx.output_dir,
-        include_permanent=False, include_temp=True,
-    )
-    mark_task_complete(ctx.entry_state, "cleanup", ctx.entry_state_path)
+    if ctx.tmp_dir.is_dir():
+        safe_rmtree(ctx.tmp_dir, ctx.output_dir)
+    mark_task_complete(ctx.entry_state, "temp_cleanup", ctx.entry_state_path)
     return False
 
 
 def _cleanup_repo_temp(repo_ctx: RepoContext) -> None:
-    """Delete temp artifacts on error or early exit (per-repo)."""
-    from soma_inits_upgrades.state_artifacts import delete_entry_artifacts
-    ctx = repo_ctx.entry_ctx
-    delete_entry_artifacts(
-        ctx.entry_state.init_file, ctx.output_dir,
-        include_permanent=False, include_temp=True,
-    )
+    """Delete per-repo temp subdirectory on error or early exit."""
+    from soma_inits_upgrades.git_ops import safe_rmtree
+    if repo_ctx.temp_dir.is_dir():
+        safe_rmtree(repo_ctx.temp_dir, repo_ctx.entry_ctx.output_dir)
 
+
+def clone_cleanup(repo_ctx: RepoContext) -> None:
+    """Delete the clone directory for a repo. Idempotent no-op if absent."""
+    from soma_inits_upgrades.git_ops import safe_rmtree
+    if repo_ctx.clone_dir.is_dir():
+        safe_rmtree(repo_ctx.clone_dir, repo_ctx.entry_ctx.output_dir)
 
 def resolve_latest_ref(ctx: EntryContext) -> str | None:
     """Resolve the latest commit SHA on the default branch."""

@@ -5,8 +5,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from soma_inits_upgrades.protocols import EntryContext
 
+
+def _repo_subdir(ctx: EntryContext) -> Path:
+    """Return the per-repo temp subdirectory for repos[0]."""
+    from soma_inits_upgrades.repo_utils import derive_repo_dir_name
+    return ctx.tmp_dir / derive_repo_dir_name(ctx.entry_state.repos[0].repo_url)
 
 def task_security_review(ctx: EntryContext) -> bool:
     """Run the security review LLM pause."""
@@ -14,7 +21,8 @@ def task_security_review(ctx: EntryContext) -> bool:
     from soma_inits_upgrades.processing_helpers import self_heal_entry_resource
     from soma_inits_upgrades.prompts import generate_security_review_prompt
     name = ctx.entry_state.init_file
-    diff_path = ctx.tmp_dir / f"{ctx.init_stem}.diff"
+    repo_dir = _repo_subdir(ctx)
+    diff_path = repo_dir / f"{ctx.init_stem}.diff"
     output_path = ctx.output_dir / f"{name}-security-review.md"
     prompt_path = ctx.tmp_dir / f"{ctx.init_stem}-security-review.prompt.md"
     malformed = output_path.with_suffix(output_path.suffix + ".malformed")
@@ -40,8 +48,9 @@ def task_upgrade_analysis(ctx: EntryContext) -> bool:
     from soma_inits_upgrades.output_validation import validate_upgrade_analysis_output
     from soma_inits_upgrades.processing_helpers import self_heal_entry_resource
     from soma_inits_upgrades.prompts_upgrade import generate_upgrade_analysis_prompt
-    diff_path = ctx.tmp_dir / f"{ctx.init_stem}.diff"
-    usage_path = ctx.tmp_dir / f"{ctx.init_stem}-usage-analysis.json"
+    repo_dir = _repo_subdir(ctx)
+    diff_path = repo_dir / f"{ctx.init_stem}.diff"
+    usage_path = repo_dir / f"{ctx.init_stem}-usage-analysis.json"
     output_path = ctx.tmp_dir / f"{ctx.init_stem}-upgrade-analysis.json"
     prompt_path = ctx.tmp_dir / f"{ctx.init_stem}-upgrade-analysis.prompt.md"
     malformed = output_path.with_suffix(output_path.suffix + ".malformed")

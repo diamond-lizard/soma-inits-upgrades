@@ -36,7 +36,7 @@ def cleanup_malformed_files(output_dir: Path, init_file_name: str) -> None:
     patterns = [
         output_dir / f"{init_file_name}-security-review.md.malformed",
         output_dir / f"{init_file_name}-upgrade-process.md.malformed",
-        output_dir / ".tmp" / f"{init_stem}-upgrade-analysis.json.malformed",
+        output_dir / ".tmp" / init_stem / f"{init_stem}-upgrade-analysis.json.malformed",
     ]
     for p in patterns:
         p.unlink(missing_ok=True)
