@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pathlib import Path
 
-from soma_inits_upgrades.prompts import (
+from soma_inits_upgrades.prompts import generate_security_review_prompt
+from soma_inits_upgrades.prompts_helpers import (
     format_common_header,
     format_malformed_context,
-    generate_security_review_prompt,
 )
 
 
@@ -53,7 +53,9 @@ def test_security_review_prompt_contains_key_phrases(tmp_path: Path) -> None:
     diff = tmp_path / "test.diff"
     output = tmp_path / "review.md"
     result = generate_security_review_prompt(
-        "dash", "https://github.com/magnars/dash.el", "aaa", "bbb", diff, output,
+        [{"package_name": "dash", "repo_url": "https://github.com/magnars/dash.el",
+          "pinned_ref": "aaa", "latest_ref": "bbb", "diff_path": diff}],
+        output,
     )
     assert "Security Review" in result
     assert "shell-command" in result
@@ -74,8 +76,9 @@ def test_security_review_prompt_includes_malformed_context(tmp_path: Path) -> No
     malformed = tmp_path / "review.malformed"
     malformed.write_text("old bad review", encoding="utf-8")
     result = generate_security_review_prompt(
-        "dash", "https://github.com/magnars/dash.el", "aaa", "bbb",
-        diff, output, malformed_report_path=malformed,
+        [{"package_name": "dash", "repo_url": "https://github.com/magnars/dash.el",
+          "pinned_ref": "aaa", "latest_ref": "bbb", "diff_path": diff}],
+        output, malformed_report_path=malformed,
     )
     assert "Previous Attempt" in result
     assert "Risk Rating line" in result
