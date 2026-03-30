@@ -67,3 +67,26 @@ def format_dependency_context(
             "WARNING: This package requires a newer Emacs version.\n",
         )
     return "".join(parts)
+
+
+def format_security_preamble() -> str:
+    """Return the contextual preamble for the security review prompt.
+
+    Explains the user's workflow and the purpose of the review so the
+    LLM has enough context to reason about risk.
+    """
+    return (
+        "You will be given the task of performing a security review "
+        "of changes to one or more\n"
+        "Emacs packages. The context of this review is as follows: "
+        "The user manages their\n"
+        "Emacs packages using elpaca, which pins each package to a "
+        "specific git commit. Over\n"
+        "time these pins become stale as upstream repositories "
+        "receive new commits. The user is\n"
+        "using a tool that identifies stale pins and generates diffs "
+        "between the pinned commit\n"
+        "and the latest upstream commit so that the changes can be "
+        "reviewed before the user\n"
+        "decides whether to update each pin.\n\n"
+    )

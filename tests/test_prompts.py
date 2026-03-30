@@ -11,6 +11,7 @@ from soma_inits_upgrades.prompts import generate_security_review_prompt
 from soma_inits_upgrades.prompts_helpers import (
     format_common_header,
     format_malformed_context,
+    format_security_preamble,
 )
 
 
@@ -82,3 +83,25 @@ def test_security_review_prompt_includes_malformed_context(tmp_path: Path) -> No
     )
     assert "Previous Attempt" in result
     assert "Risk Rating line" in result
+
+
+def test_format_security_preamble_content() -> None:
+    """Verify the security preamble contains key context elements."""
+    result = format_security_preamble()
+    assert "security review" in result
+    assert "elpaca" in result
+    assert "pins" in result.lower()
+    assert "stale" in result
+
+
+def test_security_review_prompt_includes_preamble(tmp_path: Path) -> None:
+    """Verify the security review prompt starts with the preamble."""
+    diff = tmp_path / "test.diff"
+    output = tmp_path / "review.md"
+    result = generate_security_review_prompt(
+        [{"package_name": "dash", "repo_url": "https://github.com/magnars/dash.el",
+          "pinned_ref": "aaa", "latest_ref": "bbb", "diff_path": diff}],
+        output,
+    )
+    assert result.startswith("You will be given the task")
+    assert "elpaca" in result
