@@ -96,3 +96,11 @@ def git_repo(tmp_path: Path) -> dict[str, Path | str]:
     return {"bare": bare, "clone": clone, "sha1": sha1, "sha2": sha2,
         "tmp": tmp_path}
 
+
+@pytest.fixture(autouse=True)
+def _disable_xclip(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Prevent tests from writing to the X primary selection."""
+    monkeypatch.setattr(
+        "soma_inits_upgrades.clipboard.copy_to_primary",
+        lambda text, run_fn=subprocess.run: None,
+    )
