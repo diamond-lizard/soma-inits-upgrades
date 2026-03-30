@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_PATH="$(realpath "$0")"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_PATH")")"
+VENV_PYTHON="${PROJECT_ROOT}/.venv/bin/python"
+
+if [ ! -x "$VENV_PYTHON" ]; then
+    echo "Error: virtual environment not found at ${PROJECT_ROOT}/.venv/" >&2
+    echo "Run: cd ${PROJECT_ROOT} && uv venv && uv pip install -e '.[dev]'" >&2
+    exit 1
+fi
+
+exec "$VENV_PYTHON" -m soma_inits_upgrades "$@"
