@@ -76,8 +76,10 @@ def resolve_latest_ref(repo_ctx: RepoContext) -> str | None:
     """Resolve the latest commit SHA on the default branch."""
     from soma_inits_upgrades.git_ref_ops import rev_parse
     branch = repo_ctx.repo_state.default_branch
+    if branch is None:
+        return None
     return rev_parse(
-        repo_ctx.clone_dir, f"origin/{branch}",
+        repo_ctx.clone_dir, branch,
         run_fn=repo_ctx.entry_ctx.run_fn,
     )
 
