@@ -11,7 +11,7 @@ from soma_inits_upgrades.prompts import generate_security_review_prompt
 from soma_inits_upgrades.prompts_helpers import (
     format_common_header,
     format_malformed_context,
-    format_security_preamble,
+    format_preamble,
 )
 
 
@@ -85,9 +85,9 @@ def test_security_review_prompt_includes_malformed_context(tmp_path: Path) -> No
     assert "Risk Rating line" in result
 
 
-def test_format_security_preamble_content() -> None:
-    """Verify the security preamble contains key context elements."""
-    result = format_security_preamble()
+def test_format_preamble_content() -> None:
+    """Verify the preamble contains key context elements."""
+    result = format_preamble("performing a security review of")
     assert "security review" in result
     assert "elpaca" in result
     assert "pins" in result.lower()

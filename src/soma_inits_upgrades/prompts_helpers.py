@@ -69,15 +69,17 @@ def format_dependency_context(
     return "".join(parts)
 
 
-def format_security_preamble() -> str:
-    """Return the contextual preamble for the security review prompt.
+def format_preamble(task_description: str) -> str:
+    """Return a contextual preamble for an LLM prompt.
 
-    Explains the user's workflow and the purpose of the review so the
-    LLM has enough context to reason about risk.
+    *task_description* is a short phrase such as "performing a security
+    review of" or "writing an upgrade report for".  The preamble
+    explains the user's workflow so the LLM has enough context to
+    reason about its task.
     """
     return (
-        "You will be given the task of performing a security review "
-        "of changes to one or more\n"
+        "You will be given the task of "
+        f"{task_description} changes to one or more\n"
         "Emacs packages. The context of this review is as follows: "
         "The user manages their\n"
         "Emacs packages using elpaca, which pins each package to a "

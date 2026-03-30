@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from soma_inits_upgrades.prompts_helpers import (
     format_common_header,
     format_malformed_context,
-    format_security_preamble,
+    format_preamble,
 )
 
 if TYPE_CHECKING:
@@ -74,7 +74,7 @@ def generate_security_review_prompt(
         "changes\n"
         "5. NO code snippets, diff excerpts, or line numbers\n"
     )
-    preamble = format_security_preamble()
+    preamble = format_preamble("performing a security review of")
     return (
         f"{preamble}"
         f"# Security Review Task\n\n{repos_section}{malformed}\n"

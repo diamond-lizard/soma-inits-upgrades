@@ -63,3 +63,18 @@ def test_upgrade_analysis_prompt_malformed(tmp_path: Path) -> None:
     )
     assert "Previous Attempt" in result
     assert "not valid JSON" in result
+
+
+def test_upgrade_analysis_prompt_includes_preamble(tmp_path: Path) -> None:
+    """Verify the upgrade analysis prompt starts with the preamble."""
+    diff = tmp_path / "test.diff"
+    usage = tmp_path / "usage.txt"
+    output = tmp_path / "analysis.json"
+    result = generate_upgrade_analysis_prompt(
+        [{"package_name": "dash", "repo_url": "https://github.com/magnars/dash.el",
+          "pinned_ref": "aaa", "latest_ref": "bbb",
+          "diff_path": diff, "usage_path": usage}],
+        output, "",
+    )
+    assert result.startswith("You will be given the task")
+    assert "elpaca" in result

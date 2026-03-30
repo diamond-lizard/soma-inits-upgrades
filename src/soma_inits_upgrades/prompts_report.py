@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from soma_inits_upgrades.prompts_helpers import (
     format_common_header,
     format_malformed_context,
+    format_preamble,
 )
 
 if TYPE_CHECKING:
@@ -64,7 +65,9 @@ def generate_upgrade_report_prompt(
         "6. Emacs Version Requirement (if applicable)\n"
         "7. Recommended Upgrade Approach\n"
     )
+    preamble = format_preamble("writing an upgrade report for")
     return (
+        f"{preamble}"
         f"# Upgrade Report Task\n\n"
         f"{repos_section}{dependency_context}{malformed}\n"
         f"## Instructions\n"

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from soma_inits_upgrades.prompts_helpers import (
     format_common_header,
     format_malformed_context,
+    format_preamble,
 )
 
 if TYPE_CHECKING:
@@ -66,7 +67,11 @@ def generate_upgrade_analysis_prompt(
         "conforming to the provided schema, written to the specified "
         "output path",
     )
+    preamble = format_preamble(
+        "performing an upgrade analysis of",
+    )
     return (
+        f"{preamble}"
         f"# Upgrade Analysis Task\n\n"
         f"{repos_section}{dependency_context}{malformed}\n"
         f"## Instructions\n"

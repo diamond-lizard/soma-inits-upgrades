@@ -68,3 +68,16 @@ def test_upgrade_report_two_repos(tmp_path: Path) -> None:
     assert "outorg" in result
     assert str(analysis) in result
     assert "Upgrade Report" in result
+
+
+def test_upgrade_report_prompt_includes_preamble(tmp_path: Path) -> None:
+    """Verify the upgrade report prompt starts with the preamble."""
+    analysis = tmp_path / "analysis.json"
+    output = tmp_path / "report.md"
+    result = generate_upgrade_report_prompt(
+        [{"package_name": "dash", "repo_url": "https://github.com/magnars/dash.el",
+          "pinned_ref": "aaa", "latest_ref": "bbb"}],
+        analysis, output, "",
+    )
+    assert result.startswith("You will be given the task")
+    assert "elpaca" in result
