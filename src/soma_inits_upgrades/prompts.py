@@ -8,6 +8,7 @@ from soma_inits_upgrades.prompts_helpers import (
     format_common_header,
     format_malformed_context,
     format_preamble,
+    shorten_home_in_text,
 )
 
 if TYPE_CHECKING:
@@ -75,7 +76,7 @@ def generate_security_review_prompt(
         "5. NO code snippets, diff excerpts, or line numbers\n"
     )
     preamble = format_preamble("performing a security review of")
-    return (
+    return shorten_home_in_text(
         f"{preamble}"
         f"# Security Review Task\n\n{repos_section}{malformed}\n"
         f"## Instructions\nReview ALL changes for security "

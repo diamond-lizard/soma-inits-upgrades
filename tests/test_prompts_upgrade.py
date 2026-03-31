@@ -7,7 +7,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pathlib import Path
 
-from soma_inits_upgrades.prompts_helpers import format_dependency_context
+from soma_inits_upgrades.prompts_helpers import (
+    format_dependency_context,
+    shorten_home_in_text,
+)
 from soma_inits_upgrades.prompts_upgrade import generate_upgrade_analysis_prompt
 
 
@@ -40,9 +43,9 @@ def test_upgrade_analysis_prompt_key_phrases(tmp_path: Path) -> None:
         output, dep_ctx,
     )
     assert "Upgrade Analysis" in result
-    assert str(diff) in result
-    assert str(usage) in result
-    assert str(output) in result
+    assert shorten_home_in_text(str(diff)) in result
+    assert shorten_home_in_text(str(usage)) in result
+    assert shorten_home_in_text(str(output)) in result
     assert "schema" in result.lower()
     assert "breaking_api_changes" in result
     assert "dash" in result

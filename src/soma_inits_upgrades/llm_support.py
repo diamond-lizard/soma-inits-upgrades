@@ -5,6 +5,8 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.prompts_helpers import shorten_home_in_text
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -22,8 +24,10 @@ def display_llm_task_info(
 ) -> None:
     """Print LLM task progress info to stderr."""
     print(f"[{entry_idx}/{total}] {init_file}: {task_label}", file=sys.stderr)
-    print(f"  Prompt: {prompt_path}", file=sys.stderr)
-    print(f"  Output: {output_path}", file=sys.stderr)
+    short_prompt = shorten_home_in_text(str(prompt_path))
+    short_output = shorten_home_in_text(str(output_path))
+    print(f"  Prompt: {short_prompt}", file=sys.stderr)
+    print(f"  Output: {short_output}", file=sys.stderr)
 
 
 def offer_clipboard_copy(
@@ -57,7 +61,8 @@ def prompt_user_action(output_path: Path, input_fn: UserInputFn) -> str:
         if choice in ("c", ""):
             if output_path.exists() and output_path.stat().st_size > 0:
                 return "continue"
-            print(f"  Output file missing or empty: {output_path}", file=sys.stderr)
+            short = shorten_home_in_text(str(output_path))
+            print(f"  Output file missing or empty: {short}", file=sys.stderr)
             continue
         if choice == "s":
             return "skip"

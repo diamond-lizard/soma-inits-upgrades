@@ -92,3 +92,23 @@ def format_preamble(task_description: str) -> str:
         "reviewed before the user\n"
         "decides whether to update each pin.\n\n"
     )
+
+
+def shorten_home_in_text(text: str, *, home: Path | None = None) -> str:
+    """Replace the user's home directory with ``~`` in display text.
+
+    Checks both the resolved home path (which follows symlinks) and
+    the logical home path, so that paths are shortened regardless of
+    whether the filesystem uses symlinks for /home.
+
+    *home* overrides the home directory for testing. When ``None``
+    (the default), ``Path.home()`` is used.
+    """
+    from pathlib import Path as _Path
+
+    effective = home if home is not None else _Path.home()
+    resolved = effective.resolve()
+    for prefix in (str(resolved), str(effective)):
+        text = text.replace(prefix + "/", "~/")
+        text = text.replace(prefix, "~")
+    return text

@@ -8,6 +8,7 @@ from soma_inits_upgrades.prompts_helpers import (
     format_common_header,
     format_malformed_context,
     format_preamble,
+    shorten_home_in_text,
 )
 
 if TYPE_CHECKING:
@@ -70,7 +71,7 @@ def generate_upgrade_analysis_prompt(
     preamble = format_preamble(
         "performing an upgrade analysis of",
     )
-    return (
+    return shorten_home_in_text(
         f"{preamble}"
         f"# Upgrade Analysis Task\n\n"
         f"{repos_section}{dependency_context}{malformed}\n"

@@ -17,6 +17,7 @@ from multirepo_helpers import (
 )
 
 from soma_inits_upgrades.prompts import generate_security_review_prompt
+from soma_inits_upgrades.prompts_helpers import shorten_home_in_text
 from soma_inits_upgrades.prompts_upgrade import generate_upgrade_analysis_prompt
 
 if TYPE_CHECKING:
@@ -59,8 +60,8 @@ def test_security_prompt_lists_both_repos(tmp_path: Path) -> None:
     assert URL_B in prompt
     assert PIN_A in prompt
     assert PIN_B in prompt
-    assert str(sec_info[0]["diff_path"]) in prompt
-    assert str(sec_info[1]["diff_path"]) in prompt
+    assert shorten_home_in_text(str(sec_info[0]["diff_path"])) in prompt
+    assert shorten_home_in_text(str(sec_info[1]["diff_path"])) in prompt
 
 
 def test_analysis_prompt_lists_both_repos(tmp_path: Path) -> None:
@@ -71,7 +72,7 @@ def test_analysis_prompt_lists_both_repos(tmp_path: Path) -> None:
     prompt = generate_upgrade_analysis_prompt(ana_info, output, "")
     assert URL_A in prompt
     assert URL_B in prompt
-    assert str(ana_info[0]["diff_path"]) in prompt
-    assert str(ana_info[1]["diff_path"]) in prompt
-    assert str(ana_info[0]["usage_path"]) in prompt
-    assert str(ana_info[1]["usage_path"]) in prompt
+    assert shorten_home_in_text(str(ana_info[0]["diff_path"])) in prompt
+    assert shorten_home_in_text(str(ana_info[1]["diff_path"])) in prompt
+    assert shorten_home_in_text(str(ana_info[0]["usage_path"])) in prompt
+    assert shorten_home_in_text(str(ana_info[1]["usage_path"])) in prompt

@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 from soma_inits_upgrades.prompts import generate_security_review_prompt
+from soma_inits_upgrades.prompts_helpers import shorten_home_in_text
 from soma_inits_upgrades.prompts_upgrade import (
     generate_upgrade_analysis_prompt,
 )
@@ -28,7 +29,7 @@ def test_security_review_single_repo_equivalent(tmp_path: Path) -> None:
     assert "https://github.com/magnars/dash.el" in result
     assert "aaa" in result
     assert "bbb" in result
-    assert str(diff) in result
+    assert shorten_home_in_text(str(diff)) in result
     assert "Security Review" in result
     assert "Risk Rating" in result
 
@@ -51,8 +52,8 @@ def test_security_review_two_repos(tmp_path: Path) -> None:
     )
     assert "outshine" in result
     assert "outorg" in result
-    assert str(diff1) in result
-    assert str(diff2) in result
+    assert shorten_home_in_text(str(diff1)) in result
+    assert shorten_home_in_text(str(diff2)) in result
     assert "https://github.com/alphapapa/outshine" in result
     assert "https://github.com/alphapapa/outorg" in result
 
@@ -75,10 +76,10 @@ def test_upgrade_analysis_two_repos(tmp_path: Path) -> None:
           "diff_path": diff2, "usage_path": usage2}],
         output, "",
     )
-    assert str(diff1) in result
-    assert str(diff2) in result
-    assert str(usage1) in result
-    assert str(usage2) in result
+    assert shorten_home_in_text(str(diff1)) in result
+    assert shorten_home_in_text(str(diff2)) in result
+    assert shorten_home_in_text(str(usage1)) in result
+    assert shorten_home_in_text(str(usage2)) in result
     assert "outshine" in result
     assert "outorg" in result
 

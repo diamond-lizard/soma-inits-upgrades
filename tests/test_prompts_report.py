@@ -7,7 +7,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pathlib import Path
 
-from soma_inits_upgrades.prompts_helpers import format_dependency_context
+from soma_inits_upgrades.prompts_helpers import (
+    format_dependency_context,
+    shorten_home_in_text,
+)
 from soma_inits_upgrades.prompts_report import generate_upgrade_report_prompt
 
 
@@ -30,8 +33,8 @@ def test_upgrade_report_prompt_key_phrases(tmp_path: Path) -> None:
     assert "Configuration Impact Analysis" in result
     assert "Emacs Version Requirement" in result
     assert "Recommended Upgrade Approach" in result
-    assert str(analysis) in result
-    assert str(output) in result
+    assert shorten_home_in_text(str(analysis)) in result
+    assert shorten_home_in_text(str(output)) in result
     assert "NO code snippets" in result
 
 
@@ -66,7 +69,7 @@ def test_upgrade_report_two_repos(tmp_path: Path) -> None:
     )
     assert "outshine" in result
     assert "outorg" in result
-    assert str(analysis) in result
+    assert shorten_home_in_text(str(analysis)) in result
     assert "Upgrade Report" in result
 
 

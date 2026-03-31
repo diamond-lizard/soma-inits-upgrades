@@ -7,11 +7,13 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pathlib import Path
 
+
 from soma_inits_upgrades.prompts import generate_security_review_prompt
 from soma_inits_upgrades.prompts_helpers import (
     format_common_header,
     format_malformed_context,
     format_preamble,
+    shorten_home_in_text,
 )
 
 
@@ -65,8 +67,8 @@ def test_security_review_prompt_contains_key_phrases(tmp_path: Path) -> None:
     assert "advice-add" in result
     assert "Obfuscated" in result
     assert "Risk Rating" in result
-    assert str(diff) in result
-    assert str(output) in result
+    assert shorten_home_in_text(str(diff)) in result
+    assert shorten_home_in_text(str(output)) in result
     assert "dash" in result
 
 
@@ -105,3 +107,20 @@ def test_security_review_prompt_includes_preamble(tmp_path: Path) -> None:
     )
     assert result.startswith("You will be given the task")
     assert "elpaca" in result
+
+
+def test_shorten_home_in_text_replaces_home() -> None:
+    """Verify home directory prefix is replaced with ~."""
+    from pathlib import Path
+
+    result = shorten_home_in_text(
+        "Write to: /home/testuser/.emacs.d/file.md",
+        home=Path("/home/testuser"),
+    )
+    assert result == "Write to: ~/.emacs.d/file.md"
+
+
+def test_shorten_home_in_text_leaves_other_paths() -> None:
+    """Verify paths outside home are not changed."""
+    text = "Read from: /tmp/some/file.txt"
+    assert shorten_home_in_text(text) == text
