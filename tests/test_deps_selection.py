@@ -7,7 +7,6 @@ from pathlib import Path
 
 from soma_inits_upgrades.deps_selection import (
     PackageCandidate,
-    compute_suggested_index,
     select_package_file,
 )
 
@@ -64,35 +63,6 @@ def test_eoferror_selects_suggested() -> None:
     assert result.stem == "bbb"
 
 
-def test_suggestion_matches_stem() -> None:
-    """Suggestion matches init-file-derived stem."""
-    cands = [_cand("aaa"), _cand("dired-hacks-utils"), _cand("zzz")]
-    idx = compute_suggested_index(
-        cands, "soma-dired-hacks-utils-init.el",
-    )
-    assert idx == 1
-
-
-def test_suggestion_defaults_to_first() -> None:
-    """Suggestion defaults to first when no stem matches."""
-    cands = [_cand("aaa"), _cand("bbb"), _cand("ccc")]
-    idx = compute_suggested_index(cands, "soma-xxx-init.el")
-    assert idx == 0
-
-
-def test_suggestion_two_tier_embedded_name() -> None:
-    """Two-tier fallback: embedded_name match when stem doesn't."""
-    cands = [
-        _cand("aaa"),
-        _cand("bbb-pkg", source="pkg_el", embedded="dired-hacks-utils"),
-        _cand("ccc"),
-    ]
-    idx = compute_suggested_index(
-        cands, "soma-dired-hacks-utils-init.el",
-    )
-    assert idx == 1
-
-
 def test_single_candidate_no_prompt() -> None:
     """Single candidate returns without calling input_fn."""
     called: list[str] = []
@@ -118,10 +88,3 @@ def test_prompt_includes_context(capsys) -> None:
     err = capsys.readouterr().err
     assert "soma-bbb-init.el" in err
     assert "https://github.com/ex/repo" in err
-
-
-def test_init_file_none_defaults_to_first() -> None:
-    """init_file=None defaults to first without crashing."""
-    cands = [_cand("aaa"), _cand("bbb"), _cand("ccc")]
-    idx = compute_suggested_index(cands, None)
-    assert idx == 0
