@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from soma_inits_upgrades.deps import (
+from soma_inits_upgrades.deps_finders import (
     find_package_requires_files,
     find_pkg_el_files,
 )
