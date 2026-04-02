@@ -60,6 +60,9 @@ select = [
     "RUF",
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"stubs/*.pyi" = ["N818"]
+
 [tool.ruff.lint.flake8-type-checking]
 runtime-evaluated-base-classes = ["pydantic.BaseModel"]
 

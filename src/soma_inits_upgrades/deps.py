@@ -3,14 +3,15 @@
 from __future__ import annotations
 
 import re
-import sys
 from typing import TYPE_CHECKING
 
 from soma_inits_upgrades.deps_header_parsing import extract_multiline_requires
-from soma_inits_upgrades.deps_parsing import parse_pkg_el
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+    from soma_inits_upgrades.deps_selection import PackageCandidate
+    from soma_inits_upgrades.protocols import UserInputFn
 
 
 def find_pkg_el_files(repo_dir: Path) -> list[Path]:
@@ -63,37 +64,42 @@ def _scan_file_for_header(
             results.append((path, idx))
 
 
-
 def locate_package_metadata(
     repo_dir: Path,
+    init_file: str | None = None,
+    repo_url: str | None = None,
+    input_fn: UserInputFn | None = None,
 ) -> tuple[str | None, str | None]:
     """Locate and parse package dependency metadata from a repository.
 
-    Prefers -pkg.el files over Package-Requires: headers.  Prefers
-    root-level files over subdirectory files.  Returns
-    (raw_deps_sexp, package_name) or (None, None) if no metadata found.
+    Merges -pkg.el and header candidates into a deduplicated pool.
+    Prompts the user to select when multiple candidates exist.
+    Returns (raw_deps_sexp, package_name) or (None, None).
     """
+    from soma_inits_upgrades.deps_candidate_pool import build_candidate_pool
+    from soma_inits_upgrades.deps_selection import select_package_file
+
     pkg_files = find_pkg_el_files(repo_dir)
     header_files = find_package_requires_files(repo_dir)
-    if pkg_files:
-        return parse_pkg_el(pkg_files[0])
-    if header_files:
-        return _metadata_from_header(header_files)
-    return None, None
-
-
-def _metadata_from_header(
-    header_files: list[tuple[Path, int]],
-) -> tuple[str | None, str | None]:
-    """Extract metadata from the first Package-Requires: header file."""
-    path, line_num = header_files[0]
-    if len(header_files) > 1:
-        names = ", ".join(str(h[0].name) for h in header_files[1:])
-        print(
-            f"Warning: ignoring Package-Requires in: {names}",
-            file=sys.stderr,
+    candidates = build_candidate_pool(pkg_files, header_files)
+    if not candidates:
+        return None, None
+    if len(candidates) == 1:
+        selected = candidates[0]
+    else:
+        selected = select_package_file(
+            candidates, init_file, repo_url, input_fn,
         )
-    lines = path.read_text(encoding="utf-8").splitlines()
-    raw = extract_multiline_requires(lines, line_num - 1)
-    pkg_name = path.stem
-    return raw, pkg_name
+    return _parse_selected(selected)
+
+
+def _parse_selected(
+    selected: PackageCandidate,
+) -> tuple[str | None, str | None]:
+    """Dispatch parsing based on the selected candidate's source type."""
+    if selected.source_type == "pkg_el":
+        return selected.raw_deps, selected.embedded_name or selected.stem
+    lines = selected.path.read_text(encoding="utf-8").splitlines()
+    assert selected.header_line is not None
+    raw = extract_multiline_requires(lines, selected.header_line - 1)
+    return raw, selected.stem

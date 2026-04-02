@@ -20,7 +20,10 @@ def parse_pkg_el(path: Path) -> tuple[str | None, str | None]:
     try:
         text = path.read_text(encoding="utf-8")
         parsed = sexpdata.loads(text)
-    except (OSError, UnicodeDecodeError, ValueError, AssertionError):
+    except (
+        OSError, UnicodeDecodeError, ValueError, AssertionError,
+        sexpdata.ExpectClosingBracket, sexpdata.ExpectNothing, sexpdata.ExpectSExp,
+    ):
         return None, None
     if not isinstance(parsed, list) or len(parsed) < 3:
         return None, None
