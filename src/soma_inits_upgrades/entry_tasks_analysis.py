@@ -32,7 +32,10 @@ def task_deps(repo_ctx: RepoContext) -> bool:
         msg = f"git checkout failed: latest_ref {repo_ctx.repo_state.latest_ref}"
         set_repo_error(repo_ctx, msg)
         return False
-    raw_deps, pkg_name = locate_package_metadata(repo_ctx.clone_dir)
+    raw_deps, pkg_name = locate_package_metadata(
+        repo_ctx.clone_dir, init_file=ctx.entry_state.init_file,
+        repo_url=repo_ctx.repo_state.repo_url, input_fn=ctx.input_fn,
+    )
     depends_on: list[str] = []
     min_emacs: str | None = None
     if raw_deps:
