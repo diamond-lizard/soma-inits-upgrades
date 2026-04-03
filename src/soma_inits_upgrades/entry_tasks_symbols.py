@@ -17,7 +17,8 @@ def task_symbols(repo_ctx: RepoContext) -> bool:
     from soma_inits_upgrades.state import mark_repo_task_complete
     from soma_inits_upgrades.symbol_collection import extract_changed_symbols
     from soma_inits_upgrades.symbols import EMACS_DIR
-    from soma_inits_upgrades.symbols_io import search_symbol_usages, write_usage_analysis
+    from soma_inits_upgrades.symbols_io import search_symbol_usages
+    from soma_inits_upgrades.usage_io import write_usage_analysis
     ctx = repo_ctx.entry_ctx
     diff_path = repo_ctx.temp_dir / f"{ctx.init_stem}.diff"
     if self_heal_repo_resource(diff_path, "diff", repo_ctx):

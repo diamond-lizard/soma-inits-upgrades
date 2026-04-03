@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING
 
-from soma_inits_upgrades.symbols_io import (
-    parse_rg_json_output,
+from soma_inits_upgrades.symbols_io import parse_rg_json_output
+from soma_inits_upgrades.usage_io import (
     read_usage_analysis,
     write_usage_analysis,
 )
