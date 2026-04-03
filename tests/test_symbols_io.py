@@ -76,3 +76,20 @@ def test_write_and_read_usage_analysis(tmp_path: Path) -> None:
 def test_read_usage_analysis_missing(tmp_path: Path) -> None:
     """Returns None for a nonexistent file."""
     assert read_usage_analysis(tmp_path / "nope.json") is None
+
+
+def test_write_includes_unverified_symbols(tmp_path: Path) -> None:
+    """write_usage_analysis embeds _unverified_symbols in the JSON."""
+    path = tmp_path / "usage.json"
+    write_usage_analysis({}, path, unverified_symbols=["evil", "dash"])
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    assert raw["_unverified_symbols"] == ["evil", "dash"]
+
+
+def test_read_strips_unverified_symbols(tmp_path: Path) -> None:
+    """read_usage_analysis strips _unverified_symbols from the dict."""
+    path = tmp_path / "usage.json"
+    raw = {"_unverified_symbols": ["evil"], "dash": ["init.el"]}
+    path.write_text(json.dumps(raw), encoding="utf-8")
+    result = read_usage_analysis(path)
+    assert result == {"dash": ["init.el"]}
