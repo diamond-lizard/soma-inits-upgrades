@@ -35,7 +35,10 @@ def task_symbols(repo_ctx: RepoContext) -> bool:
         usages = search_symbol_usages(
             symbols, EMACS_DIR, ctx.output_dir, repo_ctx.temp_dir, run_fn=ctx.run_fn,
         )
-        write_usage_analysis(usages, usage_path)
+        unverified = symbols if not usages else None
+        write_usage_analysis(
+            usages, usage_path, unverified_symbols=unverified,
+        )
     mark_repo_task_complete(
         ctx.entry_state, repo_ctx.repo_state, "symbols", ctx.entry_state_path,
     )
