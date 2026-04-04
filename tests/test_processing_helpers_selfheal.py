@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import pytest
 from fakes import make_fake_git
 
 from soma_inits_upgrades.processing_helpers import (
@@ -89,10 +90,11 @@ def test_self_heal_resource_missing_resets(tmp_path: Path) -> None:
 
 
 def test_self_heal_limit_exceeded(tmp_path: Path) -> None:
-    """Error set when self-healing limit reached."""
+    """Error set and SystemExit raised when self-healing limit reached."""
     ctx = _ctx(tmp_path)
     ctx.reset_counters["clone"] = 4
     ctx.entry_state.tasks_completed["clone"] = True
-    self_heal_resource(tmp_path / "gone.txt", "clone", ctx)
+    with pytest.raises(SystemExit):
+        self_heal_resource(tmp_path / "gone.txt", "clone", ctx)
     assert ctx.entry_state.status == "error"
     assert "self-healing limit" in (ctx.entry_state.notes or "")
