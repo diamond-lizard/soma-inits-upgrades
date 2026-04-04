@@ -6,6 +6,7 @@ import sys
 from typing import TYPE_CHECKING
 
 from soma_inits_upgrades.prompts_helpers import shorten_home_in_text
+from soma_inits_upgrades.protocols import default_input
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -39,16 +40,11 @@ def offer_clipboard_copy(
         return
     from soma_inits_upgrades.clipboard import copy_to_primary
 
-    resolved_fn = input_fn if input_fn is not None else _default_input
+    resolved_fn = input_fn if input_fn is not None else default_input
     print("Press ENTER to copy prompt to X primary selection...", file=sys.stderr)
     resolved_fn("")
     copy_to_primary(text)
     print("Copied.", file=sys.stderr)
-
-
-def _default_input(prompt: str) -> str:
-    """Thin wrapper around input() for DI default."""
-    return input(prompt)
 
 
 def prompt_user_action(output_path: Path, input_fn: UserInputFn) -> str:

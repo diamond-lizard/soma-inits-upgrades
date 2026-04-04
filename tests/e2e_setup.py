@@ -44,7 +44,7 @@ def run_setup_phase(
     state_dir.mkdir(parents=True)
     gs_path = state_dir / "global.json"
     gs = initialize_global_state(None, gs_path, stale_path)
-    prompt_emacs_version(gs, gs_path, prompt_fn=lambda _: "29.1")
+    prompt_emacs_version(gs, gs_path, input_fn=lambda _: "29.1")
     create_tmp_directory(output_dir)
     initialize_entry_states(GROUPED_RESULTS, state_dir, output_dir, gs)
     initialize_dep_graph(output_dir / "soma-inits-dependency-graphs.json")

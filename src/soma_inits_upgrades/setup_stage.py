@@ -5,17 +5,13 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.protocols import default_input
+
 if TYPE_CHECKING:
     from pathlib import Path
 
     from soma_inits_upgrades.protocols import UserInputFn
     from soma_inits_upgrades.state_schema import GlobalState
-
-
-def _default_prompt_fn(prompt: str) -> str:
-    """Thin wrapper around click.prompt for dependency injection."""
-    import click
-    return str(click.prompt(prompt))
 
 
 def initialize_global_state(
@@ -43,7 +39,7 @@ def initialize_global_state(
 def prompt_emacs_version(
     global_state: GlobalState,
     global_state_path: Path,
-    prompt_fn: UserInputFn | None = None,
+    input_fn: UserInputFn | None = None,
 ) -> None:
     """Prompt for Emacs version if not already recorded.
 
@@ -52,13 +48,16 @@ def prompt_emacs_version(
     """
     if global_state.emacs_version:
         return
-    fn = prompt_fn or _default_prompt_fn
+    fn = input_fn or default_input
     from packaging.version import InvalidVersion, Version
 
     from soma_inits_upgrades.state import atomic_write_json
 
     while True:
-        raw = fn("Enter your Emacs version (e.g. 29.1)")
+        try:
+            raw = fn("Enter your Emacs version (e.g. 29.1): ")
+        except EOFError:
+            raise SystemExit(1)
         try:
             Version(raw)
         except InvalidVersion:

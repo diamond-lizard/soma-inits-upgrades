@@ -36,7 +36,7 @@ def run_setup(
 
     graph_path = resolved_output / "soma-inits-dependency-graphs.json"
     gs = initialize_global_state(global_state, global_state_path, resolved_stale)
-    prompt_emacs_version(gs, global_state_path, prompt_fn=input_fn)
+    prompt_emacs_version(gs, global_state_path, input_fn=input_fn)
     create_tmp_directory(resolved_output)
     initialize_entry_states(results, state_dir, resolved_output, gs)
     initialize_dep_graph(graph_path)

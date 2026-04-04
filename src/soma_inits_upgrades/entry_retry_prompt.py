@@ -5,16 +5,13 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.protocols import default_input
+
 if TYPE_CHECKING:
     from pathlib import Path
     from typing import Literal
 
     from soma_inits_upgrades.protocols import UserInputFn
-
-
-def _default_input(prompt: str) -> str:
-    """Thin wrapper around input() for DI default."""
-    return input(prompt)
 
 
 def _prompt_exhausted_entry(
@@ -48,7 +45,7 @@ def handle_exhausted_entry(
     input_fn: UserInputFn | None,
 ) -> bool:
     """Handle entry with exhausted retries. Return True to retry."""
-    resolved = input_fn if input_fn is not None else _default_input
+    resolved = input_fn if input_fn is not None else default_input
     action = _prompt_exhausted_entry(name, notes, resolved)
     if action == "retry":
         return True

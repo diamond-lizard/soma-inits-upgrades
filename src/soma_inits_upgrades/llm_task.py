@@ -19,13 +19,13 @@ def llm_pause(
 ) -> str:
     """Orchestrate a single LLM pause point. Returns user action."""
     from soma_inits_upgrades.llm_support import (
-        _default_input,
         display_llm_task_info,
         offer_clipboard_copy,
         prompt_user_action,
         write_prompt_file,
     )
-    resolved_fn = input_fn if input_fn is not None else _default_input
+    from soma_inits_upgrades.protocols import default_input
+    resolved_fn = input_fn if input_fn is not None else default_input
     write_prompt_file(text, prompt_path)
     display_llm_task_info(entry_idx, total, init_file, task_label, prompt_path, output_path)
     offer_clipboard_copy(text, xclip_checker, resolved_fn)

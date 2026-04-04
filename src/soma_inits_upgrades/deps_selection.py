@@ -6,6 +6,8 @@ import sys
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.protocols import default_input
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -23,10 +25,6 @@ class PackageCandidate:
     embedded_name: str | None
     raw_deps: str | None
 
-
-def _default_input(prompt: str) -> str:
-    """Thin wrapper around input() for DI default."""
-    return input(prompt)
 
 
 def compute_suggested_index(
@@ -63,7 +61,7 @@ def select_package_file(
     """
     if len(candidates) == 1:
         return candidates[0]
-    resolved_fn = input_fn if input_fn is not None else _default_input
+    resolved_fn = input_fn if input_fn is not None else default_input
     suggested = compute_suggested_index(candidates, init_file)
     if init_file is not None:
         print(f"While processing {init_file} multiple packages were found", file=sys.stderr)
