@@ -39,6 +39,8 @@ def _make_resumed_ctx(tmp_path: Path):
         r_a.tier1_tasks_completed[t] = True
     r_b = RepoState(repo_url=URL_B, pinned_ref=PIN_B)
     ctx = make_ctx(tmp_path, [r_a, r_b])
+    repo_temp_a = ctx.tmp_dir / "alpha--outshine"
+    repo_temp_a.mkdir(parents=True)
     return ctx
 
 

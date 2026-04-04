@@ -2,13 +2,39 @@
 
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING
 
 from soma_inits_upgrades.entry_tasks_diff import clone_cleanup, task_temp_cleanup
 from soma_inits_upgrades.repo_utils import derive_repo_dir_name
+from soma_inits_upgrades.state import atomic_write_json
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from soma_inits_upgrades.protocols import EntryContext
+    from soma_inits_upgrades.state_schema import EntryState, RepoState
+
+
+def _validate_repo_artifacts(
+    repo_state: RepoState,
+    temp_dir: Path,
+    entry_state: EntryState,
+    entry_state_path: Path,
+) -> None:
+    """Reset Tier 1 tasks when temp dir missing but all are done."""
+    all_done = all(repo_state.tier1_tasks_completed.values())
+    if not all_done or temp_dir.is_dir():
+        return
+    for key in repo_state.tier1_tasks_completed:
+        repo_state.tier1_tasks_completed[key] = False
+    repo_state.package_name = None
+    atomic_write_json(entry_state_path, entry_state)
+    print(
+        f"Self-heal: reset Tier 1 tasks for {repo_state.repo_url}"
+        " (temp directory missing)",
+        file=sys.stderr,
+    )
 
 
 def run_entry_task_loop(ctx: EntryContext) -> bool:
@@ -29,6 +55,10 @@ def run_entry_task_loop(ctx: EntryContext) -> bool:
             entry_ctx=ctx, repo_state=repo_state,
             temp_dir=repo_temp,
             clone_dir=repo_temp / "clone",
+        )
+        _validate_repo_artifacts(
+            repo_state, repo_temp,
+            ctx.entry_state, ctx.entry_state_path,
         )
         while True:
             task_name = find_next_tier1_task(repo_state.tier1_tasks_completed)
