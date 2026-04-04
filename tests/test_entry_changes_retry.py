@@ -58,5 +58,5 @@ def test_retry_exhausted(tmp_path: Path) -> None:
     es.retries_remaining = 0
     atomic_write_json(sd / "x.el.json", es)
     results = [_entry("a")]
-    count = retry_errored_entries(results, sd)
+    count = retry_errored_entries(results, sd, input_fn=lambda _: "1")
     assert count == 0

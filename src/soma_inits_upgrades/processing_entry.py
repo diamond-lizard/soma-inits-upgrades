@@ -32,8 +32,9 @@ def ensure_entry_state(
             ],
         )
         atomic_write_json(path, state)
-        global_state.entries_summary.total += 1
-        global_state.entries_summary.pending += 1
+        if name not in global_state.entry_names:
+            global_state.entries_summary.total += 1
+            global_state.entries_summary.pending += 1
     return state
 
 

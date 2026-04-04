@@ -83,7 +83,7 @@ def test_retry_exhaustion(tmp_path: Path) -> None:
         _entry("x.el", "a"),
     ]
     dispatch_entry_processing(
-        results, sd, tmp_path, gs, make_fake_git(),
+        results, sd, tmp_path, gs, make_fake_git(), input_fn=lambda _: "1",
     )
     state = read_entry_state(sd / "x.el.json")
     assert state is not None and state.status == "error"

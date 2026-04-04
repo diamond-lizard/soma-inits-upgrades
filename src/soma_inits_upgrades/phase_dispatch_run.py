@@ -27,7 +27,7 @@ def run_entry_processing(
     global_state.entry_names = [e["init_file"] for e in results]
     global_state.entries_summary = reconcile_entries_summary(global_state.entry_names, state_dir)
     atomic_write_json(state_dir / "global.json", global_state)
-    retry_errored_entries(results, state_dir)
+    retry_errored_entries(results, state_dir, input_fn=input_fn)
     global_state.entries_summary = reconcile_entries_summary(global_state.entry_names, state_dir)
     from soma_inits_upgrades.processing_batch import process_all_entries
     return process_all_entries(
@@ -58,7 +58,7 @@ def dispatch_entry_processing(
     from soma_inits_upgrades.processing_batch import process_all_entries
     if global_state.phases.entry_processing == "done":
         if not resume_completed_entry_processing(
-            results, state_dir, output_dir, global_state,
+            results, state_dir, output_dir, global_state, input_fn=input_fn,
         ):
             return
         needs_rerun = process_all_entries(

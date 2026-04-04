@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from soma_inits_upgrades.protocols import UserInputFn
     from soma_inits_upgrades.state_schema import EntriesSummary, GlobalState
     from soma_inits_upgrades.validation_schema import GroupedEntryDict
 
@@ -33,6 +34,7 @@ def handle_detected_changes(
     results: list[GroupedEntryDict], state_dir: Path, output_dir: Path,
     global_state: GlobalState, new_names: list[str],
     modified_names: list[str], orphan_count: int,
+    input_fn: UserInputFn | None = None,
 ) -> bool:
     """Handle new, modified, or orphaned entries. Returns True if changes found."""
     if not new_names and not modified_names and orphan_count == 0:
@@ -51,7 +53,7 @@ def handle_detected_changes(
         remove_entries(graph, modified_names)
         write_graph(graph_path, graph)
     reset_phases_for_new_entries(global_state, new_names)
-    retry_errored_entries(results, state_dir)
+    retry_errored_entries(results, state_dir, input_fn=input_fn)
     global_state.entries_summary = reconcile_entries_summary(global_state.entry_names, state_dir)
     atomic_write_json(state_dir / "global.json", global_state)
     return True
@@ -59,13 +61,14 @@ def handle_detected_changes(
 
 def handle_retryable_errors(
     results: list[GroupedEntryDict], state_dir: Path, global_state: GlobalState,
+    input_fn: UserInputFn | None = None,
 ) -> bool:
     """Retry errored entries if any have remaining retries. Returns True if retried."""
     from soma_inits_upgrades.state import read_entry_state
 
     has_retryable = any(
         (s := read_entry_state(state_dir / f"{e['init_file']}.json")) is not None
-        and s.status == "error" and s.retries_remaining > 0
+        and s.status == "error"
         for e in results
     )
     if not has_retryable:
@@ -76,7 +79,7 @@ def handle_retryable_errors(
 
     reset_downstream_phases(global_state)
     global_state.phases.entry_processing = "in_progress"
-    retry_errored_entries(results, state_dir)
+    retry_errored_entries(results, state_dir, input_fn=input_fn)
     global_state.entries_summary = reconcile_entries_summary(global_state.entry_names, state_dir)
     return True
 
