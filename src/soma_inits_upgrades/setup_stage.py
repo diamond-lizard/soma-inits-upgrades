@@ -57,7 +57,7 @@ def prompt_emacs_version(
         try:
             raw = fn("Enter your Emacs version (e.g. 29.1): ")
         except EOFError:
-            raise SystemExit(1)
+            raise SystemExit(1) from None
         try:
             Version(raw)
         except InvalidVersion:
