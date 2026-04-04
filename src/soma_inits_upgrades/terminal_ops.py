@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from contextlib import suppress
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -18,7 +19,7 @@ def save_and_suppress(
     """
     try:
         fd = stdin.fileno()
-        saved = termios_mod.tcgetattr(fd)
+        saved: list[Any] = termios_mod.tcgetattr(fd)
         new = list(saved)
         new[3] &= ~termios_mod.ECHO
         termios_mod.tcsetattr(fd, termios_mod.TCSADRAIN, new)
@@ -35,12 +36,10 @@ def restore_attrs(
     """Restore previously saved terminal attributes."""
     if saved is None:
         return
-    try:
+    with suppress(termios_mod.error):
         termios_mod.tcsetattr(
             stdin.fileno(), termios_mod.TCSADRAIN, saved,
         )
-    except termios_mod.error:
-        pass
 
 
 def flush_and_restore(
@@ -51,22 +50,18 @@ def flush_and_restore(
     """Flush stdin buffer and restore saved terminal attrs."""
     if saved is None:
         return
-    try:
+    with suppress(termios_mod.error):
         fd = stdin.fileno()
         termios_mod.tcflush(fd, termios_mod.TCIFLUSH)
         termios_mod.tcsetattr(
             fd, termios_mod.TCSADRAIN, saved,
         )
-    except termios_mod.error:
-        pass
 
 
 def suppress_echo(termios_mod: ModuleType, stdin: Any) -> None:
     """Read current terminal attrs and suppress ECHO flag."""
-    try:
+    with suppress(termios_mod.error):
         fd = stdin.fileno()
         attrs = termios_mod.tcgetattr(fd)
         attrs[3] &= ~termios_mod.ECHO
         termios_mod.tcsetattr(fd, termios_mod.TCSADRAIN, attrs)
-    except termios_mod.error:
-        pass
