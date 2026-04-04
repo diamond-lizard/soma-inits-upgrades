@@ -41,6 +41,7 @@ def _make_resumed_ctx(tmp_path: Path):
     ctx = make_ctx(tmp_path, [r_a, r_b])
     repo_temp_a = ctx.tmp_dir / "alpha--outshine"
     repo_temp_a.mkdir(parents=True)
+    ctx.entry_state.tasks_completed["security_review"] = True
     return ctx
 
 
@@ -94,5 +95,6 @@ def test_resume_runs_tier2_after_both_repos(tmp_path: Path) -> None:
         patch(PATCH_TC, log_temp_cleanup(log)),
     ):
         run_entry_task_loop(ctx)
-    for tier2_task in TIER_2_TASKS:
+    remaining = [t for t in TIER_2_TASKS if t != "security_review"]
+    for tier2_task in remaining:
         assert tier2_task in log, f"Tier 2 task {tier2_task} not executed"

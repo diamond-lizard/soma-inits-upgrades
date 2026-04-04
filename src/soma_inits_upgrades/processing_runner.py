@@ -39,10 +39,34 @@ def _validate_repo_artifacts(
     )
 
 
+def _reset_tier1_on_restart(ctx: EntryContext) -> None:
+    """Reset Tier 1 tasks on restart when security_review incomplete."""
+    if ctx.entry_state.tasks_completed.get("security_review", False):
+        return
+    any_reset = False
+    for repo_state in ctx.entry_state.repos:
+        if repo_state.done_reason is not None:
+            continue
+        if not all(repo_state.tier1_tasks_completed.values()):
+            continue
+        for key in repo_state.tier1_tasks_completed:
+            repo_state.tier1_tasks_completed[key] = False
+        repo_state.package_name = None
+        any_reset = True
+        print(
+            f"Restart detected: resetting Tier 1 tasks"
+            f" for {repo_state.repo_url}",
+            file=sys.stderr,
+        )
+    if any_reset:
+        atomic_write_json(ctx.entry_state_path, ctx.entry_state)
+
+
 def run_entry_task_loop(ctx: EntryContext) -> bool:
     """Execute the two-tier entry task loop. Returns needs_rerun."""
     from soma_inits_upgrades.protocols import RepoContext
     needs_rerun = False
+    _reset_tier1_on_restart(ctx)
     for repo_state in ctx.entry_state.repos:
         if repo_state.done_reason is not None:
             continue
