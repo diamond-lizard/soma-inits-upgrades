@@ -5,8 +5,12 @@ from __future__ import annotations
 import atexit
 import os
 import sys
+from typing import TYPE_CHECKING
 
 from rich.console import Console
+
+if TYPE_CHECKING:
+    from typing import IO
 
 stderr_console = Console(stderr=True)
 
@@ -36,7 +40,7 @@ def _colorize(text: str, code: str) -> str:
     return f"\033[{code}m{text}\033[0m"
 
 
-def _reset_terminal_color(_stderr: object | None = None) -> None:
+def _reset_terminal_color(_stderr: IO[str] | None = None) -> None:
     """Write ANSI reset to stderr if color was used during this run."""
     stream = _stderr if _stderr is not None else sys.stderr
     if not _color_emitted:
