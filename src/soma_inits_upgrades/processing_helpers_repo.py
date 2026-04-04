@@ -53,7 +53,15 @@ def self_heal_repo_resource(
             repo_ctx, f"self-healing limit exceeded: {resource_path.name} missing "
             f"{count} times for {repo_ctx.entry_ctx.entry_state.init_file}",
         )
-        return True
+        name = repo_ctx.entry_ctx.entry_state.init_file
+        print(
+            f"FATAL: {resource_path.name} could not be regenerated "
+            f"for {name} after "
+            f"{count} attempts. Fix the underlying issue "
+            f"(network, permissions, upstream repo) and re-run.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     name = repo_ctx.entry_ctx.entry_state.init_file
     print(
         f"Warning: {resource_path.name} missing, re-executing {creating_task} "

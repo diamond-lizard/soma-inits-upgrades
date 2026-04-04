@@ -71,7 +71,14 @@ def self_heal_entry_resource(
             ctx, f"self-healing limit exceeded: {resource_path.name} missing "
             f"{count} times for {ctx.entry_state.init_file}",
         )
-        return True
+        print(
+            f"FATAL: {resource_path.name} could not be regenerated "
+            f"for {ctx.entry_state.init_file} after "
+            f"{count} attempts. Fix the underlying issue "
+            f"(network, permissions, upstream repo) and re-run.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     name = ctx.entry_state.init_file
     print(
         f"Warning: {resource_path.name} missing, re-executing {creating_task} "
