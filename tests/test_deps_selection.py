@@ -22,13 +22,17 @@ def _cand(
     )
 
 
-def test_select_default_via_empty_input() -> None:
-    """Empty input selects the suggested default."""
+def test_empty_input_reprompts_then_accepts_number(capsys) -> None:
+    """Empty input is rejected with a message, then a number selects."""
+    responses = iter(["", "3"])
     cands = [_cand("aaa"), _cand("bbb"), _cand("ccc")]
     result = select_package_file(
-        cands, "soma-bbb-init.el", "https://x", input_fn=lambda _: "",
+        cands, "soma-aaa-init.el", "https://x",
+        input_fn=lambda _: next(responses),
     )
-    assert result.stem == "bbb"
+    assert result.stem == "ccc"
+    err = capsys.readouterr().err
+    assert "Please enter a number to select a package." in err
 
 
 def test_select_by_number() -> None:
@@ -83,7 +87,7 @@ def test_prompt_includes_context(capsys) -> None:
     select_package_file(
         [_cand("aaa"), _cand("bbb")],
         "soma-bbb-init.el", "https://github.com/ex/repo",
-        input_fn=lambda _: "",
+        input_fn=lambda _: "1",
     )
     err = capsys.readouterr().err
     assert "soma-bbb-init.el" in err
