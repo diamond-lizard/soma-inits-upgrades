@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from soma_inits_upgrades.protocols import SubprocessRunner
+    from soma_inits_upgrades.protocols import SubprocessRunner, UserInputFn
     from soma_inits_upgrades.state_schema import GlobalState
     from soma_inits_upgrades.validation_schema import GroupedEntryDict
 
@@ -20,6 +20,7 @@ def run_setup(
     resolved_output: Path,
     state_dir: Path,
     results: list[GroupedEntryDict],
+    input_fn: UserInputFn | None = None,
 ) -> GlobalState:
     """Execute the Setup stage and return the updated global state."""
     from soma_inits_upgrades.setup_completion import (
@@ -35,7 +36,7 @@ def run_setup(
 
     graph_path = resolved_output / "soma-inits-dependency-graphs.json"
     gs = initialize_global_state(global_state, global_state_path, resolved_stale)
-    prompt_emacs_version(gs, global_state_path)
+    prompt_emacs_version(gs, global_state_path, prompt_fn=input_fn)
     create_tmp_directory(resolved_output)
     initialize_entry_states(results, state_dir, resolved_output, gs)
     initialize_dep_graph(graph_path)
@@ -50,7 +51,7 @@ def run_all_phases(
     resolved_output: Path,
     state_dir: Path,
     results: list[GroupedEntryDict],
-    run_fn: SubprocessRunner,
+    run_fn: SubprocessRunner, input_fn: UserInputFn | None = None,
 ) -> None:
     """Execute all four phases in order, resuming from where left off."""
     from soma_inits_upgrades.finalization import (
@@ -66,12 +67,12 @@ def run_all_phases(
     if global_state is None or global_state.phases.setup != "done":
         gs = run_setup(
             global_state, global_state_path,
-            resolved_stale, resolved_output, state_dir, results,
+            resolved_stale, resolved_output, state_dir, results, input_fn=input_fn,
         )
     else:
         gs = global_state
 
-    dispatch_entry_processing(results, state_dir, resolved_output, gs, run_fn)
+    dispatch_entry_processing(results, state_dir, resolved_output, gs, run_fn, input_fn=input_fn)
     gs = read_global_state(global_state_path) or gs
     check_processing_viability(gs.entries_summary, gs.entry_names, state_dir)
     dispatch_graph_finalization(gs, global_state_path, resolved_output)

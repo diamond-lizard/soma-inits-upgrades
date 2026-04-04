@@ -54,21 +54,32 @@ def cli(stale_inits_file: str, output_dir: str) -> None:
     tracker = ProcessTracker()
     signal.signal(signal.SIGTERM, make_sigterm_handler(tracker))
     run_fn = partial(tracked_run, tracker=tracker)
-    validate_tools(run_fn)
 
-    resolved_stale, resolved_output = resolve_and_validate_paths(
-        stale_inits_file, output_dir,
-    )
-    state_dir = resolved_output / ".state"
-    global_state_path = state_dir / "global.json"
+    from soma_inits_upgrades.terminal import TerminalEcho
+    te = TerminalEcho()
 
-    _lock_fd = acquire_process_lock(state_dir)
-    global_state = read_global_state(global_state_path)
-    check_stale_inits_mismatch(global_state, resolved_stale)
-    results = load_stale_inits(resolved_stale)
+    def echo_input(prompt: str) -> str:
+        """Wrap input() with terminal echo management."""
+        with te.for_input():
+            return input(prompt)
 
-    from soma_inits_upgrades.phase_orchestration import run_all_phases
-    run_all_phases(
-        global_state, global_state_path,
-        resolved_stale, resolved_output, state_dir, results, run_fn,
-    )
+    with te.suppressed():
+        validate_tools(run_fn)
+
+        resolved_stale, resolved_output = resolve_and_validate_paths(
+            stale_inits_file, output_dir,
+        )
+        state_dir = resolved_output / ".state"
+        global_state_path = state_dir / "global.json"
+
+        _lock_fd = acquire_process_lock(state_dir)
+        global_state = read_global_state(global_state_path)
+        check_stale_inits_mismatch(global_state, resolved_stale)
+        results = load_stale_inits(resolved_stale)
+
+        from soma_inits_upgrades.phase_orchestration import run_all_phases
+        run_all_phases(
+            global_state, global_state_path,
+            resolved_stale, resolved_output, state_dir, results, run_fn,
+            input_fn=echo_input,
+        )
