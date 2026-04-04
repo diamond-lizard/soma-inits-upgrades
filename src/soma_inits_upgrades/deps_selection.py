@@ -80,14 +80,15 @@ def _prompt_loop(
     resolved_fn: UserInputFn, suggested: int,
 ) -> PackageCandidate:
     """Validation loop for user package selection."""
-    prompt = f"Select the package to use (default {suggested + 1}): "
+    prompt = f"Select the package to use (suggested: {suggested + 1}): "
     while True:
         try:
             choice = resolved_fn(prompt).strip()
         except EOFError:
             return candidates[suggested]
         if not choice:
-            return candidates[suggested]
+            print("Please enter a number to select a package.", file=sys.stderr)
+            continue
         try:
             num = int(choice)
         except ValueError:
