@@ -54,6 +54,8 @@ def process_all_entries(
     for idx, entry in enumerate(results, 1):
         name = entry['init_file']
         n_repos = len(entry['repos'])
+        if idx > 1:
+            eprint("-" * 72)
         eprint(
             f"[{idx}/{total}] Processing {name}"
             f" ({n_repos} repo(s))...",
