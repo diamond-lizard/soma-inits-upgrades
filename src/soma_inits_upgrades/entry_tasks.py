@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import shutil
-import sys
 from typing import TYPE_CHECKING
+
+from soma_inits_upgrades.console import eprint, eprint_warn
 
 if TYPE_CHECKING:
     from soma_inits_upgrades.protocols import RepoContext
@@ -23,11 +24,11 @@ def task_clone(repo_ctx: RepoContext) -> bool:
     avail_mb = shutil.disk_usage(str(ctx.output_dir)).free // (1024 * 1024)
     if avail_mb < LOW_DISK_THRESHOLD_MB:
         msg = f"Warning: low disk space ({avail_mb}MB available). Clone may fail."
-        print(msg, file=sys.stderr)
+        eprint_warn(msg)
     idx, total = ctx.entry_idx, ctx.total
     name = ctx.entry_state.init_file
     url = repo_ctx.repo_state.repo_url
-    print(f"[{idx}/{total}] {name}: cloning {url}...", file=sys.stderr)
+    eprint(f"[{idx}/{total}] {name}: cloning {url}...")
     success, error_msg = clone_repo(
         repo_ctx.repo_state.repo_url, repo_ctx.clone_dir,
         ctx.output_dir, run_fn=ctx.run_fn,

@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import sys
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.console import eprint_error, eprint_prompt
 from soma_inits_upgrades.protocols import default_input
 
 if TYPE_CHECKING:
@@ -64,12 +64,12 @@ def select_package_file(
     resolved_fn = input_fn if input_fn is not None else default_input
     suggested = compute_suggested_index(candidates, init_file)
     if init_file is not None:
-        print(f"While processing {init_file} multiple packages were found", file=sys.stderr)
+        eprint_prompt(f"While processing {init_file} multiple packages were found")
     if repo_url is not None:
-        print(f"in {repo_url}:", file=sys.stderr)
+        eprint_prompt(f"in {repo_url}:")
     for i, c in enumerate(candidates):
         tag = "  [suggested]" if i == suggested else ""
-        print(f"  {i + 1}. {c.stem}{tag}", file=sys.stderr)
+        eprint_prompt(f"  {i + 1}. {c.stem}{tag}")
     return _prompt_loop(candidates, resolved_fn, suggested)
 
 
@@ -85,13 +85,13 @@ def _prompt_loop(
         except EOFError:
             return candidates[suggested]
         if not choice:
-            print("Please enter a number to select a package.", file=sys.stderr)
+            eprint_prompt("Please enter a number to select a package.")
             continue
         try:
             num = int(choice)
         except ValueError:
-            print("Invalid choice", file=sys.stderr)
+            eprint_error("Invalid choice")
             continue
         if 1 <= num <= len(candidates):
             return candidates[num - 1]
-        print("Invalid choice", file=sys.stderr)
+        eprint_error("Invalid choice")

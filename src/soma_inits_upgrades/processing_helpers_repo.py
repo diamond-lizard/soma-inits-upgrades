@@ -5,6 +5,7 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.console import eprint_error, eprint_warn
 from soma_inits_upgrades.processing_helpers import SELF_HEALING_LIMIT
 
 if TYPE_CHECKING:
@@ -54,18 +55,16 @@ def self_heal_repo_resource(
             f"{count} times for {repo_ctx.entry_ctx.entry_state.init_file}",
         )
         name = repo_ctx.entry_ctx.entry_state.init_file
-        print(
+        eprint_error(
             f"FATAL: {resource_path.name} could not be regenerated "
             f"for {name} after "
             f"{count} attempts. Fix the underlying issue "
             f"(network, permissions, upstream repo) and re-run.",
-            file=sys.stderr,
         )
         sys.exit(1)
     name = repo_ctx.entry_ctx.entry_state.init_file
-    print(
+    eprint_warn(
         f"Warning: {resource_path.name} missing, re-executing {creating_task} "
         f"for {name} (attempt {count}/{SELF_HEALING_LIMIT})",
-        file=sys.stderr,
     )
     return True

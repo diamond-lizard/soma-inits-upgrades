@@ -5,6 +5,7 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.console import eprint_error, eprint_warn
 from soma_inits_upgrades.state import atomic_write_json, read_entry_state
 from soma_inits_upgrades.state_schema import EntryState, RepoState
 
@@ -28,10 +29,9 @@ def _check_state_version(path: Path) -> None:
     try:
         EntryState.model_validate_json(raw)
     except ValidationError:
-        print(
+        eprint_error(
             "State files appear to be from an incompatible version. "
             "Delete .state/ and .tmp/ directories and restart.",
-            file=sys.stderr,
         )
         sys.exit(1)
 
@@ -51,7 +51,7 @@ def create_entry_state_if_missing(
         existing = read_entry_state(path)
         if existing is not None:
             return False
-        print(f"Warning: recreating corrupt state for {path}", file=sys.stderr)
+        eprint_warn(f"Warning: recreating corrupt state for {path}")
     repos = [
         RepoState(repo_url=r["repo_url"], pinned_ref=r["pinned_ref"])
         for r in entry_dict["repos"]

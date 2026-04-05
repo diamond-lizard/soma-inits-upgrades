@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.console import (
+    eprint,
+    eprint_error,
+    eprint_plain,
+    eprint_prompt,
+    eprint_warn,
+)
 from soma_inits_upgrades.protocols import default_input
 
 if TYPE_CHECKING:
@@ -21,12 +27,13 @@ def _prompt_exhausted_entry(
     actions: dict[str, Literal["skip", "retry", "fresh"]] = {
         "1": "skip", "2": "retry", "3": "fresh",
     }
-    print(f"\n{name}: retries exhausted.", file=sys.stderr)
+    eprint_warn(f"\n{name}: retries exhausted.")
     if notes:
-        print(f"  Last error: {notes}", file=sys.stderr)
-    print("  1) Skip this entry", file=sys.stderr)
-    print("  2) Retry once more", file=sys.stderr)
-    print("  3) Delete state and start fresh", file=sys.stderr)
+        eprint_plain("  Last error: ", end="")
+        eprint_error(notes)
+    eprint_prompt("  1) Skip this entry")
+    eprint_prompt("  2) Retry once more")
+    eprint_prompt("  3) Delete state and start fresh")
     while True:
         try:
             choice = resolved_fn("Choose [1/2/3]: ").strip()
@@ -34,10 +41,7 @@ def _prompt_exhausted_entry(
             return "skip"
         if choice in actions:
             return actions[choice]
-        print(
-            "Please enter a number (1, 2, or 3).",
-            file=sys.stderr,
-        )
+        eprint_prompt("Please enter a number (1, 2, or 3).")
 
 
 def handle_exhausted_entry(
@@ -51,11 +55,10 @@ def handle_exhausted_entry(
         return True
     if action == "fresh":
         path.unlink(missing_ok=True)
-        print(
+        eprint(
             f"Deleted state for {name}"
             " — will be recreated from scratch",
-            file=sys.stderr,
         )
         return False
-    print(f"Skipping {name} (user request)", file=sys.stderr)
+    eprint(f"Skipping {name} (user request)")
     return False

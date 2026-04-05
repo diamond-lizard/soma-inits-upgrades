@@ -5,6 +5,8 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.console import eprint_error, eprint_warn
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -24,7 +26,7 @@ def set_entry_error(ctx: EntryContext, message: str) -> None:
     atomic_write_json(ctx.entry_state_path, ctx.entry_state)
     atomic_write_json(ctx.global_state_path, ctx.global_state)
     label = f"[{ctx.entry_idx}/{ctx.total}]"
-    print(f"{label} {ctx.entry_state.init_file}: error: {message}", file=sys.stderr)
+    eprint_error(f"{label} {ctx.entry_state.init_file}: error: {message}")
 
 
 def set_entry_done_early(
@@ -71,19 +73,17 @@ def self_heal_entry_resource(
             ctx, f"self-healing limit exceeded: {resource_path.name} missing "
             f"{count} times for {ctx.entry_state.init_file}",
         )
-        print(
+        eprint_error(
             f"FATAL: {resource_path.name} could not be regenerated "
             f"for {ctx.entry_state.init_file} after "
             f"{count} attempts. Fix the underlying issue "
             f"(network, permissions, upstream repo) and re-run.",
-            file=sys.stderr,
         )
         sys.exit(1)
     name = ctx.entry_state.init_file
-    print(
+    eprint_warn(
         f"Warning: {resource_path.name} missing, re-executing {creating_task} "
         f"for {name} (attempt {count}/{SELF_HEALING_LIMIT})",
-        file=sys.stderr,
     )
     return True
 

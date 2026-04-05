@@ -6,6 +6,8 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.console import eprint, eprint_error
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -30,7 +32,7 @@ def resolve_and_validate_paths(
     try:
         state_dir.mkdir(parents=True, exist_ok=True)
     except OSError as exc:
-        print(f"Error: cannot create output directory: {exc}", file=sys.stderr)
+        eprint_error(f"Error: cannot create output directory: {exc}")
         sys.exit(1)
     return resolved_stale, resolved_output
 
@@ -48,13 +50,12 @@ def check_stale_inits_mismatch(
         return
     recorded = global_state.stale_inits_file
     if recorded and str(resolved_stale_path) != recorded:
-        print(
+        eprint_error(
             f"Error: stale inits file mismatch.\n"
             f"  Previous run used: {recorded}\n"
             f"  Current argument:  {resolved_stale_path}\n"
             f"Use the original file, or delete the .state/ directory "
             f"to start fresh.",
-            file=sys.stderr,
         )
         sys.exit(1)
 
@@ -74,13 +75,13 @@ def load_stale_inits(path: Path) -> list[GroupedEntryDict]:
         raw = path.read_text(encoding="utf-8")
         validated = StaleInitsFile.model_validate_json(raw)
     except FileNotFoundError:
-        print(f"Error: stale inits file not found: {path}", file=sys.stderr)
+        eprint_error(f"Error: stale inits file not found: {path}")
         sys.exit(1)
     except (ValidationError, ValueError) as exc:
-        print(f"Error: invalid stale inits file: {exc}", file=sys.stderr)
+        eprint_error(f"Error: invalid stale inits file: {exc}")
         sys.exit(1)
     if not validated.results:
-        print("No stale entries found in input file.", file=sys.stderr)
+        eprint("No stale entries found in input file.")
         sys.exit(0)
     grouped: dict[str, list[RepoEntryDict]] = {}
     for e in validated.results:

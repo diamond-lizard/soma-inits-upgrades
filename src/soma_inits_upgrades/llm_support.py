@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.console import eprint, eprint_error, eprint_prompt
 from soma_inits_upgrades.prompts_helpers import shorten_home_in_text
 from soma_inits_upgrades.protocols import default_input
 
@@ -24,11 +24,11 @@ def display_llm_task_info(
     task_label: str, prompt_path: Path, output_path: Path,
 ) -> None:
     """Print LLM task progress info to stderr."""
-    print(f"[{entry_idx}/{total}] {init_file}: {task_label}", file=sys.stderr)
+    eprint(f"[{entry_idx}/{total}] {init_file}: {task_label}")
     short_prompt = shorten_home_in_text(str(prompt_path))
     short_output = shorten_home_in_text(str(output_path))
-    print(f"  Prompt: {short_prompt}", file=sys.stderr)
-    print(f"  Output: {short_output}", file=sys.stderr)
+    eprint(f"  Prompt: {short_prompt}")
+    eprint(f"  Output: {short_output}")
 
 
 def offer_clipboard_copy(
@@ -41,10 +41,10 @@ def offer_clipboard_copy(
     from soma_inits_upgrades.clipboard import copy_to_primary
 
     resolved_fn = input_fn if input_fn is not None else default_input
-    print("Press ENTER to copy prompt to X primary selection...", file=sys.stderr)
+    eprint_prompt("Press ENTER to copy prompt to X primary selection...")
     resolved_fn("")
     copy_to_primary(text)
-    print("Copied.", file=sys.stderr)
+    eprint("Copied.")
 
 
 def prompt_user_action(output_path: Path, input_fn: UserInputFn) -> str:
@@ -58,11 +58,11 @@ def prompt_user_action(output_path: Path, input_fn: UserInputFn) -> str:
             if output_path.exists() and output_path.stat().st_size > 0:
                 return "continue"
             short = shorten_home_in_text(str(output_path))
-            print(f"  Output file missing or empty: {short}", file=sys.stderr)
+            eprint_error(f"  Output file missing or empty: {short}")
             continue
         if choice == "s":
             return "skip"
         if choice == "q":
             return "quit"
-        print("Invalid choice", file=sys.stderr)
+        eprint_error("Invalid choice")
 
