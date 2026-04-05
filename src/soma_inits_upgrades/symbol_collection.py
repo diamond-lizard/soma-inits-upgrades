@@ -22,7 +22,8 @@ def collect_removed_lines(diff_path: Path) -> list[str]:
     """
     import unidiff
 
-    patch = unidiff.PatchSet.from_filename(str(diff_path), encoding="utf-8")
+    with open(diff_path, encoding="utf-8", newline="\n") as f:
+        patch = unidiff.PatchSet(f)
     return [
         line.value.rstrip("\n")
         for pf in patch

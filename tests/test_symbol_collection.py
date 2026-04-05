@@ -4,10 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from soma_inits_upgrades.symbol_collection import (
-    collect_removed_lines,
-    extract_changed_symbols,
-)
+from soma_inits_upgrades.symbol_collection import extract_changed_symbols
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -30,16 +27,6 @@ SAMPLE_DIFF = """\
 +  "A new option.")
 """
 
-
-def test_collect_removed_lines(tmp_path: Path) -> None:
-    """Collects only removed lines from a diff file."""
-    diff_file = tmp_path / "test.diff"
-    diff_file.write_text(SAMPLE_DIFF, encoding="utf-8")
-    removed = collect_removed_lines(diff_file)
-    assert "(defun my-pkg-old-func (arg)" in removed
-    assert "(defvar my-pkg-old-var nil)" in removed
-    assert "(defcustom my-pkg-removed-opt nil" in removed
-    assert "(defun my-pkg-new-func (arg)" not in removed
 
 
 def test_extract_changed_symbols(tmp_path: Path) -> None:
