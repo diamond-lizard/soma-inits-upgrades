@@ -42,7 +42,7 @@ def test_new_entry_detection(tmp_path: Path) -> None:
     write_graph(tmp_path / "soma-inits-dependency-graphs.json", {})
     results = [_entry("old.el", "a"), _entry("new.el", "b")]
     dispatch_entry_processing(
-        results, sd, tmp_path, gs, make_fake_git(clone_ok=False),
+        results, sd, tmp_path, gs, make_fake_git(clone_ok=False), input_fn=lambda _: "c",
     )
     assert "new.el" in gs.entry_names
     assert (sd / "new.el.json").exists()
@@ -68,7 +68,7 @@ def test_modified_entry_detection(tmp_path: Path) -> None:
     write_graph(tmp_path / "soma-inits-dependency-graphs.json", {})
     results = [_entry("x.el", "NEW")]
     dispatch_entry_processing(
-        results, sd, tmp_path, gs, make_fake_git(clone_ok=False),
+        results, sd, tmp_path, gs, make_fake_git(clone_ok=False), input_fn=lambda _: "c",
     )
     state = read_entry_state(sd / "x.el.json")
     assert state is not None

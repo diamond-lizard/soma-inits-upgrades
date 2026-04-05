@@ -84,7 +84,7 @@ def test_clone_failure(tmp_path: Path) -> None:
     fg = make_fake_git(clone_ok=False)
     process_single_entry(
         entry, 1, 1, sd, tmp_path, gs, gsp,
-        fg, [entry], lambda: False,
+        fg, [entry], lambda: False, input_fn=lambda _: "c",
     )
     state = read_entry_state(sd / "x.el.json")
     assert state is not None and state.repos[0].done_reason == "error"

@@ -57,6 +57,10 @@ def _aggregate_repo_outcomes(ctx: EntryContext) -> None:
             ctx.entry_state.notes = f"Tier 1 failed for: {', '.join(failed)}"
             ctx.entry_state.status = "done"
         else:
+            from soma_inits_upgrades.processing_finalize_prompt import (
+                prompt_on_all_repos_errored,
+            )
+            prompt_on_all_repos_errored(ctx)
             set_entry_error(ctx, "no repo produced a usable diff")
         return
     if all(r.done_reason is not None for r in repos):

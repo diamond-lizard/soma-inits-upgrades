@@ -62,6 +62,7 @@ def test_mixed_error_and_skip_no_diff(tmp_path: Path) -> None:
         _repo("error", "clone failed", url=URL_B),
     ]
     ctx = _make_ctx(tmp_path, repos)
+    ctx.input_fn = lambda _: "c"
     finalize_entry(ctx)
     assert ctx.entry_state.status == "error"
     assert ctx.entry_state.done_reason is None

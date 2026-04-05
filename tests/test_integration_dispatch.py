@@ -54,7 +54,10 @@ def test_retry_in_progress(tmp_path: Path) -> None:
     atomic_write_json(sd / "global.json", gs)
     write_graph(tmp_path / "soma-inits-dependency-graphs.json", {})
     results = [_entry("x.el", "a")]
-    dispatch_entry_processing(results, sd, tmp_path, gs, make_fake_git(clone_ok=False))
+    dispatch_entry_processing(
+        results, sd, tmp_path, gs, make_fake_git(clone_ok=False),
+        input_fn=lambda _: "c",
+    )
     state = read_entry_state(sd / "x.el.json")
     assert state is not None
     assert state.retries_remaining == 2
@@ -80,7 +83,10 @@ def test_retry_done_phase(tmp_path: Path) -> None:
     atomic_write_json(sd / "global.json", gs)
     write_graph(tmp_path / "soma-inits-dependency-graphs.json", {})
     results = [_entry("x.el", "a")]
-    dispatch_entry_processing(results, sd, tmp_path, gs, make_fake_git(clone_ok=False))
+    dispatch_entry_processing(
+        results, sd, tmp_path, gs, make_fake_git(clone_ok=False),
+        input_fn=lambda _: "c",
+    )
     state = read_entry_state(sd / "x.el.json")
     assert state is not None and state.retries_remaining == 2
 

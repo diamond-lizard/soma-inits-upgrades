@@ -48,7 +48,7 @@ def test_self_healing_reclone(tmp_path: Path) -> None:
     entry = _entry("x.el", "old")
     fg = make_fake_git(clone_ok=False)
     process_single_entry(
-        entry, 1, 1, sd, tmp_path, gs, gsp, fg, [entry], lambda: False,
+        entry, 1, 1, sd, tmp_path, gs, gsp, fg, [entry], lambda: False, input_fn=lambda _: "c",
     )
     state = read_entry_state(sd / "x.el.json")
     assert state is not None
@@ -86,7 +86,7 @@ def test_orphan_removal(tmp_path: Path) -> None:
         ], "depended_on_by": []},
     })
     results = [_entry("keep.el", "a")]
-    dispatch_entry_processing(results, sd, tmp_path, gs, make_fake_git())
+    dispatch_entry_processing(results, sd, tmp_path, gs, make_fake_git(), input_fn=lambda _: "c")
     assert "drop.el" not in gs.entry_names
     assert not (sd / "drop.el.json").exists()
     graph, _ = read_graph(tmp_path / "soma-inits-dependency-graphs.json")

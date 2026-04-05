@@ -51,7 +51,7 @@ def test_progress_guard(tmp_path: Path) -> None:
     try:
         process_single_entry(
             entry, 1, 1, sd, tmp_path, gs, gsp,
-            make_fake_git(), [entry], lambda: False,
+            make_fake_git(), [entry], lambda: False, input_fn=lambda _: "c",
         )
         state = read_entry_state(sd / "x.el.json")
         assert state is not None
