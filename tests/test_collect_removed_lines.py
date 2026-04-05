@@ -57,3 +57,21 @@ def test_collect_removed_lines_embedded_cr(tmp_path: Path) -> None:
     diff_file.write_bytes(diff_bytes)
     removed = collect_removed_lines(diff_file)
     assert "(defun le-python-old-func ()" in removed
+
+
+def test_collect_removed_lines_latin1_bytes(tmp_path: Path) -> None:
+    """Parses a diff containing Latin-1 encoded bytes without crashing."""
+    diff_bytes = (
+        b"diff --git a/elisp-comp b/elisp-comp\n"
+        b"--- a/elisp-comp\n"
+        b"+++ b/elisp-comp\n"
+        b"@@ -1,3 +1,2 @@\n"
+        b" #!/bin/sh\n"
+        b"-# Fran\xe7ois Pinard <pinard@iro.umontreal.ca>, 1995.\n"
+        b"-(defvar elisp-comp-old nil)\n"
+        b"+(defvar elisp-comp-new nil)\n"
+    )
+    diff_file = tmp_path / "latin1.diff"
+    diff_file.write_bytes(diff_bytes)
+    removed = collect_removed_lines(diff_file)
+    assert any("elisp-comp-old" in line for line in removed)

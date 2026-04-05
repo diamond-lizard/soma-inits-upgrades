@@ -22,7 +22,7 @@ def collect_removed_lines(diff_path: Path) -> list[str]:
     """
     import unidiff
 
-    with open(diff_path, encoding="utf-8", newline="\n") as f:
+    with open(diff_path, encoding="utf-8", errors="replace", newline="\n") as f:
         patch = unidiff.PatchSet(f)
     return [
         line.value.rstrip("\n")
