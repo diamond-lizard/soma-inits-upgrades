@@ -28,7 +28,6 @@ def _print_repo_error(repo_url: str, state_path: str, notes: str) -> None:
 
 def prompt_on_all_repos_errored(ctx: EntryContext) -> None:
     """Print per-repo error details and prompt to continue or quit."""
-    from soma_inits_upgrades.state import atomic_write_json
     resolved = ctx.input_fn if ctx.input_fn is not None else default_input
     for repo in ctx.entry_state.repos:
         if repo.done_reason != "error":
@@ -37,8 +36,6 @@ def prompt_on_all_repos_errored(ctx: EntryContext) -> None:
     while True:
         choice = resolved("(c)ontinue or (q)uit: ").strip().lower()
         if choice == "q":
-            atomic_write_json(ctx.entry_state_path, ctx.entry_state)
-            atomic_write_json(ctx.global_state_path, ctx.global_state)
             sys.exit(0)
         if choice == "c":
             return

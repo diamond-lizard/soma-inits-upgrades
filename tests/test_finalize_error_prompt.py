@@ -63,6 +63,7 @@ def test_all_repos_error_quit_exits(
     with pytest.raises(SystemExit):
         finalize_entry(ctx)
     captured = capsys.readouterr()
+    assert ctx.entry_state.status == "error"
     assert "repo: https://github.com/magnars/dash.el" in captured.err
     assert f"state: {ctx.entry_state_path}" in captured.err
     assert "error: clone failed" in captured.err

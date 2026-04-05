@@ -60,8 +60,8 @@ def _aggregate_repo_outcomes(ctx: EntryContext) -> None:
             from soma_inits_upgrades.processing_finalize_prompt import (
                 prompt_on_all_repos_errored,
             )
-            prompt_on_all_repos_errored(ctx)
             set_entry_error(ctx, "no repo produced a usable diff")
+            prompt_on_all_repos_errored(ctx)
         return
     if all(r.done_reason is not None for r in repos):
         reasons = {r.done_reason for r in repos}
