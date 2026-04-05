@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
+
+from soma_inits_upgrades.console import eprint
 
 if TYPE_CHECKING:
     from soma_inits_upgrades.protocols import EntryContext, RepoContext
@@ -26,7 +27,7 @@ def task_deps(repo_ctx: RepoContext) -> bool:
     if self_heal_repo_resource(repo_ctx.clone_dir, "clone", repo_ctx):
         return False
     label = f"[{ctx.entry_idx}/{ctx.total}]"
-    print(f"{label} {ctx.entry_state.init_file}: parsing dependencies...", file=sys.stderr)
+    eprint(f"{label} {ctx.entry_state.init_file}: parsing dependencies...")
     latest = repo_ctx.repo_state.latest_ref or ""
     if not ensure_working_tree_at_ref(repo_ctx.clone_dir, latest, run_fn=ctx.run_fn):
         msg = f"git checkout failed: latest_ref {repo_ctx.repo_state.latest_ref}"

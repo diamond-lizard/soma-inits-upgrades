@@ -5,6 +5,8 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.console import eprint_error
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -21,12 +23,12 @@ def check_processing_viability(
         return
     from soma_inits_upgrades.state import read_entry_state
 
-    print("Error: no entries were successfully processed.", file=sys.stderr)
+    eprint_error("Error: no entries were successfully processed.")
     for name in entry_names:
         path = state_dir / f"{name}.json"
         state = read_entry_state(path)
         if state is not None and state.status == "error":
-            print(f"  {state.init_file}: {state.notes or 'unknown error'}", file=sys.stderr)
+            eprint_error(f"  {state.init_file}: {state.notes or 'unknown error'}")
     sys.exit(1)
 
 

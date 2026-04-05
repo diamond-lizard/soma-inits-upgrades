@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import sys
+from soma_inits_upgrades.console import eprint_warn
 
 
 def parse_requirements_sexp(raw: str) -> list[tuple[str, str]]:
@@ -17,9 +17,8 @@ def parse_requirements_sexp(raw: str) -> list[tuple[str, str]]:
     try:
         parsed = sexpdata.loads(raw)
     except (ValueError, SyntaxError, AssertionError):
-        print(
+        eprint_warn(
             f"Warning: failed to parse requirements: {raw!r}",
-            file=sys.stderr,
         )
         return []
     if not isinstance(parsed, list):

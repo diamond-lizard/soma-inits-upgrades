@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.console import eprint_warn
 from soma_inits_upgrades.state import atomic_write_json, read_entry_state
 from soma_inits_upgrades.state_artifacts import delete_entry_artifacts
 from soma_inits_upgrades.state_schema import EntryState, RepoState
@@ -50,10 +50,9 @@ def reset_entry_state_if_modified(
     if not changed:
         return False
     fields = ", ".join(changed)
-    print(
+    eprint_warn(
         f"Warning: {entry_dict['init_file']} changed ({fields}),"
         f" resetting",
-        file=sys.stderr,
     )
     delete_entry_artifacts(entry_dict["init_file"], output_dir)
     repos = [

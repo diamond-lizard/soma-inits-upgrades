@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.console import eprint_warn
 from soma_inits_upgrades.entry_tasks_diff import clone_cleanup, task_temp_cleanup
 from soma_inits_upgrades.processing_tier1 import _run_tier1_tasks
 from soma_inits_upgrades.processing_tier2 import _run_tier2_loop
@@ -32,10 +32,9 @@ def _validate_repo_artifacts(
         repo_state.tier1_tasks_completed[key] = False
     repo_state.package_name = None
     atomic_write_json(entry_state_path, entry_state)
-    print(
+    eprint_warn(
         f"Self-heal: reset Tier 1 tasks for {repo_state.repo_url}"
         " (temp directory missing)",
-        file=sys.stderr,
     )
 
 
@@ -53,10 +52,9 @@ def _reset_tier1_on_restart(ctx: EntryContext) -> None:
             repo_state.tier1_tasks_completed[key] = False
         repo_state.package_name = None
         any_reset = True
-        print(
+        eprint_warn(
             f"Restart detected: resetting Tier 1 tasks"
             f" for {repo_state.repo_url}",
-            file=sys.stderr,
         )
     if any_reset:
         atomic_write_json(ctx.entry_state_path, ctx.entry_state)

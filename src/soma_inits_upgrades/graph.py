@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING, Any
+
+from soma_inits_upgrades.console import eprint_warn
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -36,16 +37,16 @@ def _restore_from_backup(path: Path) -> tuple[GraphDict, bool]:
 
     bak = path.with_suffix(path.suffix + ".bak")
     if not bak.exists():
-        print(f"Warning: corrupt graph at {path}, no backup", file=sys.stderr)
+        eprint_warn(f"Warning: corrupt graph at {path}, no backup")
         return {}, True
     try:
         raw = bak.read_text(encoding="utf-8")
         graph = json.loads(raw)
     except (json.JSONDecodeError, OSError):
-        print(f"Warning: corrupt graph and backup at {path}", file=sys.stderr)
+        eprint_warn(f"Warning: corrupt graph and backup at {path}")
         return {}, True
     shutil.copy2(bak, path)
-    print(f"Warning: restored graph from backup at {bak}", file=sys.stderr)
+    eprint_warn(f"Warning: restored graph from backup at {bak}")
     return graph, True
 
 

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.console import eprint
 from soma_inits_upgrades.state_creation import create_entry_state_if_missing
 from soma_inits_upgrades.state_lifecycle import reset_entry_state_if_modified
 
@@ -50,7 +50,7 @@ def handle_orphaned_entries(
         (state_dir / f"{name}.json").unlink(missing_ok=True)
         delete_entry_artifacts(name, output_dir, include_permanent=True, include_temp=True)
         global_state.entry_names.remove(name)
-        print(f"Entry {name} no longer in input file, removing", file=sys.stderr)
+        eprint(f"Entry {name} no longer in input file, removing")
     graph_path = output_dir / "soma-inits-dependency-graphs.json"
     graph, _restored = read_graph(graph_path)
     remove_entries(graph, orphans)

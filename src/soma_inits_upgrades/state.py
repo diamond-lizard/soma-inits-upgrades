@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel
 
+from soma_inits_upgrades.console import eprint_warn
 from soma_inits_upgrades.state_schema import (
     EntriesSummary,
     EntryState,
@@ -27,7 +27,7 @@ def read_global_state(path: Path) -> GlobalState | None:
         raw = path.read_text(encoding="utf-8")
         return GlobalState.model_validate_json(raw)
     except (ValueError, OSError) as exc:
-        print(f"Warning: invalid global state at {path}: {exc}", file=sys.stderr)
+        eprint_warn(f"Warning: invalid global state at {path}: {exc}")
         return None
 
 
@@ -54,7 +54,7 @@ def read_entry_state(path: Path) -> EntryState | None:
         raw = path.read_text(encoding="utf-8")
         return EntryState.model_validate_json(raw)
     except (ValueError, OSError) as exc:
-        print(f"Warning: invalid entry state at {path}: {exc}", file=sys.stderr)
+        eprint_warn(f"Warning: invalid entry state at {path}: {exc}")
         return None
 
 

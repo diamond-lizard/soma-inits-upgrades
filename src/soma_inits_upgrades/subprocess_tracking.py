@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import subprocess
-import sys
 import time
 from typing import TYPE_CHECKING
 
@@ -11,6 +10,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from subprocess import Popen
 
+from soma_inits_upgrades.console import eprint
 from soma_inits_upgrades.subprocess_utils import (
     ProcessTracker,
     SubprocessTimeoutError,
@@ -55,7 +55,7 @@ def poll_with_progress(
             terminate_with_escalation(process)
             cmd_str = str(process.args) if hasattr(process, "args") else "<unknown>"
             raise SubprocessTimeoutError(cmd_str, elapsed)
-        print(f"  {label}... ({elapsed:.0f}s)", end="\r", file=sys.stderr)
+        eprint(f"  {label}... ({elapsed:.0f}s)", end="\r")
         time.sleep(_poll_interval)
     stdout, stderr = process.communicate()
     return stdout or "", stderr or ""

@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
+
+from soma_inits_upgrades.console import eprint_warn
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -23,7 +24,7 @@ def ensure_entry_state(
     state = read_entry_state(path)
     if state is None:
         name = entry["init_file"]
-        print(f"Warning: state file missing for {name}, creating default", file=sys.stderr)
+        eprint_warn(f"Warning: state file missing for {name}, creating default")
         state = EntryState(
             init_file=entry["init_file"],
             repos=[

@@ -5,8 +5,9 @@ from __future__ import annotations
 
 import shutil
 import subprocess
-import sys
 from typing import TYPE_CHECKING
+
+from soma_inits_upgrades.console import eprint_warn
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -52,4 +53,4 @@ def copy_to_primary(
             timeout=5,
         )
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError) as exc:
-        print(f"Warning: failed to copy to clipboard: {exc}", file=sys.stderr)
+        eprint_warn(f"Warning: failed to copy to clipboard: {exc}")

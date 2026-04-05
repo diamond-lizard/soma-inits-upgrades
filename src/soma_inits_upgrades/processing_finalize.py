@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
+
+from soma_inits_upgrades.console import eprint
 
 if TYPE_CHECKING:
     from soma_inits_upgrades.protocols import EntryContext
@@ -86,7 +87,7 @@ def complete_entry_bookkeeping(ctx: EntryContext) -> None:
     atomic_write_json(ctx.entry_state_path, ctx.entry_state)
     atomic_write_json(ctx.global_state_path, ctx.global_state)
     label = f"[{ctx.entry_idx}/{ctx.total}]"
-    print(f"{label} {ctx.entry_state.init_file}: done", file=sys.stderr)
+    eprint(f"{label} {ctx.entry_state.init_file}: done")
 
 
 def _next_pending_entry(ctx: EntryContext) -> str | None:

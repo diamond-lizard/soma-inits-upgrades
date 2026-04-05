@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
+
+from soma_inits_upgrades.console import eprint
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -90,4 +91,4 @@ def _complete_summary(
     msg = format_completion_message(
         categories, len(global_state.entry_names), output_dir, elapsed,
     )
-    print(msg, file=sys.stderr)
+    eprint(msg)

@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
+
+from soma_inits_upgrades.console import eprint
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -89,7 +90,7 @@ def dispatch_summary_stage(
 ) -> None:
     """Dispatch Summary stage: security summary, version conflicts, completion."""
     if global_state.phases.summary == "done":
-        print("Plan is already complete.", file=sys.stderr)
+        eprint("Plan is already complete.")
         return
     from soma_inits_upgrades.finalization_summary import run_summary_steps
 

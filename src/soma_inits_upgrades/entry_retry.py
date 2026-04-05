@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
+
+from soma_inits_upgrades.console import eprint
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -27,7 +28,7 @@ def reset_phases_for_new_entries(
         if name not in global_state.entry_names:
             global_state.entry_names.append(name)
     count = len(new_names)
-    print(f"Detected {count} new/modified entries, resuming processing", file=sys.stderr)
+    eprint(f"Detected {count} new/modified entries, resuming processing")
 
 
 def _reset_errored_repo_reasons(repos: list[RepoState]) -> None:
@@ -69,6 +70,6 @@ def retry_errored_entries(
         state.done_reason = None
         _reset_errored_repo_reasons(state.repos)
         atomic_write_json(path, state)
-        print(f"Retrying {name} ({label})", file=sys.stderr)
+        eprint(f"Retrying {name} ({label})")
         retried += 1
     return retried

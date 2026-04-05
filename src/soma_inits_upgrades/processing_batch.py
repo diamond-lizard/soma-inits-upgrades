@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
+
+from soma_inits_upgrades.console import eprint
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -53,10 +54,9 @@ def process_all_entries(
     for idx, entry in enumerate(results, 1):
         name = entry['init_file']
         n_repos = len(entry['repos'])
-        print(
+        eprint(
             f"[{idx}/{total}] Processing {name}"
             f" ({n_repos} repo(s))...",
-            file=sys.stderr,
         )
         result = process_single_entry(
             entry, idx, total, state_dir, output_dir,

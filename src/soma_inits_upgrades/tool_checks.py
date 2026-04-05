@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import re
-import sys
 from typing import TYPE_CHECKING
+
+from soma_inits_upgrades.console import eprint_error
 
 if TYPE_CHECKING:
     from soma_inits_upgrades.protocols import SubprocessRunner, WhichFn
@@ -16,7 +17,7 @@ def check_git_available(which_fn: WhichFn) -> str:
     """Verify git is on PATH. Returns the path, or exits with code 1."""
     path = which_fn("git")
     if path is None:
-        print("Error: git is not installed or not on PATH.", file=sys.stderr)
+        eprint_error("Error: git is not installed or not on PATH.")
         raise SystemExit(1)
     return path
 
@@ -28,7 +29,7 @@ def check_git_version(
     result = run_fn([git_path, "--version"], capture_output=True, text=True)
     match = re.search(r"(\d+)\.(\d+)", result.stdout)
     if match is None:
-        print(f"Error: could not parse git version from: {result.stdout.strip()}", file=sys.stderr)
+        eprint_error(f"Error: could not parse git version from: {result.stdout.strip()}")
         raise SystemExit(1)
     major, minor = int(match.group(1)), int(match.group(2))
     if (major, minor) < MIN_GIT_VERSION:
@@ -37,7 +38,7 @@ def check_git_version(
             f"Error: git 2.19+ is required for partial (blobless) clones."
             f" Found version {version_str}."
         )
-        print(msg, file=sys.stderr)
+        eprint_error(msg)
         raise SystemExit(1)
 
 
@@ -45,7 +46,7 @@ def check_rg_available(which_fn: WhichFn) -> str:
     """Verify rg is on PATH. Returns the path, or exits with code 1."""
     path = which_fn("rg")
     if path is None:
-        print("Error: rg (ripgrep) is not installed or not on PATH.", file=sys.stderr)
+        eprint_error("Error: rg (ripgrep) is not installed or not on PATH.")
         raise SystemExit(1)
     return path
 
@@ -64,7 +65,7 @@ def check_rg_pcre2(
             " for elisp symbol search. Install ripgrep with PCRE2"
             " (e.g., cargo install ripgrep)."
         )
-        print(msg, file=sys.stderr)
+        eprint_error(msg)
         raise SystemExit(1)
 
 def validate_tools(run_fn: SubprocessRunner) -> None:

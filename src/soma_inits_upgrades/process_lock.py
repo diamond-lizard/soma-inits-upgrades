@@ -5,6 +5,8 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.console import eprint_error
+
 if TYPE_CHECKING:
     from io import TextIOWrapper
     from pathlib import Path
@@ -27,11 +29,10 @@ def acquire_process_lock(state_dir: Path) -> TextIOWrapper:
         fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except BlockingIOError:
         existing_pid = lock_path.read_text(encoding="utf-8").strip()
-        print(
+        eprint_error(
             f"Error: another instance of soma-inits-upgrades is already "
             f"running (PID {existing_pid}). If this is incorrect, delete "
             f"{lock_path} and retry.",
-            file=sys.stderr,
         )
         sys.exit(1)
     fd.write(str(os.getpid()))

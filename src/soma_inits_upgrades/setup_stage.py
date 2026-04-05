@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.console import eprint_error
 from soma_inits_upgrades.protocols import default_input
 
 if TYPE_CHECKING:
@@ -61,7 +61,7 @@ def prompt_emacs_version(
         try:
             Version(raw)
         except InvalidVersion:
-            print(f"Error: {raw!r} is not a valid version.", file=sys.stderr)
+            eprint_error(f"Error: {raw!r} is not a valid version.")
             continue
         global_state.emacs_version = raw
         atomic_write_json(global_state_path, global_state)

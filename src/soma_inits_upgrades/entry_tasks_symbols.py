@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
+
+from soma_inits_upgrades.console import eprint
 
 if TYPE_CHECKING:
     from soma_inits_upgrades.protocols import RepoContext
@@ -25,11 +26,11 @@ def task_symbols(repo_ctx: RepoContext) -> bool:
         return False
     label = f"[{ctx.entry_idx}/{ctx.total}]"
     name = ctx.entry_state.init_file
-    print(f"{label} {name}: extracting symbols and searching usages...", file=sys.stderr)
+    eprint(f"{label} {name}: extracting symbols and searching usages...")
     symbols = extract_changed_symbols(diff_path)
     usage_path = repo_ctx.temp_dir / f"{ctx.init_stem}-usage-analysis.json"
     if not symbols:
-        print(f"{label} {name}: no changed symbols, skipping usage search", file=sys.stderr)
+        eprint(f"{label} {name}: no changed symbols, skipping usage search")
         write_usage_analysis({}, usage_path)
     else:
         usages = search_symbol_usages(

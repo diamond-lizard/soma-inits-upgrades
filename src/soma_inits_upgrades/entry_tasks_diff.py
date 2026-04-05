@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import sys
 from typing import TYPE_CHECKING
+
+from soma_inits_upgrades.console import eprint
 
 if TYPE_CHECKING:
     from soma_inits_upgrades.protocols import EntryContext, RepoContext
@@ -24,7 +25,7 @@ def task_diff(repo_ctx: RepoContext) -> bool:
     if self_heal_repo_resource(repo_ctx.clone_dir, "clone", repo_ctx):
         return False
     label = f"[{ctx.entry_idx}/{ctx.total}]"
-    print(f"{label} {ctx.entry_state.init_file}: generating diff...", file=sys.stderr)
+    eprint(f"{label} {ctx.entry_state.init_file}: generating diff...")
     diff_path = repo_ctx.temp_dir / f"{ctx.init_stem}.diff"
     try:
         has_diff = generate_diff(

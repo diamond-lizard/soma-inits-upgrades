@@ -5,6 +5,8 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING
 
+from soma_inits_upgrades.console import eprint_warn
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -45,10 +47,9 @@ def recover_single_graph_entry(
     import pathlib
 
     prog = pathlib.Path(sys.argv[0]).name
-    print(
+    eprint_warn(
         f"Warning: state file corrupt for {init_file}, recreating. "
         f"This entry will be fully reprocessed on next run of {prog}.",
-        file=sys.stderr,
     )
     return True
 
