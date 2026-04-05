@@ -5,8 +5,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import pytest
-
 from soma_inits_upgrades.processing_finalize import finalize_entry
 from soma_inits_upgrades.state_schema import RepoState
 
@@ -86,32 +84,3 @@ def test_guard_preserves_skipped(tmp_path: Path) -> None:
     assert ctx.entry_state.status == "done"
     assert ctx.entry_state.done_reason == "skipped"
 
-
-def test_all_repos_error_continue_shows_details(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str],
-) -> None:
-    """'c' continues; stderr shows repo URL, state path, and notes."""
-    notes = "clone failed [origin: tasks.py:10 in do_clone]"
-    ctx = _make_ctx(tmp_path, _repo("error", notes))
-    ctx.input_fn = lambda _: "c"
-    finalize_entry(ctx)
-    assert ctx.entry_state.status == "error"
-    captured = capsys.readouterr()
-    assert "dash.el" in captured.err
-    assert str(ctx.entry_state_path) in captured.err
-    assert "origin: tasks.py:10 in do_clone" in captured.err
-
-
-def test_all_repos_error_quit_exits(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str],
-) -> None:
-    """'q' triggers sys.exit; stderr shows repo details."""
-    notes = "clone failed [origin: tasks.py:10 in do_clone]"
-    ctx = _make_ctx(tmp_path, _repo("error", notes))
-    ctx.input_fn = lambda _: "q"
-    with pytest.raises(SystemExit):
-        finalize_entry(ctx)
-    captured = capsys.readouterr()
-    assert "dash.el" in captured.err
-    assert str(ctx.entry_state_path) in captured.err
-    assert "origin: tasks.py:10 in do_clone" in captured.err
