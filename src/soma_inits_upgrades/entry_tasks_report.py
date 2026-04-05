@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 def task_upgrade_report(ctx: EntryContext) -> bool:
     """Run the upgrade report LLM pause."""
-    from soma_inits_upgrades.entry_tasks_analysis import _build_dep_context
+    from soma_inits_upgrades.entry_tasks_dep_context import build_dep_context
     from soma_inits_upgrades.llm_task import run_llm_task
     from soma_inits_upgrades.processing_helpers import self_heal_entry_resource
     from soma_inits_upgrades.prompts_report import generate_upgrade_report_prompt
@@ -21,7 +21,7 @@ def task_upgrade_report(ctx: EntryContext) -> bool:
     prompt = ctx.tmp_dir / f"{ctx.init_stem}-upgrade-report.prompt.md"
     malformed = output.with_suffix(output.suffix + ".malformed")
     mal_arg = malformed if malformed.exists() else None
-    dep_ctx = _build_dep_context(ctx)
+    dep_ctx = build_dep_context(ctx)
     repos_info: list[ReportRepoInfo] = []
     for repo in ctx.entry_state.repos:
         if repo.done_reason is not None:

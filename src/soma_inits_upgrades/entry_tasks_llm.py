@@ -47,7 +47,7 @@ def task_security_review(ctx: EntryContext) -> bool:
 
 def task_upgrade_analysis(ctx: EntryContext) -> bool:
     """Run the upgrade analysis LLM pause and validate output."""
-    from soma_inits_upgrades.entry_tasks_analysis import _build_dep_context
+    from soma_inits_upgrades.entry_tasks_dep_context import build_dep_context
     from soma_inits_upgrades.llm_task import run_llm_task
     from soma_inits_upgrades.output_validation import (
         validate_upgrade_analysis_output,
@@ -61,7 +61,7 @@ def task_upgrade_analysis(ctx: EntryContext) -> bool:
     prompt = ctx.tmp_dir / f"{ctx.init_stem}-upgrade-analysis.prompt.md"
     malformed = output.with_suffix(output.suffix + ".malformed")
     mal_arg = malformed if malformed.exists() else None
-    dep_ctx = _build_dep_context(ctx)
+    dep_ctx = build_dep_context(ctx)
     repos_info: list[AnalysisRepoInfo] = []
     for repo in ctx.entry_state.repos:
         if repo.done_reason is not None:
