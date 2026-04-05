@@ -41,6 +41,9 @@ class FakeGit:
         result = self._dispatch(subcmd)
         if subcmd == "clone" and result.returncode == 0:
             self._create_clone_dir(arg_list)
+        stdout_dest = kwargs.get("stdout")
+        if hasattr(stdout_dest, "write") and result.stdout:
+            stdout_dest.write(result.stdout.encode())
         return result
 
     def _dispatch(self, subcmd: str) -> subprocess.CompletedProcess[str]:

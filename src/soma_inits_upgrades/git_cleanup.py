@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from subprocess import PIPE
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -26,25 +27,29 @@ def generate_diff(
     """
     run_fn = resolve_run(run_fn)
     try:
-        result = run_fn(
-            ["git", "diff", "--no-color", "--no-ext-diff",
-             pinned_ref, latest_ref, "--"],
-            capture_output=True, text=True,
-            timeout=GIT_DIFF_TIMEOUT_SECONDS, cwd=str(clone_dir),
-        )
+        with output_path.open("wb") as fout:
+            result = run_fn(
+                ["git", "diff", "--no-color", "--no-ext-diff",
+                 pinned_ref, latest_ref, "--"],
+                stdout=fout, stderr=PIPE, text=True,
+                timeout=GIT_DIFF_TIMEOUT_SECONDS,
+                cwd=str(clone_dir),
+            )
     except SubprocessTimeoutError as exc:
+        output_path.unlink(missing_ok=True)
         msg = (
             f"diff timed out after {GIT_DIFF_TIMEOUT_SECONDS} seconds"
             f" between {pinned_ref} and {latest_ref}"
         )
         raise RuntimeError(msg) from exc
     if result.returncode != 0:
+        output_path.unlink(missing_ok=True)
         msg = (
             f"git diff failed (exit {result.returncode}):"
             f" {result.stderr.strip()}"
         )
         raise RuntimeError(msg)
-    if not result.stdout.strip():
+    if output_path.stat().st_size == 0:
+        output_path.unlink(missing_ok=True)
         return False
-    output_path.write_text(result.stdout, encoding="utf-8")
     return True
