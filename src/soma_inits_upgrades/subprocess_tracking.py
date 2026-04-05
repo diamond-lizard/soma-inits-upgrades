@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from collections.abc import Callable
     from subprocess import Popen
+    from typing import IO
 
 from soma_inits_upgrades.console import eprint
 from soma_inits_upgrades.subprocess_utils import (
@@ -67,6 +68,7 @@ def tracked_run(
     cwd: str | None = None, env: dict[str, str] | None = None,
     input: str | None = None, capture_output: bool = False,  # noqa: A002
     text: bool = False, check: bool = False,
+    stdout: int | IO[bytes] | None = None, stderr: int | IO[bytes] | None = None,
     _popen_factory: Callable[..., Popen[str]] | None = None,
     _poll_interval: float = 10,
 ) -> subprocess.CompletedProcess[str]:
@@ -79,17 +81,19 @@ def tracked_run(
     factory = _popen_factory if _popen_factory is not None else subprocess.Popen
     stdin_pipe = subprocess.PIPE if input is not None else None
     process = factory(
-        args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        args,
+        stdout=stdout if stdout is not None else subprocess.PIPE,
+        stderr=stderr if stderr is not None else subprocess.PIPE,
         stdin=stdin_pipe, text=True, cwd=cwd, env=env,
     )
     tracker.set(process)
     try:
         if progress_label is not None:
-            stdout, stderr = poll_with_progress(process, timeout, progress_label, _poll_interval)
+            out_str, err_str = poll_with_progress(process, timeout, progress_label, _poll_interval)
         else:
-            stdout, stderr = _communicate_with_timeout(process, input, timeout, args)
+            out_str, err_str = _communicate_with_timeout(process, input, timeout, args)
     finally:
         tracker.clear()
     return subprocess.CompletedProcess(
-        args, process.returncode or 0, stdout, stderr,
+        args, process.returncode or 0, out_str, err_str,
     )
