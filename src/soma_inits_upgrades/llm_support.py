@@ -54,9 +54,9 @@ def prompt_user_action(output_path: Path, input_fn: UserInputFn) -> str:
             choice = input_fn("(c)ontinue, (s)kip, or (q)uit: ").strip().lower()
         except EOFError:
             return "quit"
+        if choice in ("c", "") and output_path.exists() and output_path.stat().st_size > 0:
+            return "continue"
         if choice in ("c", ""):
-            if output_path.exists() and output_path.stat().st_size > 0:
-                return "continue"
             short = shorten_home_in_text(str(output_path))
             eprint_error(f"  Output file missing or empty: {short}")
             continue
