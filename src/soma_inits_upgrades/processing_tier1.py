@@ -20,14 +20,9 @@ def _dispatch_tier1_task(
     try:
         result = TIER_1_HANDLERS[task_name](repo_ctx)
     except Exception as exc:
-        import traceback
-        from pathlib import Path
-        tb = traceback.extract_tb(exc.__traceback__)
-        last = tb[-1]
-        origin = Path(last.filename).name
-        suffix = f"[origin: {origin}:{last.lineno} in {last.name}]"
-        msg = f"internal error in task {task_name}: {exc} {suffix}"
-        set_repo_error(repo_ctx, msg)
+        set_repo_error(
+            repo_ctx, f"internal error in task {task_name}: {exc}", exc,
+        )
         return False, True
     if rs.done_reason is not None:
         return result, True

@@ -34,7 +34,7 @@ def task_diff(repo_ctx: RepoContext) -> bool:
             diff_path, run_fn=ctx.run_fn,
         )
     except Exception as exc:
-        set_repo_error(repo_ctx, f"diff generation failed: {exc}")
+        set_repo_error(repo_ctx, f"diff generation failed: {exc}", exc)
         _cleanup_repo_temp(repo_ctx)
         return False
     if not has_diff:

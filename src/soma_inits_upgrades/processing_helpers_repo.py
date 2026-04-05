@@ -25,10 +25,23 @@ def set_repo_done_early(
     atomic_write_json(repo_ctx.entry_ctx.entry_state_path, repo_ctx.entry_ctx.entry_state)
 
 
-def set_repo_error(repo_ctx: RepoContext, message: str) -> None:
-    """Set per-repo error fields and persist state."""
-    from soma_inits_upgrades.state import atomic_write_json
+def set_repo_error(
+    repo_ctx: RepoContext, message: str,
+    exc: BaseException | None = None,
+) -> None:
+    """Set per-repo error fields and persist state.
 
+    When exc is provided, appends the exception origin (file, line,
+    function) to the message as an [origin: ...] suffix.
+    """
+    from soma_inits_upgrades.state import atomic_write_json
+    if exc is not None and exc.__traceback__ is not None:
+        import traceback
+        from pathlib import Path
+        tb = traceback.extract_tb(exc.__traceback__)
+        last = tb[-1]
+        origin = Path(last.filename).name
+        message = f"{message} [origin: {origin}:{last.lineno} in {last.name}]"
     repo_ctx.repo_state.done_reason = "error"
     repo_ctx.repo_state.notes = message
     atomic_write_json(repo_ctx.entry_ctx.entry_state_path, repo_ctx.entry_ctx.entry_state)
