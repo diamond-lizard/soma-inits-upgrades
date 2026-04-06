@@ -21,7 +21,7 @@ MODE_DEFINITION_FORMS: set[str] = {
 _COMMENT_RE = re.compile(r"^\s*;")
 _DEFFORM_RE = re.compile(r"\(\s*(" + "|".join(
     re.escape(f) for f in sorted(DEFINITION_FORMS, key=len, reverse=True)
-) + r")\s+(\S+)")
+) + r")\s+([^\s()]+)")
 
 
 def is_definition_line(line: str) -> bool:

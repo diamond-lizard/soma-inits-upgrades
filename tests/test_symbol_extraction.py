@@ -93,3 +93,28 @@ def test_derive_mode_symbols_derived_mode() -> None:
 def test_derive_mode_symbols_non_mode() -> None:
     """Returns just the symbol for non-mode forms."""
     assert derive_mode_symbols("my-func", "defun") == ["my-func"]
+
+
+def test_is_definition_line_defvar_no_value() -> None:
+    """Recognizes (defvar sym) with no value as a definition line."""
+    assert is_definition_line("(defvar found)")
+
+
+def test_extract_symbol_and_form_defvar_no_value() -> None:
+    """Extracts symbol from (defvar sym) with no value."""
+    result = extract_symbol_and_form("(defvar found)")
+    assert result == ("found", "defvar")
+
+
+def test_extract_symbol_and_form_defun_no_space_before_arglist() -> None:
+    """Extracts symbol when arglist abuts the function name."""
+    result = extract_symbol_and_form(
+        "(defun mumamo-chunk-aspnet(pos min max)",
+    )
+    assert result == ("mumamo-chunk-aspnet", "defun")
+
+
+def test_extract_symbol_and_form_defun_empty_arglist_no_space() -> None:
+    """Extracts symbol when empty arglist abuts the function name."""
+    result = extract_symbol_and_form("(defun emacs-buffer-file()")
+    assert result == ("emacs-buffer-file", "defun")
