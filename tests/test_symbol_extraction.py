@@ -118,3 +118,24 @@ def test_extract_symbol_and_form_defun_empty_arglist_no_space() -> None:
     """Extracts symbol when empty arglist abuts the function name."""
     result = extract_symbol_and_form("(defun emacs-buffer-file()")
     assert result == ("emacs-buffer-file", "defun")
+
+
+def test_extract_symbol_and_form_quoted_list_rejected() -> None:
+    """Does not extract a symbol from a definition keyword inside a quoted list."""
+    result = extract_symbol_and_form(
+        "                 (safe-forms '( defun defmacro",
+    )
+    assert result is None
+
+
+def test_extract_symbol_and_form_definition_form_as_symbol() -> None:
+    """Rejects extraction when the 'symbol' is itself a definition keyword."""
+    result = extract_symbol_and_form("(defun defvar")
+    assert result is None
+
+
+def test_is_definition_line_after_nonwhitespace_rejected() -> None:
+    """Does not recognize a definition keyword preceded by non-whitespace content."""
+    assert not is_definition_line(
+        "                 (safe-forms '( defun defmacro",
+    )

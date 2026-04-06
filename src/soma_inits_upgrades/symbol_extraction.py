@@ -19,7 +19,7 @@ MODE_DEFINITION_FORMS: set[str] = {
 }
 
 _COMMENT_RE = re.compile(r"^\s*;")
-_DEFFORM_RE = re.compile(r"\(\s*(" + "|".join(
+_DEFFORM_RE = re.compile(r"^\s*\(\s*(" + "|".join(
     re.escape(f) for f in sorted(DEFINITION_FORMS, key=len, reverse=True)
 ) + r")\s+([^\s()]+)")
 
@@ -43,7 +43,10 @@ def extract_symbol_and_form(line: str) -> tuple[str, str] | None:
     match = _DEFFORM_RE.search(line)
     if not match:
         return None
-    return match.group(2), match.group(1)
+    symbol, form = match.group(2), match.group(1)
+    if symbol in DEFINITION_FORMS:
+        return None
+    return symbol, form
 
 
 def derive_mode_symbols(symbol: str, form: str) -> list[str]:
