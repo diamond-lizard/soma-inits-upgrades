@@ -14,23 +14,32 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
+def _collect_lines(diff_path: Path) -> tuple[list[str], list[str]]:
+    """Parse a diff and return (removed_lines, added_lines) in one pass."""
+    import unidiff
+
+    with open(diff_path, encoding="utf-8", errors="replace", newline="\n") as f:
+        patch = unidiff.PatchSet(f)
+    removed: list[str] = []
+    added: list[str] = []
+    for pf in patch:
+        for hunk in pf:
+            for line in hunk:
+                text = line.value.rstrip("\n")
+                if line.is_removed:
+                    removed.append(text)
+                elif line.is_added:
+                    added.append(text)
+    return removed, added
+
+
 def collect_removed_lines(diff_path: Path) -> list[str]:
     """Parse a diff file and return all removed line contents.
 
     Uses unidiff to parse the diff into structured objects, then flattens
     files -> hunks -> lines into a flat list of removed line strings.
     """
-    import unidiff
-
-    with open(diff_path, encoding="utf-8", errors="replace", newline="\n") as f:
-        patch = unidiff.PatchSet(f)
-    return [
-        line.value.rstrip("\n")
-        for pf in patch
-        for hunk in pf
-        for line in hunk
-        if line.is_removed
-    ]
+    return _collect_lines(diff_path)[0]
 
 
 def _symbols_from_line(line: str) -> list[str]:
@@ -46,21 +55,21 @@ def _symbols_from_line(line: str) -> list[str]:
     return derive_mode_symbols(extracted[0], extracted[1])
 
 
-def extract_changed_symbols(diff_path: Path) -> list[str]:
-    """Extract unique changed/removed elisp symbols from a diff file.
-
-    Pipelines removed lines through definition detection, symbol extraction,
-    and mode symbol expansion. Returns a deduplicated list.
-    """
-    all_syms = (
+def _extract_syms(lines: list[str]) -> set[str]:
+    """Extract all definition symbols from a list of source lines."""
+    return {
         sym
-        for line in collect_removed_lines(diff_path)
+        for line in lines
         for sym in _symbols_from_line(line)
-    )
-    seen: set[str] = set()
-    result: list[str] = []
-    for sym in all_syms:
-        if sym not in seen:
-            seen.add(sym)
-            result.append(sym)
-    return result
+    }
+
+
+def extract_changed_symbols(diff_path: Path) -> list[str]:
+    """Extract elisp symbols removed but not re-added in a diff.
+
+    Symbols present on both removed and added lines (cosmetic
+    changes like whitespace or timestamp reformatting) are excluded.
+    Returns a sorted list for deterministic output.
+    """
+    removed_lines, added_lines = _collect_lines(diff_path)
+    return sorted(_extract_syms(removed_lines) - _extract_syms(added_lines))

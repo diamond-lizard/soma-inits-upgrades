@@ -75,3 +75,78 @@ def test_extract_changed_symbols_deduplication(tmp_path: Path) -> None:
     diff_file.write_text(diff, encoding="utf-8")
     symbols = extract_changed_symbols(diff_file)
     assert symbols.count("my-dup") == 1
+
+
+def test_extract_changed_symbols_cosmetic_excluded(tmp_path: Path) -> None:
+    """Symbols present on both removed and added lines are excluded."""
+    diff = """\
+--- a/pkg.el
++++ b/pkg.el
+@@ -1,2 +1,2 @@
+-(defvar my-var nil "Old docstring.")
++(defvar my-var nil "New docstring.")
+-(defun old-func () nil)
++(defun new-func () nil)
+"""
+    diff_file = tmp_path / "cosmetic.diff"
+    diff_file.write_text(diff, encoding="utf-8")
+    symbols = extract_changed_symbols(diff_file)
+    assert "my-var" not in symbols
+    assert "old-func" in symbols
+    assert "new-func" not in symbols
+
+
+def test_extract_changed_symbols_truly_removed_detected(
+    tmp_path: Path,
+) -> None:
+    """Symbols only on removed lines are still detected."""
+    diff = """\
+--- a/pkg.el
++++ b/pkg.el
+@@ -1,1 +1,1 @@
+-(defun old-func () nil)
++(defun new-func () nil)
+"""
+    diff_file = tmp_path / "removed.diff"
+    diff_file.write_text(diff, encoding="utf-8")
+    symbols = extract_changed_symbols(diff_file)
+    assert "old-func" in symbols
+    assert "new-func" not in symbols
+
+
+def test_extract_changed_symbols_autoload_timestamp_excluded(
+    tmp_path: Path,
+) -> None:
+    """Regenerated autoloads with only timestamp changes are excluded."""
+    diff = """\
+--- a/loaddefs.el
++++ b/loaddefs.el
+@@ -1,2 +1,2 @@
+-;;;### (autoloads nil "my-pkg" "my-pkg.el" (19362 49086))
+-(defvar my-mode nil "doc")
++;;;### (autoloads nil "my-pkg" "my-pkg.el" (19362 45486))
++(defvar my-mode nil "doc")
+"""
+    diff_file = tmp_path / "autoload.diff"
+    diff_file.write_text(diff, encoding="utf-8")
+    symbols = extract_changed_symbols(diff_file)
+    assert "my-mode" not in symbols
+
+
+def test_extract_changed_symbols_mode_cosmetic_excluded(
+    tmp_path: Path,
+) -> None:
+    """Mode symbol on both sides excludes derived -hook and -map variants."""
+    diff = """\
+--- a/mode.el
++++ b/mode.el
+@@ -1,1 +1,1 @@
+-(define-minor-mode my-mode "Old doc.")
++(define-minor-mode my-mode "New doc.")
+"""
+    diff_file = tmp_path / "mode.diff"
+    diff_file.write_text(diff, encoding="utf-8")
+    symbols = extract_changed_symbols(diff_file)
+    assert "my-mode" not in symbols
+    assert "my-mode-hook" not in symbols
+    assert "my-mode-map" not in symbols
