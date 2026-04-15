@@ -22,6 +22,7 @@ def locate_package_metadata(
     init_file: str | None = None,
     repo_url: str | None = None,
     input_fn: UserInputFn | None = None,
+    inits_dir: Path | None = None,
 ) -> tuple[str | None, str | None]:
     """Locate and parse package dependency metadata from a repository.
 
@@ -35,6 +36,7 @@ def locate_package_metadata(
     pkg_files = find_pkg_el_files(repo_dir)
     header_files = find_package_requires_files(repo_dir)
     candidates = build_candidate_pool(pkg_files, header_files)
+    candidates = _filter_by_use_package(candidates, init_file, inits_dir)
     if not candidates:
         return None, None
     if len(candidates) == 1:
@@ -56,3 +58,23 @@ def _parse_selected(
     assert selected.header_line is not None
     raw = extract_multiline_requires(lines, selected.header_line - 1)
     return raw, selected.stem
+
+def _filter_by_use_package(
+    candidates: list[PackageCandidate],
+    init_file: str | None,
+    inits_dir: Path | None,
+) -> list[PackageCandidate]:
+    """Narrow candidates to those matching use-package declarations.
+
+    Returns the filtered list if any candidates match, otherwise
+    returns the original list unchanged (fallback).
+    """
+    if inits_dir is None or init_file is None:
+        return candidates
+    from soma_inits_upgrades.use_package_parser import extract_use_package_names
+
+    declared = extract_use_package_names(inits_dir / init_file)
+    if not declared:
+        return candidates
+    filtered = [c for c in candidates if c.stem in declared]
+    return filtered if filtered else candidates

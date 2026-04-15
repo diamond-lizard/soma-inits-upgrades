@@ -69,6 +69,7 @@ def process_single_entry(
     """Process a single entry. Returns needs_rerun."""
     from soma_inits_upgrades.processing import run_entry_task_loop
     from soma_inits_upgrades.processing_finalize import finalize_entry
+    from soma_inits_upgrades.symbols import EMACS_DIR
     state = ensure_entry_state(entry, state_dir, global_state)
     if state is None:
         return False
@@ -90,8 +91,8 @@ def process_single_entry(
         init_stem=init_stem,
         results=results,
         xclip_checker=xclip_checker,
-        run_fn=run_fn,
-        input_fn=input_fn,
+        run_fn=run_fn, input_fn=input_fn,
+        inits_dir=EMACS_DIR / "soma" / "inits",
     )
     needs_rerun = run_entry_task_loop(ctx)
     finalize_entry(ctx)

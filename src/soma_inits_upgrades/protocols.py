@@ -68,6 +68,7 @@ class EntryContext(BaseModel):
     run_fn: SubprocessRunner
     input_fn: UserInputFn | None = None
     reset_counters: dict[str, int] = Field(default_factory=dict)
+    inits_dir: Path | None = None
 
 
 @dataclass
@@ -89,12 +90,3 @@ class Tier2TaskHandler(Protocol):
     """Protocol for Tier 2 per-entry task handler functions."""
 
     def __call__(self, ctx: EntryContext) -> bool: ...
-
-
-def default_input(prompt: str) -> str:
-    """Safety-net UserInputFn fallback when no input_fn is injected.
-
-    In production the composition root injects an echo-managed
-    closure instead.
-    """
-    return input(prompt)

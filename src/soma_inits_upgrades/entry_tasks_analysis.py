@@ -36,6 +36,7 @@ def task_deps(repo_ctx: RepoContext) -> bool:
     raw_deps, pkg_name = locate_package_metadata(
         repo_ctx.clone_dir, init_file=ctx.entry_state.init_file,
         repo_url=repo_ctx.repo_state.repo_url, input_fn=ctx.input_fn,
+        inits_dir=ctx.inits_dir,
     )
     depends_on: list[str] = []
     min_emacs: str | None = None
