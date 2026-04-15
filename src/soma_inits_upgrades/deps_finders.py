@@ -25,7 +25,7 @@ def find_pkg_el_files(repo_dir: Path) -> list[Path]:
     return root_files + sub_files
 
 
-_PKG_REQ_RE = re.compile(r"^;+\s*Package-Requires:")
+_PKG_REQ_RE = re.compile(r"^;+\s*Package-Requires:", re.IGNORECASE)
 
 
 def find_package_requires_files(repo_dir: Path) -> list[tuple[Path, int]]:

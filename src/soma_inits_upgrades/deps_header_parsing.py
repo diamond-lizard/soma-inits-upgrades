@@ -15,7 +15,7 @@ def extract_multiline_requires(lines: list[str], header_line_idx: int) -> str:
     parentheses are balanced.
     """
     header = lines[header_line_idx]
-    value = header.split("Package-Requires:", 1)[1].strip()
+    value = re.split(r"Package-Requires:", header, maxsplit=1, flags=re.IGNORECASE)[1].strip()
     for line in lines[header_line_idx + 1 :]:
         if _is_balanced(value):
             break
