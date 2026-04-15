@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from soma_inits_upgrades.console import eprint_error, eprint_prompt
-from soma_inits_upgrades.protocols import default_input
+from soma_inits_upgrades.default_input import default_input
 
 if TYPE_CHECKING:
     from pathlib import Path
