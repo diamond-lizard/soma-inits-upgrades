@@ -56,6 +56,7 @@ class RepoState(BaseModel):
     depends_on: list[str] | None = None
     done_reason: str | None = None
     notes: str | None = None
+    is_monorepo_derived: bool = False
     tier1_tasks_completed: dict[str, bool] = Field(
         default_factory=_default_tier1_tasks_completed,
     )
@@ -70,3 +71,4 @@ class EntryState(BaseModel):
     done_reason: str | None = None
     retries_remaining: int = 5
     tasks_completed: dict[str, bool] = Field(default_factory=_default_tasks_completed)
+    multi_package_verified: bool = False

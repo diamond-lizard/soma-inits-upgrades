@@ -25,6 +25,8 @@ def _validate_repo_artifacts(
     entry_state_path: Path,
 ) -> None:
     """Reset Tier 1 tasks when temp dir missing but all are done."""
+    if repo_state.is_monorepo_derived:
+        return
     all_done = all(repo_state.tier1_tasks_completed.values())
     if not all_done or temp_dir.is_dir():
         return
@@ -42,6 +44,12 @@ def _reset_tier1_on_restart(ctx: EntryContext) -> None:
     """Reset Tier 1 tasks on restart when security_review incomplete."""
     if ctx.entry_state.tasks_completed.get("security_review", False):
         return
+    had_derived = any(r.is_monorepo_derived for r in ctx.entry_state.repos)
+    ctx.entry_state.repos = [
+        r for r in ctx.entry_state.repos if not r.is_monorepo_derived
+    ]
+    if had_derived:
+        ctx.entry_state.multi_package_verified = False
     any_reset = False
     for repo_state in ctx.entry_state.repos:
         if repo_state.done_reason is not None:
@@ -56,7 +64,7 @@ def _reset_tier1_on_restart(ctx: EntryContext) -> None:
             f"Restart detected: resetting Tier 1 tasks"
             f" for {repo_state.repo_url}",
         )
-    if any_reset:
+    if any_reset or had_derived:
         atomic_write_json(ctx.entry_state_path, ctx.entry_state)
 
 

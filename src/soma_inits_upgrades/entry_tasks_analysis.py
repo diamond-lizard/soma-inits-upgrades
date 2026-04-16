@@ -51,6 +51,8 @@ def task_deps(repo_ctx: RepoContext) -> bool:
     mark_repo_task_complete(
         ctx.entry_state, repo_ctx.repo_state, "deps", ctx.entry_state_path,
     )
+    from soma_inits_upgrades.entry_tasks_monorepo import detect_monorepo_packages
+    detect_monorepo_packages(repo_ctx)
     return False
 
 
