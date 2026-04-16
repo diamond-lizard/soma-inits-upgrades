@@ -9,6 +9,7 @@ from soma_inits_upgrades.entry_tasks_diff import clone_cleanup, task_temp_cleanu
 from soma_inits_upgrades.processing_tier1 import _run_tier1_tasks
 from soma_inits_upgrades.processing_tier2 import _run_tier2_loop
 from soma_inits_upgrades.repo_utils import derive_repo_dir_name
+from soma_inits_upgrades.selfheal_package_runner import run_package_selfheal
 from soma_inits_upgrades.state import atomic_write_json
 
 if TYPE_CHECKING:
@@ -73,6 +74,7 @@ def run_entry_task_loop(ctx: EntryContext) -> bool:
     from soma_inits_upgrades.protocols import RepoContext
     needs_rerun = False
     _reset_tier1_on_restart(ctx)
+    run_package_selfheal(ctx)
     for repo_state in ctx.entry_state.repos:
         if repo_state.done_reason is not None:
             continue
