@@ -17,6 +17,7 @@ def task_upgrade_report(ctx: EntryContext) -> bool:
     from soma_inits_upgrades.prompts_report import generate_upgrade_report_prompt
     name = ctx.entry_state.init_file
     analysis = ctx.tmp_dir / f"{ctx.init_stem}-upgrade-analysis.json"
+    security_review = ctx.output_dir / f"{name}-security-review.md"
     output = ctx.output_dir / f"{name}-upgrade-process.md"
     prompt = ctx.tmp_dir / f"{ctx.init_stem}-upgrade-report.prompt.md"
     malformed = output.with_suffix(output.suffix + ".malformed")
@@ -40,7 +41,7 @@ def task_upgrade_report(ctx: EntryContext) -> bool:
         )
     result = run_llm_task(
         ctx, "upgrade_report", prompt_fn, prompt, output,
-        [(analysis, "upgrade_analysis")],
+        [(security_review, "security_review"), (analysis, "upgrade_analysis")],
         self_heal_entry_resource, "Upgrade Report",
     )
     return result == "break"
