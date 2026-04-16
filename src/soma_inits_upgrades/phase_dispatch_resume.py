@@ -20,12 +20,21 @@ def resume_completed_entry_processing(
     """Handle entry_processing already done. Returns True to reprocess."""
     from soma_inits_upgrades.entry_changes import detect_new_or_modified_entries
     from soma_inits_upgrades.phase_dispatch import handle_detected_changes
+    from soma_inits_upgrades.selfheal_package_scan import (
+        scan_completed_entries_for_selfheal,
+    )
     from soma_inits_upgrades.state import atomic_write_json
+    from soma_inits_upgrades.symbols import EMACS_DIR
 
     new, modified, orphan_count = detect_new_or_modified_entries(
         results, state_dir, output_dir, global_state,
     )
     atomic_write_json(state_dir / "global.json", global_state)
+    inits_dir = EMACS_DIR / "soma" / "inits"
+    healed = scan_completed_entries_for_selfheal(
+        global_state.entry_names, state_dir, inits_dir,
+    )
+    modified.extend(healed)
     if handle_detected_changes(
         results, state_dir, output_dir, global_state,
         new, modified, orphan_count,

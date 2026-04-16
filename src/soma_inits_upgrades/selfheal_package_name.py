@@ -8,20 +8,22 @@ from soma_inits_upgrades.console import eprint_warn
 from soma_inits_upgrades.state import atomic_write_json
 
 if TYPE_CHECKING:
-    from soma_inits_upgrades.protocols import EntryContext
+    from pathlib import Path
+
+    from soma_inits_upgrades.state_schema import EntryState
 
 
-def _collect_active_package_names(ctx: EntryContext) -> list[str]:
+def _collect_active_package_names(entry_state: EntryState) -> list[str]:
     """Return package_name values from non-done repos where set."""
     return [
         r.package_name
-        for r in ctx.entry_state.repos
+        for r in entry_state.repos
         if r.done_reason is None and r.package_name is not None
     ]
 
 
 def check_package_name_mismatch(
-    declared_names: list[str], ctx: EntryContext,
+    declared_names: list[str], entry_state: EntryState,
 ) -> str | None:
     """Detect stored package names absent from declared names.
 
@@ -30,20 +32,20 @@ def check_package_name_mismatch(
     """
     if not declared_names:
         return None
-    stored = _collect_active_package_names(ctx)
+    stored = _collect_active_package_names(entry_state)
     if not stored:
         return None
     wrong = [n for n in stored if n not in declared_names]
     if not wrong:
         return None
     return (
-        f"package name mismatch for {ctx.entry_state.init_file}:"
+        f"package name mismatch for {entry_state.init_file}:"
         f" stored {wrong} but init file declares {declared_names}"
     )
 
 
 def check_multi_package_count(
-    declared_names: list[str], ctx: EntryContext,
+    declared_names: list[str], entry_state: EntryState,
 ) -> str | None:
     """Detect missing monorepo entries by comparing declaration count.
 
@@ -52,30 +54,32 @@ def check_multi_package_count(
     """
     if not declared_names:
         return None
-    if not _collect_active_package_names(ctx):
+    if not _collect_active_package_names(entry_state):
         return None
-    if ctx.entry_state.multi_package_verified:
+    if entry_state.multi_package_verified:
         return None
-    non_done = sum(1 for r in ctx.entry_state.repos if r.done_reason is None)
+    non_done = sum(1 for r in entry_state.repos if r.done_reason is None)
     if len(declared_names) <= non_done:
         return None
     return (
-        f"missing multi-package entries for {ctx.entry_state.init_file}:"
+        f"missing multi-package entries for {entry_state.init_file}:"
         f" {len(declared_names)} declared but only {non_done} repos"
     )
 
 
-def reset_entry_for_reprocessing(ctx: EntryContext, reason: str) -> None:
+def reset_entry_for_reprocessing(
+    entry_state: EntryState, entry_state_path: Path, reason: str,
+) -> None:
     """Perform full structural reset for package name re-processing.
 
     Removes monorepo-derived entries, resets all Tier 1/2/cleanup tasks
     on active repos, clears package fields, and persists state.
     """
     eprint_warn(reason)
-    ctx.entry_state.repos = [
-        r for r in ctx.entry_state.repos if not r.is_monorepo_derived
+    entry_state.repos = [
+        r for r in entry_state.repos if not r.is_monorepo_derived
     ]
-    for repo in ctx.entry_state.repos:
+    for repo in entry_state.repos:
         if repo.done_reason is not None:
             continue
         for key in repo.tier1_tasks_completed:
@@ -83,7 +87,7 @@ def reset_entry_for_reprocessing(ctx: EntryContext, reason: str) -> None:
         repo.package_name = None
         repo.depends_on = None
         repo.min_emacs_version = None
-    for key in ctx.entry_state.tasks_completed:
-        ctx.entry_state.tasks_completed[key] = False
-    ctx.entry_state.multi_package_verified = False
-    atomic_write_json(ctx.entry_state_path, ctx.entry_state)
+    for key in entry_state.tasks_completed:
+        entry_state.tasks_completed[key] = False
+    entry_state.multi_package_verified = False
+    atomic_write_json(entry_state_path, entry_state)

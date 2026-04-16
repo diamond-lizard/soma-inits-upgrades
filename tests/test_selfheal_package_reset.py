@@ -33,7 +33,7 @@ def test_reset_full_structural_reset(tmp_path: Path) -> None:
     )
     ctx.entry_state.repos.append(derived)
 
-    reset_entry_for_reprocessing(ctx, "test reset reason")
+    reset_entry_for_reprocessing(ctx.entry_state, ctx.entry_state_path, "test reset reason")
 
     assert len(ctx.entry_state.repos) == 1
     r = ctx.entry_state.repos[0]
@@ -62,7 +62,7 @@ def test_reset_preserves_done_reason_repos(tmp_path: Path) -> None:
         active.tier1_tasks_completed[key] = True
     ctx.entry_state.repos.append(active)
 
-    reset_entry_for_reprocessing(ctx, "mismatch")
+    reset_entry_for_reprocessing(ctx.entry_state, ctx.entry_state_path, "mismatch")
 
     assert len(ctx.entry_state.repos) == 2
     assert ctx.entry_state.repos[0].package_name == "evil-helpers"
@@ -78,7 +78,7 @@ def test_reset_persists_state(tmp_path: Path) -> None:
     for key in ctx.entry_state.repos[0].tier1_tasks_completed:
         ctx.entry_state.repos[0].tier1_tasks_completed[key] = True
 
-    reset_entry_for_reprocessing(ctx, "persist test")
+    reset_entry_for_reprocessing(ctx.entry_state, ctx.entry_state_path, "persist test")
 
     from soma_inits_upgrades.state import read_entry_state
     reloaded = read_entry_state(ctx.entry_state_path)

@@ -28,8 +28,8 @@ def run_package_selfheal(ctx: EntryContext) -> None:
     declared = extract_use_package_names(init_path)
     if not declared:
         return
-    reason = check_package_name_mismatch(declared, ctx)
+    reason = check_package_name_mismatch(declared, ctx.entry_state)
     if reason is None:
-        reason = check_multi_package_count(declared, ctx)
+        reason = check_multi_package_count(declared, ctx.entry_state)
     if reason is not None:
-        reset_entry_for_reprocessing(ctx, reason)
+        reset_entry_for_reprocessing(ctx.entry_state, ctx.entry_state_path, reason)
